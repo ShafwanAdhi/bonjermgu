@@ -1,0 +1,470 @@
+{
+  "categories": [
+    {
+      "name": "Showroom Mobil Bekas",
+      "code": "SRB",
+      "segment": "Reguler",
+      "type": "External",
+      "tier": "Referral",
+      "allows_passenger": true,
+      "allows_commercial": true,
+      "sub_categories": [
+        {
+          "name": "Bursa Otomotif Sunter",
+          "institutions": []
+        },
+        {
+          "name": "Bursa Otomotif Mall Glodok Kemayoran",
+          "institutions": []
+        },
+        {
+          "name": "Bursa Otomotif Mangga Dua Square",
+          "institutions": []
+        },
+        {
+          "name": "Bursa Otomotif Pasar Mobil Kemayoran",
+          "institutions": []
+        },
+        {
+          "name": "Bursa Otomotif WTC Mangga Dua",
+          "institutions": []
+        },
+        {
+          "name": "Bursa Otomotif Season City",
+          "institutions": []
+        },
+        {
+          "name": "Bursa Otomotif Blok M",
+          "institutions": []
+        },
+        {
+          "name": "Bursa Otomotif ITC Permata Hijau",
+          "institutions": []
+        },
+        {
+          "name": "Bursa Otomotif Bintaro",
+          "institutions": []
+        },
+        {
+          "name": "Bursa Otomotif Serpong Summarecon",
+          "institutions": []
+        },
+        {
+          "name": "Cluster Fatmawati",
+          "institutions": []
+        },
+        {
+          "name": "Cluster Pondok Indah",
+          "institutions": []
+        },
+        {
+          "name": "Referral",
+          "institutions": []
+        }
+      ]
+    },
+    {
+      "name": "Karyawan Internal & Captive",
+      "code": "KIN",
+      "segment": "Reguler",
+      "type": "Internal",
+      "tier": "Referral",
+      "allows_passenger": true,
+      "allows_commercial": true,
+      "sub_categories": [
+        {
+          "name": "Pemegang WMK",
+          "institutions": []
+        },
+        {
+          "name": "Team Operation",
+          "institutions": []
+        },
+        {
+          "name": "Team AR",
+          "institutions": []
+        },
+        {
+          "name": "Team Credit Risk",
+          "institutions": []
+        },
+        {
+          "name": "Graha Sultan",
+          "institutions": [
+            "Team A",
+            "Team B",
+            "Team C",
+            "Team D"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Captive Internal",
+      "code": "CIN",
+      "segment": "Captive",
+      "type": "Internal",
+      "tier": "Khusus Karyawan Bank Mandiri",
+      "allows_passenger": true,
+      "allows_commercial": false,
+      "sub_categories": [
+        {
+          "name": "Area Kyai Tapa",
+          "institutions": [
+            "Jakarta Kyai Tapa",
+            "BMP Jakarta Kyai Tapa",
+            "Jakarta Jelambar",
+            "Jakarta Latumeten",
+            "Jakarta Grogol Muwardi",
+            "Jakarta Jelambar Baru",
+            "Jakarta Taman Duta Mas",
+            "Jakarta Tomang",
+            "Jakarta R.S. Royal Taruma",
+            "Jakarta Universitas Trisakti",
+            "Jakarta Universitas Tarumanegara",
+            "Jakarta KS Tubun (dh Jakarta R.S. Pelni)",
+            "Jakarta R.S. Harapan Kita",
+            "Jakarta R.S. Kanker Dharmais",
+            "Jakarta S. Parman",
+            "Jakarta Mal Ciputra",
+            "Jakarta Menara Citicon"
+          ]
+        },
+        {
+          "name": "Area Green Ville",
+          "institutions": [
+            "Jakarta Green Ville",
+            "Jakarta Gedung Pusri",
+            "Jakarta AKR Gallery West (dh Jakarta Jalan Panjang)",
+            "Jakarta Slipi Jaya",
+            "Jakarta Kemanggisan",
+            "Jakarta Rawa Belong",
+            "Jakarta Taman Kebon Jeruk",
+            "Jakarta Kebon Jeruk Perjuangan",
+            "BMP Jakarta Kebon Jeruk",
+            "Jakarta Kebon Jeruk",
+            "Jakarta Taman Aries",
+            "Jakarta Kelapa Dua (dh Jkt Kepa Duri)",
+            "Jakarta Kedoya",
+            "Jakarta Mal Taman Anggrek",
+            "Jakarta Mediterania Tanjung Duren",
+            "Jakarta Tanjung Duren",
+            "Jakarta Pesanggrahan Raya",
+            "Jakarta Grand Slipi Tower"
+          ]
+        },
+        {
+          "name": "Area Daan Mogot",
+          "institutions": [
+            "Jakarta Daan Mogot",
+            "BMP Jakarta Daan Mogot",
+            "Jakarta Cengkareng Pasar Ganefo (dh Jakarta Kalideres)",
+            "Jakarta Puri Indah",
+            "Jakarta Taman Palem Lestari",
+            "Jakarta Taman Semanan Indah",
+            "Jakarta Daan Mogot Baru",
+            "Jakarta Mal Puri Indah",
+            "Jakarta Puri Kencana",
+            "Jakarta Citra Garden",
+            "Jakarta Palem City",
+            "Jakarta Ciputra Internasional",
+            "Jakarta Botanical Garden",
+            "Jakarta Taman Permata Buana",
+            "Jakarta Citra 2 Extention",
+            "Jakarta Pos Pengumben Raya",
+            "Jakarta St. Moritz",
+            "Jakarta Pasar Cengkareng",
+            "Jakarta Pasar Meruya Kembangan",
+            "Jakarta Raya Kosambi"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Captive External",
+      "code": "CEX",
+      "segment": "Captive",
+      "type": "External",
+      "tier": "Semangat",
+      "allows_passenger": true,
+      "allows_commercial": true,
+      "sub_categories": [
+        {
+          "name": "Area Kyai Tapa",
+          "institutions": [
+            "Jakarta Kyai Tapa",
+            "BMP Jakarta Kyai Tapa",
+            "Jakarta Jelambar",
+            "Jakarta Latumeten",
+            "Jakarta Grogol Muwardi",
+            "Jakarta Jelambar Baru",
+            "Jakarta Taman Duta Mas",
+            "Jakarta Tomang",
+            "Jakarta R.S. Royal Taruma",
+            "Jakarta Universitas Trisakti",
+            "Jakarta Universitas Tarumanegara",
+            "Jakarta KS Tubun (dh Jakarta R.S. Pelni)",
+            "Jakarta R.S. Harapan Kita",
+            "Jakarta R.S. Kanker Dharmais",
+            "Jakarta S. Parman",
+            "Jakarta Mal Ciputra",
+            "Jakarta Menara Citicon"
+          ]
+        },
+        {
+          "name": "Area Green Ville",
+          "institutions": [
+            "Jakarta Green Ville",
+            "Jakarta Gedung Pusri",
+            "Jakarta AKR Gallery West (dh Jakarta Jalan Panjang)",
+            "Jakarta Slipi Jaya",
+            "Jakarta Kemanggisan",
+            "Jakarta Rawa Belong",
+            "Jakarta Taman Kebon Jeruk",
+            "Jakarta Kebon Jeruk Perjuangan",
+            "BMP Jakarta Kebon Jeruk",
+            "Jakarta Kebon Jeruk",
+            "Jakarta Taman Aries",
+            "Jakarta Kelapa Dua (dh Jkt Kepa Duri)",
+            "Jakarta Kedoya",
+            "Jakarta Mal Taman Anggrek",
+            "Jakarta Mediterania Tanjung Duren",
+            "Jakarta Tanjung Duren",
+            "Jakarta Pesanggrahan Raya",
+            "Jakarta Grand Slipi Tower"
+          ]
+        },
+        {
+          "name": "Area Daan Mogot",
+          "institutions": [
+            "Jakarta Daan Mogot",
+            "BMP Jakarta Daan Mogot",
+            "Jakarta Cengkareng Pasar Ganefo (dh Jakarta Kalideres)",
+            "Jakarta Puri Indah",
+            "Jakarta Taman Palem Lestari",
+            "Jakarta Taman Semanan Indah",
+            "Jakarta Daan Mogot Baru",
+            "Jakarta Mal Puri Indah",
+            "Jakarta Puri Kencana",
+            "Jakarta Citra Garden",
+            "Jakarta Palem City",
+            "Jakarta Ciputra Internasional",
+            "Jakarta Botanical Garden",
+            "Jakarta Taman Permata Buana",
+            "Jakarta Citra 2 Extention",
+            "Jakarta Pos Pengumben Raya",
+            "Jakarta St. Moritz",
+            "Jakarta Pasar Cengkareng",
+            "Jakarta Pasar Meruya Kembangan",
+            "Jakarta Raya Kosambi"
+          ]
+        },
+        {
+          "name": "SME & Private/Prioritas",
+          "institutions": []
+        }
+      ]
+    },
+    {
+      "name": "Wira Agency Retail",
+      "code": "WAR",
+      "segment": "Reguler",
+      "type": "Agency",
+      "tier": "Sales Dealer",
+      "allows_passenger": true,
+      "allows_commercial": true,
+      "sub_categories": [
+        {
+          "name": "Karyawan Perbankan",
+          "institutions": [
+            "BCA",
+            "BNI",
+            "BRI",
+            "BSI",
+            "BTN",
+            "BUKOPIN",
+            "CIMB NIAGA",
+            "DANAMON",
+            "KEB HANA",
+            "MAY BANK",
+            "MAYAPADA",
+            "MEGA",
+            "MUAMALAT",
+            "OCBC",
+            "PANIN",
+            "PERMATA",
+            "SINARMAS",
+            "UOB"
+          ]
+        },
+        {
+          "name": "Sales Authorized Dealer",
+          "institutions": [
+            "Aion",
+            "BMW",
+            "BYD",
+            "Chery",
+            "Daihatsu",
+            "DFSK",
+            "Hino",
+            "Honda",
+            "Hyundai",
+            "Isuzu",
+            "Kia",
+            "Lexus",
+            "Mazda",
+            "Mercedes",
+            "Mitsubishi",
+            "Neta",
+            "Nissan",
+            "Suzuki",
+            "Toyota",
+            "Wuling"
+          ]
+        },
+        {
+          "name": "Karyawan Koperasi",
+          "institutions": []
+        },
+        {
+          "name": "Karyawan Multifinance",
+          "institutions": [
+            "ACC",
+            "ADIRA Finance",
+            "BCA Finance",
+            "BFI Finance",
+            "BNI Finance",
+            "BRI Finance",
+            "CIMB Niaga Finance",
+            "Clipan Finance",
+            "Dipo Star Finance",
+            "FIF",
+            "Kredit Plus",
+            "May Bank Finance",
+            "Mega Finance",
+            "MNC Finance",
+            "MUF",
+            "NSC Finance",
+            "OTO Multiartha",
+            "Sinar Mas Finance",
+            "WOM Finance"
+          ]
+        },
+        {
+          "name": "Karyawan asuransi Rekanan",
+          "institutions": [
+            "AAB",
+            "ABDA",
+            "ACA",
+            "ADIRA",
+            "ARINDO",
+            "AWT",
+            "BESS",
+            "CAKRAWALA",
+            "KRESNA",
+            "MAG",
+            "MEGA",
+            "MNC",
+            "MPM",
+            "OONA",
+            "RAKSA",
+            "RAMAYANA",
+            "SIMAS",
+            "SUNDAY",
+            "TOB"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Wira Bisnis",
+      "code": "WBS",
+      "segment": "Reguler",
+      "type": "External",
+      "tier": "Referral",
+      "allows_passenger": true,
+      "allows_commercial": true,
+      "sub_categories": [
+        {
+          "name": "Akasha",
+          "institutions": []
+        },
+        {
+          "name": "Carsindo",
+          "institutions": []
+        },
+        {
+          "name": "Empower",
+          "institutions": []
+        },
+        {
+          "name": "Favorite",
+          "institutions": []
+        },
+        {
+          "name": "FinGo",
+          "institutions": []
+        },
+        {
+          "name": "Good",
+          "institutions": []
+        },
+        {
+          "name": "Goona",
+          "institutions": []
+        },
+        {
+          "name": "Pinjam Bagus",
+          "institutions": []
+        },
+        {
+          "name": "Porto",
+          "institutions": []
+        },
+        {
+          "name": "Semesta",
+          "institutions": []
+        },
+        {
+          "name": "Soehu",
+          "institutions": []
+        },
+        {
+          "name": "Taktis",
+          "institutions": []
+        }
+      ]
+    },
+    {
+      "name": "Others",
+      "code": "OTH",
+      "segment": "Reguler",
+      "type": "External",
+      "tier": "Referral",
+      "allows_passenger": true,
+      "allows_commercial": true,
+      "sub_categories": []
+    }
+  ],
+  "domiciles": [
+    "Jakarta Utara",
+    "Jakarta Selatan",
+    "Jakarta Timur",
+    "Jakarta Barat",
+    "Jakarta Pusat",
+    "Kota Bogor",
+    "Kabupaten Bogor",
+    "Depok",
+    "Kota Tanggerang",
+    "Kabupaten Tanggerang",
+    "Kota Tanggerang Selatan",
+    "Kota Bekasi",
+    "Kabupaten Bekasi"
+  ],
+  "age_groups": [
+    "18-35 tahun",
+    "36-45 tahun",
+    "46-50 tahun",
+    "51-60 tahun"
+  ]
+}

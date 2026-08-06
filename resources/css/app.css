@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    html {
+        -webkit-font-smoothing: antialiased;
+    }
+
+    /* Keeps Alpine-conditional blocks hidden until Alpine boots. */
+    [x-cloak] {
+        display: none !important;
+    }
+
+    body {
+        @apply bg-canvas font-sans text-body;
+    }
+
+    /*
+     * The design system documents Default and Active/Pressed states only.
+     * Focus is kept regardless — removing it would break keyboard navigation.
+     */
+    :focus-visible {
+        @apply outline-none ring-2 ring-info-border ring-offset-2;
+    }
+}
+
+@layer components {
+    /* Centered editorial container: 1280px cap with 48px breathing room. */
+    .band {
+        @apply mx-auto max-w-container px-lg md:px-xxl;
+    }
+}
