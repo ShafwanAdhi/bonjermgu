@@ -75,7 +75,7 @@ class Login extends Component
         // Session fixation defence — mandatory, per AD-15.
         session()->regenerate();
 
-        $this->redirectIntended(route(Auth::user()->role->homeRoute()), navigate: true);
+        $this->redirectIntended(route(Auth::user()->role->homeRoute()));
     }
 
     protected function ensureIsNotRateLimited(): void
