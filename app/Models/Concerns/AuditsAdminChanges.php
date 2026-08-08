@@ -3,8 +3,10 @@
 namespace App\Models\Concerns;
 
 use App\Models\AdminChangeLog;
+use App\Repositories\SimulationConfigurationRepository;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 trait AuditsAdminChanges
 {
@@ -58,5 +60,7 @@ trait AuditsAdminChanges
             'after_values' => $after,
             'created_at' => now(),
         ]);
+
+        Cache::forever(SimulationConfigurationRepository::CACHE_VERSION_KEY, (string) hrtime(true));
     }
 }

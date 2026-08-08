@@ -20,10 +20,13 @@ use App\Models\Referral;
 use App\Models\SimulationSetting;
 use App\Models\SumInsuredSchedule;
 use App\Models\TjhTier;
+use Illuminate\Support\Facades\Cache;
 use RuntimeException;
 
 final class SimulationConfigurationRepository
 {
+    public const CACHE_VERSION_KEY = 'simulation_config_version';
+
     private const EXTENSION_CODES = [
         'banjir' => 'flood',
         'gempa' => 'earthquake',
@@ -41,6 +44,17 @@ final class SimulationConfigurationRepository
     }
 
     public function forProduct(Product $product): SimulationConfig
+    {
+        $version = Cache::get(self::CACHE_VERSION_KEY, '0');
+
+        return Cache::remember(
+            "simulation_config:{$version}:product:{$product->id}",
+            now()->addHours(12),
+            fn () => $this->buildForProduct($product),
+        );
+    }
+
+    private function buildForProduct(Product $product): SimulationConfig
     {
         $settings = SimulationSetting::query()->pluck('value', 'key')->all();
         $zone = $this->stringSetting($settings, 'active_insurance_zone');
