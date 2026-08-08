@@ -3,14 +3,11 @@
 namespace App\Livewire\Auth;
 
 use App\Enums\Role;
-use App\Models\Institution;
 use App\Models\Referral;
-use App\Models\ReferralCategory;
-use App\Models\ReferralSubCategory;
 use App\Models\User;
+use App\Repositories\MasterLookupRepository;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -108,12 +105,7 @@ class Register extends Component
     #[Computed]
     public function categories(): Collection
     {
-        return $this->sortOptionsWithOthersLast(
-            ReferralCategory::query()
-                ->where('is_active', true)
-                ->orderBy('name')
-                ->get(['id', 'name'])
-        );
+        return app(MasterLookupRepository::class)->activeReferralCategories();
     }
 
     #[Computed]
@@ -123,12 +115,7 @@ class Register extends Component
             return collect();
         }
 
-        return $this->sortOptionsWithOthersLast(
-            ReferralSubCategory::query()
-                ->where('category_id', $this->category_id)
-                ->orderBy('name')
-                ->get(['id', 'name'])
-        );
+        return app(MasterLookupRepository::class)->subCategoriesForCategory((int) $this->category_id);
     }
 
     #[Computed]
@@ -138,12 +125,7 @@ class Register extends Component
             return collect();
         }
 
-        return $this->sortOptionsWithOthersLast(
-            Institution::query()
-                ->where('sub_category_id', $this->sub_category_id)
-                ->orderBy('name')
-                ->get(['id', 'name'])
-        );
+        return app(MasterLookupRepository::class)->institutionsForSubCategory((int) $this->sub_category_id);
     }
 
     public function categoryOptionLabel(string $name): string
@@ -200,19 +182,4 @@ class Register extends Component
         return view('livewire.auth.register');
     }
 
-    private function sortOptionsWithOthersLast(Collection $options): Collection
-    {
-        return $options
-            ->sortBy(fn ($option) => sprintf(
-                '%d-%s',
-                $this->isOthersLabel($option->name) ? 1 : 0,
-                Str::lower($option->name),
-            ))
-            ->values();
-    }
-
-    private function isOthersLabel(string $name): bool
-    {
-        return in_array(Str::lower($name), ['others', 'other', 'lainnya'], true);
-    }
 }

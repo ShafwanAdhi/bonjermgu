@@ -3,7 +3,9 @@
 namespace App\Models\Concerns;
 
 use App\Models\AdminChangeLog;
+use App\Repositories\MasterLookupRepository;
 use App\Repositories\SimulationConfigurationRepository;
+use App\Repositories\VehicleCascadeRepository;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -61,6 +63,10 @@ trait AuditsAdminChanges
             'created_at' => now(),
         ]);
 
-        Cache::forever(SimulationConfigurationRepository::CACHE_VERSION_KEY, (string) hrtime(true));
+        $version = (string) hrtime(true);
+
+        Cache::forever(SimulationConfigurationRepository::CACHE_VERSION_KEY, $version);
+        Cache::forever(MasterLookupRepository::CACHE_VERSION_KEY, $version);
+        Cache::forever(VehicleCascadeRepository::CACHE_VERSION_KEY, $version);
     }
 }

@@ -14,6 +14,7 @@ use App\Models\AgeGroup;
 use App\Models\Domicile;
 use App\Models\Referral;
 use App\Models\VehiclePrice;
+use App\Repositories\MasterLookupRepository;
 use App\Repositories\VehicleCascadeRepository;
 use App\Services\SimulationService;
 use Carbon\Carbon;
@@ -204,13 +205,13 @@ final class CreditSimulation extends Component
     #[Computed]
     public function domiciles(): Collection
     {
-        return Domicile::query()->orderBy('sort_order')->get(['id', 'name']);
+        return app(MasterLookupRepository::class)->domiciles();
     }
 
     #[Computed]
     public function ageGroups(): Collection
     {
-        return AgeGroup::query()->orderBy('sort_order')->get(['id', 'label']);
+        return app(MasterLookupRepository::class)->ageGroups();
     }
 
     #[Computed]
