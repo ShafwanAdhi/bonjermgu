@@ -19,6 +19,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @livewireStyles
 </head>
 <body class="bg-canvas pb-[72px] md:pb-0">
     <header class="border-b border-hairline bg-canvas">
@@ -28,15 +29,15 @@
             </a>
 
             {{-- Desktop menu. On small screens this moves to the bottom bar. --}}
-            <nav class="hidden self-stretch md:flex md:gap-7">
+            <nav class="hidden self-stretch md:flex md:gap-6 lg:gap-7">
                 @foreach ($navigation as $item)
                     <a href="{{ route($item['route']) }}"
                        @class([
-                           '-mb-px flex items-center gap-2 border-b-2 text-body-md',
+                           '-mb-px flex items-center gap-1.5 border-b-2 px-2 lg:px-2.5 text-body-md',
                            'border-primary text-ink' => request()->routeIs($item['match']),
                            'border-transparent text-muted' => ! request()->routeIs($item['match']),
                        ])>
-                        <x-ui.nav-icon :route="$item['route']" />
+                        <x-ui.nav-icon :route="$item['route']" class="hidden h-3.5 w-3.5 opacity-70 xl:block" />
                         <span>{{ $item['label'] }}</span>
                     </a>
                 @endforeach
@@ -77,5 +78,6 @@
             </a>
         @endforeach
     </nav>
+    @livewireScripts
 </body>
 </html>
