@@ -570,6 +570,7 @@ final class CreditSimulation extends Component
                 'instalment_type' => $validated['instalment_type'],
                 'insurance' => $this->coverageLabel($validated['coverage_type']),
                 'domicile' => $domicile->name,
+                'debtor_type_value' => $validated['debtor_type'],
                 'debtor_type' => $this->debtorTypeLabel($validated['debtor_type']),
                 'age_group' => $ageGroup,
                 'funding_purpose' => $validated['funding_purpose']

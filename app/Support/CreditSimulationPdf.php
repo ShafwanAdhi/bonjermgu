@@ -27,15 +27,23 @@ class CreditSimulationPdf
         $y = 735;
         $this->sectionTitle($ops, self::MARGIN, $y, 'Identitas dan Simulasi');
         $y -= 22;
-        $y = $this->fieldGrid($ops, $y, [
+        $identityFields = [
             ['Nama Calon Debitur', $subject['debtor_name'] ?? '-'],
-            ['NIK', $subject['debtor_nik'] ?? '-'],
-            ['Tanggal Lahir', $subject['debtor_birth_date'] ?? '-'],
             ['Kode Referral', $subject['referral_code'] ?? '-'],
             ['Nama Referral', $subject['referral_name'] ?? '-'],
             ['Jenis Pembiayaan', $subject['product'] ?? '-'],
             ['Dasar Simulasi', $subject['mode'] ?? '-'],
-        ]);
+        ];
+
+        if (filled($subject['debtor_nik'] ?? null)) {
+            array_splice($identityFields, 1, 0, [['NIK', $subject['debtor_nik']]]);
+        }
+
+        if (filled($subject['debtor_birth_date'] ?? null)) {
+            array_splice($identityFields, 2, 0, [['Tanggal Lahir', $subject['debtor_birth_date']]]);
+        }
+
+        $y = $this->fieldGrid($ops, $y, $identityFields);
 
         $y -= 8;
         $this->sectionTitle($ops, self::MARGIN, $y, 'Data Kendaraan');

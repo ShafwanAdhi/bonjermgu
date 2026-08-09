@@ -219,6 +219,28 @@ test('legal entity simulation print does not require personal identity fields', 
         ->and($snapshot['subject']['debtor_birth_date'])->toBeNull()
         ->and($component->get('debtor_nik'))->toBe('');
 
+    $this->actingAs($referral->user)
+        ->withSession(['simulation.active' => $snapshot])
+        ->get(route('simulation.print'))
+        ->assertOk()
+        ->assertSee('PT Calon Debitur')
+        ->assertSee('Badan Hukum Usaha')
+        ->assertDontSee('NIK')
+        ->assertDontSee('Tanggal Lahir');
+
+    $download = $this->actingAs($referral->user)
+        ->withSession(['simulation.active' => $snapshot])
+        ->get(route('simulation.print.download'));
+
+    $download->assertOk()
+        ->assertHeader('Content-Type', 'application/pdf');
+
+    expect($download->getContent())->toStartWith('%PDF-1.4')
+        ->and($download->getContent())->toContain('PT Calon Debitur')
+        ->and($download->getContent())->toContain('Badan Hukum Usaha')
+        ->and($download->getContent())->toContain('bonjemgu.com')
+        ->and($download->getContent())->not->toContain('Tanggal Lahir');
+
     Carbon::setTestNow();
 });
 

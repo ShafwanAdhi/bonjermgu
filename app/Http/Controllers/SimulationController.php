@@ -55,7 +55,14 @@ class SimulationController extends Controller
                 ->with('simulation_error', 'Jalankan simulasi terlebih dahulu sebelum mengunduh.');
         }
 
-        foreach (['debtor_name', 'debtor_nik', 'debtor_birth_date'] as $identityField) {
+        $requiredIdentityFields = ['debtor_name'];
+
+        if ($this->requiresPersonalDebtorIdentity($snapshot)) {
+            $requiredIdentityFields[] = 'debtor_nik';
+            $requiredIdentityFields[] = 'debtor_birth_date';
+        }
+
+        foreach ($requiredIdentityFields as $identityField) {
             if (blank($snapshot['subject'][$identityField] ?? null)) {
                 return redirect()
                     ->route('simulation')
@@ -64,6 +71,14 @@ class SimulationController extends Controller
         }
 
         return $snapshot;
+    }
+
+    private function requiresPersonalDebtorIdentity(array $snapshot): bool
+    {
+        $subject = $snapshot['subject'] ?? [];
+
+        return ($subject['debtor_type_value'] ?? null) !== 'legal_entity'
+            && ($subject['debtor_type'] ?? null) !== 'Badan Hukum Usaha';
     }
 
     private function subject(array $snapshot): array
