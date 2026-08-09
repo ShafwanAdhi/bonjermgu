@@ -211,7 +211,7 @@
     background-clip: text;
     -webkit-background-clip: text;
     font-family: theme('fontFamily.display');
-    font-size: clamp(2rem, 4.4vw, 4rem);
+    font-size: clamp(1.65rem, 3.5vw, 3.25rem);
     font-weight: 600;
     line-height: 1.08;
     text-wrap: balance;
