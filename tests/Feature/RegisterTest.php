@@ -63,7 +63,11 @@ it('renders the registration page', function () {
     $this->get('/register')
         ->assertOk()
         ->assertSee('Registrasi Referral')
-        ->assertSee('Harus unik, digunakan untuk masuk')
+        ->assertSee('Kembali')
+        ->assertSee('Contoh: Budi Santoso')
+        ->assertSee('Contoh: 081234567890')
+        ->assertSee('Contoh: budi_santoso')
+        ->assertSee('Nama user ini akan digunakan untuk proses login nanti.')
         ->assertSee('Minimal 8 karakter')
         ->assertSee('Tampilkan kata sandi')
         ->assertSee('Karyawan Internal')
@@ -137,6 +141,7 @@ it('requires the mandatory fields', function () {
         ->assertHasErrors([
             'full_name' => 'required',
             'birth_date' => 'required',
+            'phone' => 'required',
             'username' => 'required',
             'password' => 'required',
             'category_id' => 'required',

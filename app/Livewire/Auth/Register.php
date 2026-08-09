@@ -56,7 +56,7 @@ class Register extends Component
             // rule accepts addresses containing CR/LF (GHSA-5vg9-5847-vvmq),
             // which has no fix on the 11.x line.
             'email' => ['nullable', 'email:rfc,strict', 'max:150'],
-            'phone' => ['nullable', 'string', 'max:20'],
+            'phone' => ['required', 'string', 'max:20'],
             'username' => ['required', 'string', 'min:4', 'max:50', 'alpha_dash', Rule::unique('users', 'username')],
             'password' => ['required', 'string', 'min:8', 'max:72', 'confirmed'],
             'category_id' => ['required', Rule::exists('referral_categories', 'id')],
@@ -181,5 +181,4 @@ class Register extends Component
     {
         return view('livewire.auth.register');
     }
-
 }

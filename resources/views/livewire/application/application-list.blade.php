@@ -15,36 +15,28 @@
         <x-ui.callout class="mb-md">{{ session('application_success') }}</x-ui.callout>
     @endif
 
-    <div class="mb-lg flex flex-wrap items-end gap-sm">
-        <div class="min-w-[260px] flex-1">
+    <div class="mb-lg grid gap-sm md:grid-cols-[minmax(260px,1fr)_210px_180px] md:items-end">
+        <div>
             <x-ui.input wire:model.live.debounce.400ms="search" type="search"
                         placeholder="Cari Kode Aplikasi atau Nama Debitur…" />
         </div>
 
-        <div class="flex w-full flex-wrap items-end gap-sm sm:w-auto">
-            <x-ui.field label="Produk">
-                <x-ui.select wire:model.live="product" class="w-full sm:w-[210px]">
-                    <option value="">Semua produk</option>
-                    @foreach ($this->products as $product)
-                        <option value="{{ $product->value }}">{{ $product->label() }}</option>
-                    @endforeach
-                </x-ui.select>
-            </x-ui.field>
+        <x-ui.field label="Produk">
+            <x-ui.select wire:model.live="product">
+                <option value="">Semua</option>
+                @foreach ($this->products as $product)
+                    <option value="{{ $product->value }}">{{ $product->label() }}</option>
+                @endforeach
+            </x-ui.select>
+        </x-ui.field>
 
-            <x-ui.field label="Status Go Live">
-                <x-ui.select wire:model.live="goLive" class="w-full sm:w-[180px]">
-                    <option value="">Semua status</option>
-                    <option value="live">Go Live</option>
-                    <option value="pipeline">Pipe Line</option>
-                </x-ui.select>
-            </x-ui.field>
-        </div>
-
-        @if ($search !== '' || $product !== '' || $goLive !== '')
-            <x-ui.button variant="secondary" size="md" type="button" wire:click="resetFilters">
-                Bersihkan
-            </x-ui.button>
-        @endif
+        <x-ui.field label="Status Go Live">
+            <x-ui.select wire:model.live="goLive">
+                <option value="">Semua</option>
+                <option value="live">Go Live</option>
+                <option value="pipeline">Pipe Line</option>
+            </x-ui.select>
+        </x-ui.field>
     </div>
 
     <div wire:loading.class="opacity-60" wire:target="search,product,goLive,gotoPage,nextPage,previousPage">
@@ -83,10 +75,10 @@
                         </x-ui.chip>
                     </x-ui.td>
                     <x-ui.td align="right">
-                        <x-ui.button variant="secondary" size="sm"
-                                     :href="route('applications.show', $application)" wire:navigate>
+                        <a href="{{ route('applications.show', $application) }}" wire:navigate
+                           class="text-[13px] font-medium text-link">
                             Detail
-                        </x-ui.button>
+                        </a>
                     </x-ui.td>
                 </tr>
             @empty
@@ -117,11 +109,5 @@
 
     <div class="mt-md">{{ $this->applications->links() }}</div>
 
-    <p class="mt-sm text-helper text-muted">
-        @if ($this->isOfficer)
-            Hanya aplikasi milik Anda yang ditampilkan. Aplikasi AO lain menghasilkan halaman tidak ditemukan.
-        @else
-            Hanya aplikasi yang Anda bawa yang ditampilkan. Status dapat dilihat tanpa dapat diubah.
-        @endif
-    </p>
+    
 </div>

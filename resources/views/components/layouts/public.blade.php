@@ -16,17 +16,17 @@
 </head>
 <body class="bg-canvas">
     <header class="border-b border-hairline bg-canvas">
-        <div class="band flex h-16 items-center gap-sm">
+        <div class="mx-auto flex h-14 max-w-container items-center gap-xs px-sm sm:h-16 sm:gap-sm sm:px-lg md:px-xxl">
             <a href="{{ route('landing') }}" class="mr-auto flex items-center gap-2.5">
                 <x-ui.wordmark />
             </a>
 
             <a href="{{ route('login') }}"
-               class="rounded-lg border border-hairline bg-canvas px-5 py-[11px] text-button text-ink">
+               class="rounded-lg border border-hairline bg-canvas px-2.5 py-2 text-[12px] font-medium leading-[1.4] text-ink sm:px-5 sm:py-[11px] sm:text-button">
                 Masuk
             </a>
             <a href="{{ route('register') }}"
-               class="rounded-lg bg-primary px-5 py-3 text-button text-on-primary active:bg-primary-active">
+               class="rounded-lg bg-primary px-2.5 py-2 text-[12px] font-medium leading-[1.4] text-on-primary active:bg-primary-active sm:px-5 sm:py-3 sm:text-button">
                 Registrasi
             </a>
         </div>

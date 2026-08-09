@@ -13,6 +13,9 @@ it('renders the login page', function () {
     $this->get('/login')
         ->assertOk()
         ->assertSee('Masuk')
+        ->assertSee('Kembali')
+        ->assertSee('Masukkan nama user')
+        ->assertSee('Masukkan kata sandi')
         ->assertSee('Tampilkan kata sandi');
 });
 

@@ -3,24 +3,34 @@
 
     {{-- Registrasi Berhasil. Password dipilih Referral saat pendaftaran dan
          tidak ditampilkan ulang setelah akun dibuat. --}}
-    <div class="min-h-[calc(100vh-100px)] bg-surface-soft px-lg py-section md:px-xxl">
-        <div class="mx-auto max-w-[520px] rounded-lg border border-hairline bg-canvas p-xxl text-center">
-            <div class="mx-auto mb-lg flex h-14 w-14 items-center justify-center rounded-pill border-[1.5px] border-success-border text-[26px] text-success">
-                &check;
-            </div>
+    <div class="bg-surface-soft px-lg py-xl md:px-xxl md:py-xxl">
+        <div class="mx-auto max-w-[520px]">
+            <a href="{{ route('landing') }}" class="group mb-md inline-flex items-center gap-2.5 text-body-md text-muted transition-colors hover:text-ink">
+                <span class="flex h-8 w-8 items-center justify-center rounded-full border border-hairline bg-canvas text-ink transition-colors group-hover:border-border-strong"
+                      aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+                        <path d="m15 18-6-6 6-6" />
+                    </svg>
+                </span>
+                Kembali
+            </a>
 
-            <h1 class="mb-2 text-title-lg text-ink">Akun Anda aktif</h1>
-            <p class="mb-xl text-[14px] leading-[1.6] text-body">
-                Selamat bergabung, {{ $full_name }}. Gunakan nama user dan kata sandi
-                yang Anda buat untuk masuk ke sistem.
-            </p>
+            <div class="rounded-lg border border-hairline bg-canvas p-xxl text-center">
+                <div class="mx-auto mb-lg flex h-14 w-14 items-center justify-center rounded-pill border-[1.5px] border-success-border text-[26px] text-success">
+                    &check;
+                </div>
 
-            <p class="mb-xl rounded-md bg-signature-cream px-[18px] py-3.5 text-[13px] leading-[1.6] text-signature-coral">
-                Demi keamanan, kata sandi tidak ditampilkan ulang setelah pendaftaran berhasil.
-            </p>
+                <h1 class="mb-2 text-title-lg text-ink">Akun Anda aktif</h1>
+                <p class="mb-xl text-[14px] leading-[1.6] text-body">
+                    Selamat bergabung, {{ $full_name }}. Gunakan nama user dan kata sandi
+                    yang Anda buat untuk masuk ke sistem.
+                </p>
 
-            <div class="flex flex-wrap justify-center gap-sm">
-                <x-ui.button :href="route('login')">Masuk sekarang</x-ui.button>
+                <div class="flex flex-wrap justify-center gap-sm">
+                    <x-ui.button :href="route('login')">Masuk sekarang</x-ui.button>
+                </div>
             </div>
         </div>
     </div>
@@ -28,8 +38,20 @@
 @else
 
     {{-- Registrasi Referral --}}
-    <div class="min-h-[calc(100vh-100px)] bg-surface-soft px-lg pb-section pt-16 md:px-xxl">
+    <div class="bg-surface-soft px-lg py-xl md:px-xxl md:py-xxl">
         <div class="mx-auto max-w-[640px]">
+            <a href="{{ route('landing') }}" class="group mb-md inline-flex items-center gap-2.5 text-body-md text-muted transition-colors hover:text-ink">
+                <span class="flex h-8 w-8 items-center justify-center rounded-full border border-hairline bg-canvas text-ink transition-colors group-hover:border-border-strong"
+                      aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+                        <path d="m15 18-6-6 6-6" />
+                    </svg>
+                </span>
+                Kembali
+            </a>
+
             <h1 class="mb-2 font-display text-display-md text-ink">Registrasi Referral</h1>
             <p class="mb-xl text-[14px] leading-[1.6] text-muted">
                 Isi data di bawah ini. Akun Anda langsung aktif setelah pendaftaran.
@@ -45,32 +67,37 @@
                     <x-ui.field label="Nama Lengkap" required class="sm:col-span-2"
                                 :error="$errors->first('full_name')">
                         <x-ui.input wire:model="full_name" type="text"
-                                    :invalid="$errors->has('full_name')" autocomplete="name" />
+                                    :invalid="$errors->has('full_name')" autocomplete="name"
+                                    placeholder="Contoh: Budi Santoso" />
                     </x-ui.field>
 
                     <x-ui.field label="Tanggal Lahir" required :error="$errors->first('birth_date')">
                         <x-ui.input wire:model="birth_date" type="date"
-                                    :invalid="$errors->has('birth_date')" />
+                                    :invalid="$errors->has('birth_date')"
+                                    placeholder="Pilih tanggal lahir" />
                     </x-ui.field>
 
                     <x-ui.field label="Alamat Email" :error="$errors->first('email')">
                         <x-ui.input wire:model="email" type="email"
-                                    :invalid="$errors->has('email')" autocomplete="email" />
+                                    :invalid="$errors->has('email')" autocomplete="email"
+                                    placeholder="Contoh: nama@email.com" />
                     </x-ui.field>
 
-                    <x-ui.field label="No. Handphone" :error="$errors->first('phone')">
+                    <x-ui.field label="No. Handphone" required :error="$errors->first('phone')">
                         <x-ui.input wire:model="phone" type="tel"
-                                    :invalid="$errors->has('phone')" autocomplete="tel" />
+                                    :invalid="$errors->has('phone')" autocomplete="tel"
+                                    placeholder="Contoh: 081234567890" required />
                     </x-ui.field>
                 </div>
 
                 <p class="border-t border-hairline pt-lg text-eyebrow uppercase text-muted">Akun</p>
 
                 <x-ui.field label="Nama User" required
+                            helper="Nama user ini akan digunakan untuk proses login nanti."
                             :error="$errors->first('username')">
                     <x-ui.input wire:model="username" type="text"
                                 :invalid="$errors->has('username')" autocomplete="username"
-                                placeholder="Harus unik, digunakan untuk masuk" />
+                                placeholder="Contoh: budi_santoso" />
                 </x-ui.field>
 
                 <div class="grid grid-cols-1 gap-md sm:grid-cols-2">
@@ -143,13 +170,10 @@
 
                     <x-ui.field label="Nama Cabang" :error="$errors->first('branch_name')">
                         <x-ui.input wire:model="branch_name" type="text"
-                                    :invalid="$errors->has('branch_name')" />
+                                    :invalid="$errors->has('branch_name')"
+                                    placeholder="Contoh: KCP Jakarta Kebon Jeruk" />
                     </x-ui.field>
                 </div>
-
-                <p class="-mt-sm text-helper text-muted">
-                    Pilihan sub-kategori dan instansi dimuat dari server mengikuti kategori yang dipilih.
-                </p>
 
                 <x-ui.button type="submit" wire:loading.attr="disabled" class="w-full">
                     <span wire:loading.remove wire:target="register">Daftar &amp; aktifkan akun</span>
