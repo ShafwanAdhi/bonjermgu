@@ -154,7 +154,7 @@
     z-index: 80;
     overflow: hidden;
     pointer-events: none;
-    animation: birthday-celebration-layer 4300ms ease-out both;
+    animation: birthday-celebration-layer 7000ms ease-out both;
 }
 
 .birthday-fireworks::before {
@@ -168,7 +168,7 @@
         radial-gradient(circle, rgba(200, 154, 59, 0.20) 0 1.5px, transparent 2.5px);
     background-position: 0 0, 28px 38px, 54px 12px;
     background-size: 96px 96px, 118px 118px, 144px 144px;
-    animation: birthday-confetti-field 3900ms ease-out both;
+    animation: birthday-confetti-field 6600ms ease-out both;
 }
 
 .birthday-fireworks span {
@@ -189,7 +189,7 @@
         radial-gradient(circle, color-mix(in srgb, var(--tone) 72%, white) 0 1.75px, transparent 3px) 84% 84% / 8px 8px no-repeat,
         radial-gradient(circle, var(--tone) 0 1.75px, transparent 3px) 16% 16% / 8px 8px no-repeat;
     filter: saturate(0.92);
-    animation: birthday-firework 3200ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation: birthday-firework 5200ms cubic-bezier(0.16, 1, 0.3, 1) both;
     animation-delay: var(--delay);
 }
 
