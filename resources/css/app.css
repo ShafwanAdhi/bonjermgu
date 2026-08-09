@@ -197,12 +197,25 @@
     display: block;
     max-width: 980px;
     margin-top: 0.25rem;
-    color: theme('colors.signature.coral');
+    color: transparent;
+    background-image: linear-gradient(
+        90deg,
+        theme('colors.signature.coral'),
+        theme('colors.signature.mustard'),
+        theme('colors.success.DEFAULT'),
+        theme('colors.info.DEFAULT'),
+        theme('colors.signature.peach'),
+        theme('colors.signature.coral')
+    );
+    background-size: 220% 100%;
+    background-clip: text;
+    -webkit-background-clip: text;
     font-family: theme('fontFamily.display');
     font-size: clamp(2rem, 4.4vw, 4rem);
     font-weight: 600;
     line-height: 1.08;
     text-wrap: balance;
+    animation: birthday-rainbow-text 7000ms linear both;
 }
 
 .motion-focus-ring:focus-within {
@@ -305,6 +318,16 @@
     }
 }
 
+@keyframes birthday-rainbow-text {
+    from {
+        background-position: 0% 50%;
+    }
+
+    to {
+        background-position: 100% 50%;
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
@@ -332,5 +355,9 @@
 
     .birthday-fireworks {
         display: none;
+    }
+
+    .birthday-message {
+        animation: none;
     }
 }
