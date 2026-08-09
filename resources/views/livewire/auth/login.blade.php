@@ -1,16 +1,6 @@
 <div class="bg-surface-soft px-lg py-xl md:px-xxl md:py-xxl">
     <div class="mx-auto max-w-[400px]">
-        <a href="{{ route('landing') }}" class="group mb-md inline-flex items-center gap-2.5 text-body-md text-muted transition-colors hover:text-ink">
-            <span class="flex h-8 w-8 items-center justify-center rounded-full border border-hairline bg-canvas text-ink transition-colors group-hover:border-border-strong"
-                  aria-hidden="true">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                     fill="none" stroke="currentColor" stroke-width="2"
-                     stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
-                    <path d="m15 18-6-6 6-6" />
-                </svg>
-            </span>
-            Kembali
-        </a>
+        <x-ui.back-link :href="route('landing')" class="mb-md" />
 
         <div class="rounded-lg border border-hairline bg-canvas p-xl sm:p-10">
             <h1 class="mb-2 text-title-lg text-ink">Masuk</h1>

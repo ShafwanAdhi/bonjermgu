@@ -2,10 +2,16 @@
 
 <x-layouts.app title="Dashboard — Kebon Jeruk Multiguna">
     <div class="band py-xl md:py-xxl" data-motion-page>
+        @if ($isBirthday)
+            <x-ui.birthday-fireworks />
+        @endif
 
-        <div class="mb-9" data-reveal="hero">
+        <div class="mb-9 py-1" data-reveal="hero">
             <h1 class="font-display text-display-md text-ink">
-                Selamat datang, {{ Str::before(auth()->user()->displayName(), ' ') }}
+                <span class="block">Selamat datang, {{ Str::before(auth()->user()->displayName(), ' ') }}.</span>
+                @if ($isBirthday)
+                    <span class="birthday-message">Selamat ulang tahun, semoga selalu diberikan kesehatan.</span>
+                @endif
             </h1>
             <p class="mt-0.5 text-[13px] leading-[1.5] text-muted">
                 Referral · {{ Format::date(now()) }}

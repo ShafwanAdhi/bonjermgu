@@ -7,10 +7,7 @@
 
 <div class="mx-auto max-w-[1080px] px-lg py-xl md:px-xxl md:py-xxl">
 
-    <p class="mb-md text-[13px] leading-[1.4] text-muted">
-        <a href="{{ route('applications.index') }}" wire:navigate class="inline-flex min-h-10 items-center text-link">Aplikasi</a>
-        / {{ $application->code }}
-    </p>
+    <x-ui.back-link :href="route('applications.index')" wire:navigate class="mb-md" />
 
     <div class="mb-lg flex flex-wrap items-center gap-md">
         <h1 class="m-0 font-display text-display-md text-ink">{{ $application->code }}</h1>

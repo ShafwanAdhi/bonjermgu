@@ -5,9 +5,7 @@
 <div class="bg-surface-soft">
     <div class="mx-auto max-w-[640px] px-lg py-xl md:px-xxl md:py-xxl">
 
-        <p class="mb-md text-[13px] leading-[1.4] text-muted">
-            <a href="{{ route('applications.index') }}" wire:navigate class="text-link">Aplikasi</a> / Buat
-        </p>
+        <x-ui.back-link :href="route('applications.index')" wire:navigate class="mb-md" />
 
         <h1 class="mb-2 font-display text-display-md text-ink">Buat Credit Application</h1>
         <p class="mb-lg text-[14px] leading-[1.6] text-muted">

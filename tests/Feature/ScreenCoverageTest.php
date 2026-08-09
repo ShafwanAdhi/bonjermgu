@@ -138,6 +138,48 @@ it('renders the admin dashboard variant', function () {
         ->assertSee('Pipe Line');
 });
 
+it('renders a birthday greeting on the referral dashboard', function () {
+    $referral = Referral::factory()->create([
+        'full_name' => 'Budi Santoso',
+        'birth_date' => '1990-'.now()->format('m-d'),
+    ]);
+
+    $this->actingAs($referral->user)
+        ->get('/dashboard')
+        ->assertOk()
+        ->assertSeeText('Selamat datang, Budi.')
+        ->assertSeeText('Selamat ulang tahun, semoga selalu diberikan kesehatan.')
+        ->assertSee('birthday-fireworks', escape: false);
+});
+
+it('renders a birthday greeting on the officer dashboard', function () {
+    $officer = AccountOfficer::factory()->create([
+        'full_name' => 'Siti Rahayu',
+        'birth_date' => '1990-'.now()->format('m-d'),
+    ]);
+
+    $this->actingAs($officer->user)
+        ->get('/dashboard')
+        ->assertOk()
+        ->assertSeeText('Selamat datang, Siti.')
+        ->assertSeeText('Selamat ulang tahun, semoga selalu diberikan kesehatan.')
+        ->assertSee('birthday-fireworks', escape: false);
+});
+
+it('keeps the normal dashboard greeting when today is not the user birthday', function () {
+    $referral = Referral::factory()->create([
+        'full_name' => 'Andi Wijaya',
+        'birth_date' => now()->subDay()->subYears(30)->format('Y-m-d'),
+    ]);
+
+    $this->actingAs($referral->user)
+        ->get('/dashboard')
+        ->assertOk()
+        ->assertSee('Selamat datang, Andi.', escape: false)
+        ->assertDontSee('Selamat ulang tahun, semoga selalu diberikan kesehatan.', escape: false)
+        ->assertDontSee('birthday-fireworks', escape: false);
+});
+
 it('renders both lending tabs', function (string $tab, string $expected) {
     $this->actingAs(actingAsRole('admin'));
 

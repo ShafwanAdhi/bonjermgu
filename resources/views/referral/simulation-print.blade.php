@@ -6,7 +6,7 @@
     <div class="mx-auto max-w-[820px] p-lg md:p-xxl">
 
         <div class="no-print mb-lg flex flex-wrap items-center gap-sm">
-            <x-ui.button variant="secondary" size="md" :href="route('simulation')">Kembali</x-ui.button>
+            <x-ui.back-link :href="route('simulation')" />
             <x-ui.button size="md" :href="route('simulation.print.download')">Download Simulasi Kredit</x-ui.button>
         </div>
 

@@ -79,4 +79,12 @@ class User extends Authenticatable
     {
         return $this->profile()->first()?->full_name ?? $this->username;
     }
+
+    public function hasBirthdayToday(): bool
+    {
+        $birthDate = $this->profile()->first()?->birth_date;
+
+        return $birthDate !== null
+            && $birthDate->format('m-d') === now()->format('m-d');
+    }
 }

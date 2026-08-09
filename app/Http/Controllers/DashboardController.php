@@ -35,9 +35,11 @@ class DashboardController extends Controller
 
     private function referral(): View
     {
+        $user = Auth::user();
         $applications = $this->scopedApplications();
 
         return view('referral.dashboard', [
+            'isBirthday' => $user->hasBirthdayToday(),
             'carried' => (clone $applications)->count(),
             'goLive' => (clone $applications)->whereNotNull('go_live_date')->count(),
             'recent' => $applications
@@ -51,9 +53,11 @@ class DashboardController extends Controller
 
     private function officer(): View
     {
+        $user = Auth::user();
         $applications = $this->scopedApplications();
 
         return view('officer.dashboard', [
+            'isBirthday' => $user->hasBirthdayToday(),
             'handled' => (clone $applications)->count(),
             'pipeline' => (clone $applications)->whereNull('go_live_date')->count(),
             'referralCount' => (clone $applications)->distinct()->count('referral_id'),
