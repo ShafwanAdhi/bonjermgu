@@ -45,9 +45,15 @@
                 @foreach ($cascoBands as $index => $band)
                     <tr wire:key="casco-{{ $index }}">
                         @foreach (['band_min', 'band_max', 'passenger_comprehensive', 'commercial_comprehensive', 'passenger_tlo', 'commercial_tlo'] as $field)
-                            <x-ui.td><x-ui.input wire:model="cascoBands.{{ $index }}.{{ $field }}" type="number"
-                                                     step="{{ str_contains($field, 'band_') ? '1' : '0.000001' }}"
-                                                     placeholder="{{ $field === 'band_max' ? 'Kosong = tanpa batas' : '' }}" /></x-ui.td>
+                            <x-ui.td>
+                                @if (str_contains($field, 'band_'))
+                                    <x-ui.money-input wire:model="cascoBands.{{ $index }}.{{ $field }}"
+                                                      placeholder="{{ $field === 'band_max' ? 'Tanpa batas' : 'Rp 0' }}" />
+                                @else
+                                    <x-ui.input wire:model="cascoBands.{{ $index }}.{{ $field }}" type="number"
+                                                step="0.000001" />
+                                @endif
+                            </x-ui.td>
                         @endforeach
                         <x-ui.td><button type="button" wire:click="removeCascoBand({{ $index }})" class="text-[13px] font-medium text-signature-coral">Hapus</button></x-ui.td>
                     </tr>
@@ -99,7 +105,7 @@
                 @foreach ($tjhTiers as $index => $row)
                     <div class="grid grid-cols-[70px_1fr_1fr_auto] gap-sm border-b border-divider py-2">
                         <x-ui.input wire:model="tjhTiers.{{ $index }}.sequence" type="number" min="1" />
-                        <x-ui.input wire:model="tjhTiers.{{ $index }}.limit_amount" type="number" min="1" placeholder="Tanpa batas" />
+                        <x-ui.money-input wire:model="tjhTiers.{{ $index }}.limit_amount" placeholder="Tanpa batas" />
                         <x-ui.input wire:model="tjhTiers.{{ $index }}.rate" type="number" step="0.000001" min="0" max="100" />
                         <button type="button" wire:click="removeTjhTier({{ $index }})" class="text-signature-coral">Hapus</button>
                     </div>

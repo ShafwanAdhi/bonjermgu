@@ -16,7 +16,7 @@
 
         <p class="mx-auto mb-9 max-w-[520px] text-[16px] leading-[1.6] text-body" data-reveal="hero" style="--reveal-delay: 180ms">
             Kebon Jeruk Multiguna membantu mitra Referral membuat simulasi kredit untuk calon
-            debitur dan memantau perjalanan aplikasinya — dari pooling sampai Go Live.
+            debitur dan memantau perjalanan aplikasinya dari pooling sampai Go Live.
         </p>
 
         <div class="flex flex-wrap justify-center gap-sm" data-reveal="hero" style="--reveal-delay: 270ms">

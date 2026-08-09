@@ -32,6 +32,12 @@ beforeEach(function () {
     $this->seed(SimulationConfigurationSeeder::class);
 });
 
+function subCategoryIdFor(ReferralCategory $category): int
+{
+    return $category->subCategories()->value('id')
+        ?? $category->subCategories()->create(['name' => "Sub Uji {$category->code}"])->id;
+}
+
 /* --------------------------------------------------- Invariant utama */
 
 /**
@@ -55,7 +61,7 @@ it('resolves an active product for every active category and allowed usage', fun
         foreach ($usages as $usage) {
             $referral = Referral::factory()->create([
                 'category_id' => $category->id,
-                'sub_category_id' => $category->subCategories()->value('id'),
+                'sub_category_id' => subCategoryIdFor($category),
             ]);
 
             $expectedName = $resolver->nameFor($category, $usage);
@@ -166,7 +172,7 @@ it('refuses a usage the category does not allow', function () {
 
     $referral = Referral::factory()->create([
         'category_id' => $category->id,
-        'sub_category_id' => $category->subCategories()->value('id'),
+        'sub_category_id' => subCategoryIdFor($category),
     ]);
 
     app(ProductResolver::class)->resolve($referral, VehicleUsage::COMMERCIAL);

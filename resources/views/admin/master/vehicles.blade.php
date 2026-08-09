@@ -94,7 +94,7 @@
             @foreach ($prices as $index => $row)
                 <div class="grid grid-cols-[120px_1fr_auto] gap-sm border-b border-divider py-2" wire:key="price-{{ $row['id'] ?? 'new-'.$index }}">
                     <x-ui.input wire:model="prices.{{ $index }}.year" type="number" min="1" max="32767" placeholder="Tahun" />
-                    <x-ui.input wire:model="prices.{{ $index }}.price" type="number" min="0" placeholder="Harga PHPM" />
+                    <x-ui.money-input wire:model="prices.{{ $index }}.price" placeholder="Rp 250.000.000" />
                     <button type="button" wire:click="removePrice({{ $index }})" class="text-[13px] text-signature-coral">Hapus</button>
                 </div>
             @endforeach

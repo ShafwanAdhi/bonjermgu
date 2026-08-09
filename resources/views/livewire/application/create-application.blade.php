@@ -141,10 +141,10 @@
                             </x-ui.field>
                         @endif
 
-                        <x-ui.field label="Amount Finance" helper="Opsional saat pembuatan. Rupiah penuh, tanpa titik."
+                        <x-ui.field label="Amount Finance" helper="Opsional saat pembuatan. Gunakan nominal rupiah penuh."
                                     :error="$errors->first('amount_finance')">
-                            <x-ui.input wire:model="amount_finance" type="number" min="0" step="1"
-                                        :invalid="$errors->has('amount_finance')" />
+                            <x-ui.money-input wire:model="amount_finance" placeholder="Rp 50.000.000"
+                                              :invalid="$errors->has('amount_finance')" />
                         </x-ui.field>
 
                         {{-- Satu application selalu satu unit — client-decisions.md butir 15. --}}

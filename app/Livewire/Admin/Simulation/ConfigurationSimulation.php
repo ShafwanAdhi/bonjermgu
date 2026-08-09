@@ -23,6 +23,7 @@ use App\Models\VehicleType;
 use App\Models\VehicleUsage as VehicleUsageModel;
 use App\Repositories\ProductResolver;
 use App\Support\Format;
+use App\Support\RupiahInput;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
@@ -290,6 +291,9 @@ class ConfigurationSimulation extends Component
 
     public function calculate(): void
     {
+        $this->market_price = RupiahInput::normalize($this->market_price);
+        $this->desired_amount = RupiahInput::normalize($this->desired_amount);
+
         $this->calculationError = null;
         $this->hasCalculated = false;
         $this->rows = [];

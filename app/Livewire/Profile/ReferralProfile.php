@@ -14,15 +14,14 @@ use Livewire\Component;
 
 /**
  * A Referral's own profile.
- *
- * Birth date is shown but not editable here. Changing it is an Admin action.
- * See App\Livewire\Admin\Accounts.
  */
 class ReferralProfile extends Component
 {
     public bool $editing = false;
 
     public string $full_name = '';
+
+    public string $birth_date = '';
 
     public string $email = '';
 
@@ -88,6 +87,7 @@ class ReferralProfile extends Component
     {
         return [
             'full_name' => ['required', 'string', 'max:150'],
+            'birth_date' => ['required', 'date', 'before:today'],
             'email' => ['nullable', 'email:rfc,strict', 'max:150'],
             'phone' => ['nullable', 'string', 'max:20'],
             'category_id' => ['required', Rule::exists('referral_categories', 'id')],
@@ -107,6 +107,7 @@ class ReferralProfile extends Component
     {
         return [
             'full_name' => 'Nama Lengkap',
+            'birth_date' => 'Tanggal Lahir',
             'email' => 'Alamat Email',
             'phone' => 'No. Handphone',
             'category_id' => 'Kategori',
@@ -132,6 +133,7 @@ class ReferralProfile extends Component
     {
         $this->fillFromProfile();
         $this->editing = true;
+        $this->dispatch('profile-editing');
     }
 
     public function cancel(): void
@@ -147,6 +149,7 @@ class ReferralProfile extends Component
 
         $this->profile->update([
             'full_name' => $validated['full_name'],
+            'birth_date' => $validated['birth_date'],
             'email' => $validated['email'] ?: null,
             'phone' => $validated['phone'] ?: null,
             'category_id' => $validated['category_id'],
@@ -166,6 +169,7 @@ class ReferralProfile extends Component
         $profile = $this->profile;
 
         $this->full_name = $profile->full_name;
+        $this->birth_date = $profile->birth_date?->format('Y-m-d') ?? '';
         $this->email = $profile->email ?? '';
         $this->phone = $profile->phone ?? '';
         $this->category_id = (string) $profile->category_id;

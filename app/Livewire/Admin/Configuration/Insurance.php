@@ -11,6 +11,7 @@ use App\Models\InsuranceExtensionRate;
 use App\Models\InsuranceLoadingRate;
 use App\Models\TjhTier;
 use App\Services\ConfigurationIntegrityValidator;
+use App\Support\RupiahInput;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -132,6 +133,9 @@ final class Insurance extends AuditedAdminComponent
 
     public function save(ConfigurationIntegrityValidator $integrity): void
     {
+        $this->cascoBands = RupiahInput::normalizeRows($this->cascoBands, ['band_min', 'band_max']);
+        $this->tjhTiers = RupiahInput::normalizeRows($this->tjhTiers, ['limit_amount']);
+
         $validated = $this->validate($this->rules(), [], $this->validationAttributes());
 
         DB::transaction(function () use ($validated, $integrity): void {

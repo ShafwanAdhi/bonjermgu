@@ -21,17 +21,22 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
 </head>
-<body class="bg-canvas pb-[72px] md:pb-0">
+<body class="bg-canvas pb-[72px] lg:pb-0">
+    @if ($user->role->value === 'referral')
+        <div class="referral-scroll-progress" data-scroll-progress aria-hidden="true"></div>
+    @endif
+
     <header class="border-b border-hairline bg-canvas">
         <div class="band flex h-16 items-center gap-xl">
-            <a href="{{ route('dashboard') }}" class="shrink-0">
+            <a href="{{ route('dashboard') }}" class="flex min-h-11 shrink-0 items-center">
                 <x-ui.wordmark />
             </a>
 
             {{-- Desktop menu. On small screens this moves to the bottom bar. --}}
-            <nav class="hidden self-stretch md:flex md:gap-6 lg:gap-7">
+            <nav class="hidden self-stretch lg:flex lg:gap-7">
                 @foreach ($navigation as $item)
                     <a href="{{ route($item['route']) }}"
+                       data-motion-action
                        @class([
                            '-mb-px flex items-center gap-1.5 border-b-2 px-2 lg:px-2.5 text-body-md',
                            'border-primary text-ink' => request()->routeIs($item['match']),
@@ -47,13 +52,15 @@
                 <span class="flex h-8 w-8 items-center justify-center rounded-pill text-[12px] font-medium {{ $user->role->avatarClasses() }}">
                     {{ $initials }}
                 </span>
-                <span class="hidden flex-col gap-0.5 sm:flex">
+                <span class="hidden flex-col gap-0.5 xl:flex">
                     <span class="text-[13px] font-medium leading-none text-ink">{{ $user->displayName() }}</span>
                     <span class="text-[11px] leading-none text-muted">{{ $user->role->label() }}</span>
                 </span>
-                <form method="POST" action="{{ route('logout') }}" class="ml-sm border-l border-hairline pl-md">
+                <form method="POST" action="{{ route('logout') }}" class="ml-sm border-l border-hairline pl-sm md:pl-md">
                     @csrf
-                    <button type="submit" class="text-[13px] leading-none text-muted">Keluar</button>
+                    <button type="submit" class="inline-flex min-h-11 items-center rounded-sm px-3 text-[13px] leading-none text-muted transition-colors hover:text-ink">
+                        Keluar
+                    </button>
                 </form>
             </div>
         </div>
@@ -65,9 +72,10 @@
 
     {{-- Mobile tab bar, from Mobile.dc.html. Same destinations as the desktop
          menu — a Referral in the field gets the whole app, not a subset. --}}
-    <nav class="fixed inset-x-0 bottom-0 z-40 flex border-t border-hairline bg-canvas md:hidden">
+    <nav class="fixed inset-x-0 bottom-0 z-40 flex border-t border-hairline bg-canvas lg:hidden">
         @foreach ($navigation as $item)
             <a href="{{ route($item['route']) }}"
+               data-motion-action
                @class([
                    'flex flex-1 flex-col items-center gap-1.5 py-3 text-center text-[12px] leading-[1.2]',
                    '-mt-px border-t-2 border-primary font-medium text-ink' => request()->routeIs($item['match']),

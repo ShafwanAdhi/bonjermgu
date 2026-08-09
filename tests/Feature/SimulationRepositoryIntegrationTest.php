@@ -13,6 +13,7 @@ use App\Models\InsuranceCascoRate;
 use App\Models\InsuranceExtensionRate;
 use App\Models\ProductRate;
 use App\Models\Referral;
+use App\Models\ReferralCategory;
 use App\Models\SimulationSetting;
 use App\Models\VehicleModel;
 use App\Models\VehiclePrice;
@@ -20,9 +21,15 @@ use App\Repositories\ProductResolver;
 use App\Repositories\SimulationConfigurationRepository;
 use App\Repositories\VehicleCascadeRepository;
 use App\Services\SimulationService;
+use Database\Seeders\ReferralMasterSeeder;
+use Database\Seeders\SimulationConfigurationSeeder;
+use Tests\Support\TestVehicleMaster;
 
 test('seeded repositories resolve the cascade configuration and run the simulation engine', function () {
-    $this->seed();
+    $this->seed(ReferralMasterSeeder::class);
+    $this->seed(SimulationConfigurationSeeder::class);
+    TestVehicleMaster::seed();
+    Admin::factory()->create();
 
     $vehicles = app(VehicleCascadeRepository::class);
     $model = VehicleModel::query()
@@ -55,12 +62,16 @@ test('seeded repositories resolve the cascade configuration and run the simulati
             ->exists())->toBeTrue();
     }
 
-    $referral = Referral::query()
-        ->whereHas('category', fn ($query) => $query
-            ->where('segment', 'Reguler')
-            ->where('tier', 'Referral'))
-        ->with(['category', 'user'])
+    $referralCategory = ReferralCategory::query()
+        ->where('segment', 'Reguler')
+        ->where('tier', 'Referral')
+        ->with('subCategories')
         ->firstOrFail();
+    $referral = Referral::factory()->create([
+        'category_id' => $referralCategory->id,
+        'sub_category_id' => $referralCategory->subCategories->firstOrFail()->id,
+        'institution_id' => null,
+    ])->load(['category', 'user']);
     $domainUsage = VehicleUsage::from($usage->name);
     $product = app(ProductResolver::class)->resolve($referral, $domainUsage);
     $config = app(SimulationConfigurationRepository::class)->forReferral($referral, $domainUsage);
@@ -83,10 +94,15 @@ test('seeded repositories resolve the cascade configuration and run the simulati
             (float) InsuranceExtensionRate::query()->where('code', 'banjir')->value('rate'),
         );
 
-    $showroomReferral = Referral::query()
-        ->whereHas('category', fn ($query) => $query->where('code', 'SRB'))
-        ->with('category')
+    $showroomCategory = ReferralCategory::query()
+        ->where('code', 'SRB')
+        ->with('subCategories')
         ->firstOrFail();
+    $showroomReferral = Referral::factory()->create([
+        'category_id' => $showroomCategory->id,
+        'sub_category_id' => $showroomCategory->subCategories->firstOrFail()->id,
+        'institution_id' => null,
+    ])->load('category');
 
     expect(app(ProductResolver::class)->resolve($showroomReferral, VehicleUsage::PASSENGER)->name)
         ->toBe('Reguler Passenger Referral')

@@ -8,6 +8,7 @@ use App\Models\VehicleModel;
 use App\Models\VehiclePrice;
 use App\Models\VehicleType;
 use App\Models\VehicleUsage;
+use App\Support\RupiahInput;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -281,6 +282,8 @@ final class Vehicles extends AuditedAdminComponent
 
     public function savePrices(): void
     {
+        $this->prices = RupiahInput::normalizeRows($this->prices, ['price']);
+
         $validated = $this->validate([
             'modelId' => ['required', 'integer', Rule::exists('vehicle_models', 'id')->where('type_id', $this->typeId)],
             'prices' => ['array'],

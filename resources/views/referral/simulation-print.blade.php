@@ -20,10 +20,14 @@
                 </div>
             </div>
 
-            <div class="mb-xl grid grid-cols-2 gap-lg sm:grid-cols-3">
+            <div class="mb-xl grid grid-cols-1 gap-lg sm:grid-cols-3">
                 <x-ui.key-value label="Nama Calon Debitur">{{ $subject['debtor_name'] }}</x-ui.key-value>
-                <x-ui.key-value label="NIK">{{ $subject['debtor_nik'] }}</x-ui.key-value>
-                <x-ui.key-value label="Tanggal Lahir">{{ $subject['debtor_birth_date'] }}</x-ui.key-value>
+                @if ($subject['debtor_nik'] ?? null)
+                    <x-ui.key-value label="NIK">{{ $subject['debtor_nik'] }}</x-ui.key-value>
+                @endif
+                @if ($subject['debtor_birth_date'] ?? null)
+                    <x-ui.key-value label="Tanggal Lahir">{{ $subject['debtor_birth_date'] }}</x-ui.key-value>
+                @endif
                 <x-ui.key-value label="Kode Referral">{{ $subject['referral_code'] }}</x-ui.key-value>
                 <x-ui.key-value label="Nama Referral">{{ $subject['referral_name'] }}</x-ui.key-value>
                 <x-ui.key-value label="Jenis Pembiayaan">{{ $subject['product'] }}</x-ui.key-value>
@@ -31,7 +35,7 @@
             </div>
 
             <p class="mb-md text-eyebrow uppercase text-muted">Data Kendaraan</p>
-            <div class="mb-xl grid grid-cols-2 gap-lg sm:grid-cols-3">
+            <div class="mb-xl grid grid-cols-1 gap-lg sm:grid-cols-3">
                 <x-ui.key-value label="Kendaraan">{{ $subject['vehicle'] }}</x-ui.key-value>
                 <x-ui.key-value label="Tahun">{{ $subject['vehicle_year'] }}</x-ui.key-value>
                 <x-ui.key-value label="Penggunaan Unit">{{ $subject['usage'] }}</x-ui.key-value>
@@ -48,7 +52,35 @@
             </div>
 
             <p class="mb-md text-eyebrow uppercase text-muted">Hasil Lima Tenor</p>
-            <x-ui.table class="mb-lg">
+            <div class="mb-lg sm:hidden">
+                <div class="overflow-hidden rounded-lg border border-hairline">
+                    @foreach ($results as $row)
+                        <div class="border-b border-divider px-md py-3 last:border-b-0">
+                            <p class="{{ $row['zero'] ? 'text-border-strong' : 'text-ink' }} text-[13px] font-medium leading-[1.4]">
+                                {{ $row['tenor'] }}
+                            </p>
+                            <div class="mt-2 grid grid-cols-2 gap-sm">
+                                <div>
+                                    <p class="text-[11px] uppercase leading-[1.3] text-muted">
+                                        {{ $disbursementHeading }}
+                                    </p>
+                                    <p class="{{ $row['zero'] ? 'text-border-strong' : 'font-medium text-ink' }} mt-1 text-[14px] leading-[1.4]">
+                                        {{ $row['disbursement'] }}
+                                    </p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-[11px] uppercase leading-[1.3] text-muted">Angsuran</p>
+                                    <p class="{{ $row['zero'] ? 'text-border-strong' : 'font-medium text-ink' }} mt-1 text-[14px] leading-[1.4]">
+                                        {{ $row['instalment'] }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+
+            <x-ui.table class="mb-lg hidden sm:block">
                 <x-slot:head>
                     <x-ui.th>Tenor</x-ui.th>
                     <x-ui.th align="right">{{ $disbursementHeading }}</x-ui.th>

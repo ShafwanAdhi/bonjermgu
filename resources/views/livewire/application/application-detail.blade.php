@@ -8,7 +8,7 @@
 <div class="mx-auto max-w-[1080px] px-lg py-xl md:px-xxl md:py-xxl">
 
     <p class="mb-md text-[13px] leading-[1.4] text-muted">
-        <a href="{{ route('applications.index') }}" wire:navigate class="text-link">Aplikasi</a>
+        <a href="{{ route('applications.index') }}" wire:navigate class="inline-flex min-h-10 items-center text-link">Aplikasi</a>
         / {{ $application->code }}
     </p>
 
@@ -17,11 +17,6 @@
         <x-ui.chip :tone="$application->go_live_date ? 'success' : 'neutral'" class="px-3 py-1.5 text-[13px]">
             {{ $application->go_live_date ? 'Go Live' : 'Pipe Line' }}
         </x-ui.chip>
-        <span class="text-body-md text-muted">
-            {{ $this->canEdit
-                ? 'Anda pemilik aplikasi ini — status dapat diubah.'
-                : 'Anda membawa aplikasi ini — tampilan baca saja.' }}
-        </span>
     </div>
 
     @if (session('application_success'))
@@ -89,10 +84,10 @@
                         </x-ui.field>
                     @endif
 
-                    <x-ui.field label="Amount Finance" helper="Rupiah penuh, tanpa titik."
+                    <x-ui.field label="Amount Finance" helper="Nominal rupiah penuh."
                                 :error="$errors->first('amount_finance')">
-                        <x-ui.input wire:model="amount_finance" type="number" min="0" step="1"
-                                    :invalid="$errors->has('amount_finance')" />
+                        <x-ui.money-input wire:model="amount_finance" placeholder="Rp 50.000.000"
+                                          :invalid="$errors->has('amount_finance')" />
                     </x-ui.field>
 
                     {{-- Satu application selalu satu unit — client-decisions.md butir 15. --}}
@@ -162,7 +157,44 @@
             </x-slot:actions>
         @endif
 
-        <x-ui.table min-width="560px">
+        <div class="flex flex-col gap-sm md:hidden">
+            @foreach ($this->documents as $document)
+                <div class="rounded-lg border border-hairline bg-canvas px-md py-3"
+                     wire:key="document-mobile-{{ $document->id }}">
+                    <div class="flex items-start justify-between gap-md">
+                        <div>
+                            <p class="text-body-md text-ink">{{ $document->requirement->name }}</p>
+                            <p class="mt-1 text-[13px] text-muted">{{ $document->requirement->subject }}</p>
+                        </div>
+
+                        @if ($this->canEdit)
+                            <span class="inline-flex shrink-0 overflow-hidden rounded-sm border border-hairline">
+                                <button type="button"
+                                        wire:click="setDocumentStatus({{ $document->id }}, '{{ DocumentStatus::Belum->value }}')"
+                                        @class([
+                                            'px-3.5 py-1.5 text-[12px] font-medium leading-[1.2]',
+                                            'bg-muted text-canvas' => ! $document->status->isComplete(),
+                                            'bg-canvas text-muted' => $document->status->isComplete(),
+                                        ])>&#10007; Belum</button>
+                                <button type="button"
+                                        wire:click="setDocumentStatus({{ $document->id }}, '{{ DocumentStatus::Lengkap->value }}')"
+                                        @class([
+                                            'border-l border-hairline px-3.5 py-1.5 text-[12px] font-medium leading-[1.2]',
+                                            'bg-primary text-on-primary' => $document->status->isComplete(),
+                                            'bg-canvas text-muted' => ! $document->status->isComplete(),
+                                        ])>&#10003; Lengkap</button>
+                            </span>
+                        @else
+                            <x-ui.chip :tone="$document->status->isComplete() ? 'success' : 'neutral'" class="shrink-0">
+                                {{ $document->status->isComplete() ? '✓ Lengkap' : '✕ Belum' }}
+                            </x-ui.chip>
+                        @endif
+                    </div>
+                </div>
+            @endforeach
+        </div>
+
+        <x-ui.table min-width="560px" class="hidden md:block">
             <x-slot:head>
                 <x-ui.th>Dokumen</x-ui.th>
                 <x-ui.th>Subjek</x-ui.th>
@@ -202,10 +234,6 @@
                 </tr>
             @endforeach
         </x-ui.table>
-
-        <p class="mt-sm text-helper text-muted">
-            Tidak ada unggah berkas — sistem hanya mencatat status verifikasi.
-        </p>
     </x-ui.card>
 
     {{-- ------------------------------------------------------------ Tracking --}}
@@ -240,10 +268,6 @@
                 </div>
             @endforeach
         </div>
-
-        <p class="mt-sm text-helper text-muted">
-            Tahapan boleh ditandai dalam urutan apa pun dan dapat dikembalikan ke Belum.
-        </p>
     </x-ui.card>
 
     {{-- Go Live confirmation — it changes the Lending classification. --}}

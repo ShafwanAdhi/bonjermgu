@@ -133,16 +133,16 @@
                         @if ($this->isUcf)
                             <x-ui.field label="Harga Pasar" required class="col-span-2"
                                         :error="$errors->first('market_price')">
-                                <x-ui.input wire:model="market_price" type="number" min="0" step="1"
-                                            :invalid="$errors->has('market_price')" />
+                                <x-ui.money-input wire:model="market_price" placeholder="Rp 50.000.000"
+                                                  :invalid="$errors->has('market_price')" />
                             </x-ui.field>
                         @endif
 
                         @if ($this->isModeB)
                             <x-ui.field label="Nominal Dikehendaki" required class="col-span-2"
                                         :error="$errors->first('desired_amount')">
-                                <x-ui.input wire:model="desired_amount" type="number" min="0" step="1"
-                                            :invalid="$errors->has('desired_amount')" />
+                                <x-ui.money-input wire:model="desired_amount" placeholder="Rp 50.000.000"
+                                                  :invalid="$errors->has('desired_amount')" />
                             </x-ui.field>
                         @endif
                     </div>

@@ -25,7 +25,7 @@
 
         @if ($editing)
             <form wire:submit="save" class="flex flex-col gap-lg">
-                <p class="border-t border-hairline pt-7 text-eyebrow uppercase text-muted">Data diri</p>
+                <p id="profile-data-diri" class="scroll-mt-50 border-t border-hairline pt-7 text-eyebrow uppercase text-muted">Data diri</p>
 
                 <div class="grid grid-cols-1 gap-md sm:grid-cols-2">
                     <x-ui.field label="Nama Lengkap" required class="sm:col-span-2"
@@ -33,9 +33,8 @@
                         <x-ui.input wire:model="full_name" :invalid="$errors->has('full_name')" />
                     </x-ui.field>
 
-                    <x-ui.field label="Tanggal Lahir" helper="Hanya Admin yang dapat mengubahnya.">
-                        <x-ui.input value="{{ $this->profile->birth_date?->translatedFormat('d F Y') }}" disabled
-                                    class="bg-surface-soft text-muted" />
+                    <x-ui.field label="Tanggal Lahir" required :error="$errors->first('birth_date')">
+                        <x-ui.input wire:model="birth_date" type="date" :invalid="$errors->has('birth_date')" />
                     </x-ui.field>
 
                     <x-ui.field label="Alamat Email" :error="$errors->first('email')">

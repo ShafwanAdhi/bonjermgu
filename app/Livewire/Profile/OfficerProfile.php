@@ -20,6 +20,8 @@ class OfficerProfile extends Component
 
     public string $full_name = '';
 
+    public string $birth_date = '';
+
     public string $email = '';
 
     public string $phone = '';
@@ -39,6 +41,7 @@ class OfficerProfile extends Component
     {
         return [
             'full_name' => ['required', 'string', 'max:150'],
+            'birth_date' => ['required', 'date', 'before:today'],
             'email' => ['nullable', 'email:rfc,strict', 'max:150'],
             'phone' => ['nullable', 'string', 'max:20'],
         ];
@@ -48,6 +51,7 @@ class OfficerProfile extends Component
     {
         return [
             'full_name' => 'Nama Lengkap',
+            'birth_date' => 'Tanggal Lahir',
             'email' => 'Alamat Email',
             'phone' => 'No. Handphone',
         ];
@@ -57,6 +61,7 @@ class OfficerProfile extends Component
     {
         $this->fillFromProfile();
         $this->editing = true;
+        $this->dispatch('profile-editing');
     }
 
     public function cancel(): void
@@ -72,6 +77,7 @@ class OfficerProfile extends Component
 
         $this->profile->update([
             'full_name' => $validated['full_name'],
+            'birth_date' => $validated['birth_date'],
             'email' => $validated['email'] ?: null,
             'phone' => $validated['phone'] ?: null,
         ]);
@@ -87,6 +93,7 @@ class OfficerProfile extends Component
         $profile = $this->profile;
 
         $this->full_name = $profile->full_name;
+        $this->birth_date = $profile->birth_date?->format('Y-m-d') ?? '';
         $this->email = $profile->email ?? '';
         $this->phone = $profile->phone ?? '';
     }

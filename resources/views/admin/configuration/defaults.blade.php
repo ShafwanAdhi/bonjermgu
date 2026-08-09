@@ -27,6 +27,9 @@
                                     <option value="{{ $zone }}">{{ $zone }}</option>
                                 @endforeach
                             </x-ui.select>
+                        @elseif ($definition['type'] === 'money')
+                            <x-ui.money-input wire:model="settings.{{ $key }}" placeholder="Rp 0"
+                                              :invalid="$errors->has('settings.'.$key)" />
                         @else
                             <x-ui.input wire:model="settings.{{ $key }}" type="number"
                                         min="{{ $definition['type'] === 'positive_integer' ? 1 : 0 }}"

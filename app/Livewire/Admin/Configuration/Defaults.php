@@ -6,6 +6,7 @@ use App\Livewire\Admin\AuditedAdminComponent;
 use App\Models\InsuranceCascoRate;
 use App\Models\SimulationSetting;
 use App\Services\ConfigurationIntegrityValidator;
+use App\Support\RupiahInput;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -46,6 +47,8 @@ final class Defaults extends AuditedAdminComponent
 
     public function save(ConfigurationIntegrityValidator $integrity): void
     {
+        $this->normalizeMoneySettings();
+
         $validated = $this->validate($this->rules(), [], $this->validationAttributes());
 
         DB::transaction(function () use ($validated, $integrity): void {
@@ -63,6 +66,15 @@ final class Defaults extends AuditedAdminComponent
         $this->loadData();
         $this->refreshAudit();
         session()->flash('admin_success', 'Nilai default simulasi berhasil disimpan.');
+    }
+
+    private function normalizeMoneySettings(): void
+    {
+        foreach (self::DEFINITIONS as $key => $definition) {
+            if ($definition['type'] === 'money') {
+                $this->settings[$key] = RupiahInput::normalize($this->settings[$key] ?? '');
+            }
+        }
     }
 
     public function render(): View

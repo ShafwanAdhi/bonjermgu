@@ -27,7 +27,7 @@
 @endphp
 
 @if ($href)
-    <a href="{{ $href }}" {{ $attributes->class($classes) }}>{{ $slot }}</a>
+    <a href="{{ $href }}" data-motion-action {{ $attributes->class($classes) }}>{{ $slot }}</a>
 @else
-    <button {{ $attributes->class($classes) }}>{{ $slot }}</button>
+    <button data-motion-action {{ $attributes->class($classes) }}>{{ $slot }}</button>
 @endif

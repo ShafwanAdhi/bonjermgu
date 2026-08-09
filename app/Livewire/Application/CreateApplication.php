@@ -8,6 +8,7 @@ use App\Domain\Application\FinancingProduct;
 use App\Domain\Application\SpouseIncomeType;
 use App\Models\Application;
 use App\Models\Referral;
+use App\Support\RupiahInput;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -158,6 +159,8 @@ class CreateApplication extends Component
     public function save()
     {
         $this->authorize('create', Application::class);
+
+        $this->amount_finance = RupiahInput::normalize($this->amount_finance);
 
         $validated = $this->validate();
 

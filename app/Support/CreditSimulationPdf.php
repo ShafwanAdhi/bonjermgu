@@ -17,6 +17,8 @@ class CreditSimulationPdf
     {
         $ops = [];
 
+        $this->watermark($ops);
+
         $this->text($ops, self::MARGIN, 798, 'Kebon Jeruk Multiguna', 18, 'F2');
         $this->text($ops, self::MARGIN, 776, 'Hasil Simulasi Kredit', 16, 'F2');
         $this->text($ops, 365, 798, (string) ($subject['printed_at'] ?? ''), 10, 'F1');
@@ -136,6 +138,15 @@ class CreditSimulationPdf
     private function sectionTitle(array &$ops, int $x, int $y, string $text): void
     {
         $this->text($ops, $x, $y, Str::upper($text), 9, 'F2', [0.43, 0.45, 0.5]);
+    }
+
+    private function watermark(array &$ops): void
+    {
+        for ($y = 28; $y < self::PAGE_HEIGHT; $y += 28) {
+            for ($x = 0; $x < self::PAGE_WIDTH; $x += 112) {
+                $this->text($ops, $x, $y, 'bonjemgu.com', 10, 'F1', [0.88, 0.89, 0.91]);
+            }
+        }
     }
 
     /** @param array{0: float, 1: float, 2: float} $color */

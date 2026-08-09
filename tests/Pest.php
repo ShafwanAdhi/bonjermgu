@@ -1,7 +1,7 @@
 <?php
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Support\SerializesTestingDatabase;
 use Tests\TestCase;
 
-uses(TestCase::class, RefreshDatabase::class)->in('Feature');
+uses(TestCase::class, SerializesTestingDatabase::class)->in('Feature');
 uses(TestCase::class)->in('Unit');

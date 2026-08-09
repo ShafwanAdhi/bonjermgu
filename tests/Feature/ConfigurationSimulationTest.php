@@ -23,13 +23,13 @@ use App\Services\SimulationService;
 use App\Support\Format;
 use Database\Seeders\ReferralMasterSeeder;
 use Database\Seeders\SimulationConfigurationSeeder;
-use Database\Seeders\VehicleSeeder;
 use Livewire\Livewire;
+use Tests\Support\TestVehicleMaster;
 
 beforeEach(function () {
     $this->seed(ReferralMasterSeeder::class);
     $this->seed(SimulationConfigurationSeeder::class);
-    $this->seed(VehicleSeeder::class);
+    TestVehicleMaster::seed();
 
     $this->admin = Admin::factory()->create()->user;
 
@@ -181,7 +181,7 @@ it('renders the calculation trace for the traced tenor', function () {
         ->set('type_id', (string) $this->model->type_id)
         ->set('model_id', (string) $this->model->id)
         ->set('vehicle_year', (string) $this->year)
-        ->set('market_price', '110000000')
+        ->set('market_price', 'Rp 110.000.000')
         ->call('calculate')
         ->assertHasNoErrors()
         ->assertSet('hasCalculated', true)
@@ -202,7 +202,7 @@ it('switches the trace to another tenor', function () {
         ->set('type_id', (string) $this->model->type_id)
         ->set('model_id', (string) $this->model->id)
         ->set('vehicle_year', (string) $this->year)
-        ->set('market_price', '110000000')
+        ->set('market_price', 'Rp 110.000.000')
         ->call('calculate')
         ->assertSet('traced_tenor', 12)
         ->call('traceTenor', 60)

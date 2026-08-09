@@ -12,6 +12,7 @@ use App\Models\Application;
 use App\Models\ApplicationDocument;
 use App\Models\ApplicationTracking;
 use App\Models\TrackingStage;
+use App\Support\RupiahInput;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -183,6 +184,8 @@ class ApplicationDetail extends Component
     public function save(): void
     {
         $this->authorize('update', $this->application);
+
+        $this->amount_finance = RupiahInput::normalize($this->amount_finance);
 
         $validated = $this->validate();
 

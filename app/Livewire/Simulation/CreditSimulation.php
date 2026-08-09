@@ -17,6 +17,7 @@ use App\Models\VehiclePrice;
 use App\Repositories\MasterLookupRepository;
 use App\Repositories\VehicleCascadeRepository;
 use App\Services\SimulationService;
+use App\Support\RupiahInput;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
@@ -29,6 +30,27 @@ use Throwable;
 
 final class CreditSimulation extends Component
 {
+    private const FORM_SESSION_KEY = 'simulation.credit.form';
+
+    private const FORM_STATE_PROPERTIES = [
+        'financing_type',
+        'mode',
+        'domicile_id',
+        'debtor_type',
+        'age_group_id',
+        'usage_id',
+        'brand_id',
+        'type_id',
+        'model_id',
+        'vehicle_year',
+        'instalment_type',
+        'coverage_type',
+        'stnk_ownership',
+        'funding_purpose',
+        'market_price',
+        'desired_amount',
+    ];
+
     public string $financing_type = 'DTN';
 
     public string $mode = 'A';
@@ -84,6 +106,7 @@ final class CreditSimulation extends Component
 
     public function mount(): void
     {
+        $this->restoreFormState();
         $this->results = $this->zeroRows();
         $this->calculationError = session()->pull('simulation_error');
     }
@@ -158,8 +181,17 @@ final class CreditSimulation extends Component
     {
         return [
             'debtor_name' => ['required', 'string', 'max:150'],
-            'debtor_nik' => ['required', 'digits:16'],
-            'debtor_birth_date' => ['required', 'date', 'before:today'],
+            'debtor_nik' => [
+                Rule::requiredIf($this->needsPersonalDebtorIdentity()),
+                'nullable',
+                'digits:16',
+            ],
+            'debtor_birth_date' => [
+                Rule::requiredIf($this->needsPersonalDebtorIdentity()),
+                'nullable',
+                'date',
+                'before:today',
+            ],
         ];
     }
 
@@ -289,11 +321,14 @@ final class CreditSimulation extends Component
                 break;
         }
 
+        $this->persistFormState();
         $this->clearResults();
     }
 
     public function calculate(): void
     {
+        $this->normalizeMoneyInputs();
+        $this->persistFormState();
         $this->forgetActiveResult();
         $this->clearResults();
         $this->resetValidation();
@@ -343,6 +378,27 @@ final class CreditSimulation extends Component
         }
     }
 
+    public function clearFormData(): void
+    {
+        session()->forget(self::FORM_SESSION_KEY);
+        $this->resetFormStateProperties();
+        $this->resetValidation();
+        $this->forgetActiveResult();
+        $this->priceUnavailable = false;
+        $this->calculationError = null;
+        $this->showPrintForm = false;
+        $this->activeProductName = null;
+        $this->vehicleSummary = null;
+        $this->clearResults();
+        $this->clearComputedOptions();
+    }
+
+    private function normalizeMoneyInputs(): void
+    {
+        $this->market_price = RupiahInput::normalize($this->market_price);
+        $this->desired_amount = RupiahInput::normalize($this->desired_amount);
+    }
+
     public function openPrintForm(): void
     {
         if (! $this->hasCalculated || ! session()->has('simulation.active')) {
@@ -369,6 +425,10 @@ final class CreditSimulation extends Component
             return null;
         }
 
+        if (! $this->needsPersonalDebtorIdentity()) {
+            $this->reset('debtor_nik', 'debtor_birth_date');
+        }
+
         $validated = $this->validate(
             $this->printRules(),
             $this->messages(),
@@ -384,10 +444,12 @@ final class CreditSimulation extends Component
         }
 
         $snapshot['subject']['debtor_name'] = trim($validated['debtor_name']);
-        $snapshot['subject']['debtor_nik'] = $validated['debtor_nik'];
-        $snapshot['subject']['debtor_birth_date'] = Carbon::parse($validated['debtor_birth_date'])
-            ->locale('id')
-            ->translatedFormat('d F Y');
+        $snapshot['subject']['debtor_nik'] = $this->needsPersonalDebtorIdentity()
+            ? ($validated['debtor_nik'] ?? null)
+            : null;
+        $snapshot['subject']['debtor_birth_date'] = $this->needsPersonalDebtorIdentity() && ($validated['debtor_birth_date'] ?? null)
+            ? Carbon::parse($validated['debtor_birth_date'])->locale('id')->translatedFormat('d F Y')
+            : null;
         session()->put('simulation.active', $snapshot);
 
         return $this->redirectRoute('simulation.print');
@@ -550,6 +612,66 @@ final class CreditSimulation extends Component
         session()->forget('simulation.active');
     }
 
+    private function restoreFormState(): void
+    {
+        $state = session()->get(self::FORM_SESSION_KEY, []);
+
+        if (! is_array($state)) {
+            return;
+        }
+
+        foreach (self::FORM_STATE_PROPERTIES as $property) {
+            if (array_key_exists($property, $state)) {
+                $this->{$property} = $state[$property];
+            }
+        }
+    }
+
+    private function persistFormState(): void
+    {
+        session()->put(self::FORM_SESSION_KEY, $this->formState());
+    }
+
+    /** @return array<string, mixed> */
+    private function formState(): array
+    {
+        $state = [];
+
+        foreach (self::FORM_STATE_PROPERTIES as $property) {
+            $state[$property] = $this->{$property};
+        }
+
+        return $state;
+    }
+
+    private function resetFormStateProperties(): void
+    {
+        $this->financing_type = 'DTN';
+        $this->mode = 'A';
+        $this->domicile_id = null;
+        $this->debtor_type = 'non_entrepreneur';
+        $this->age_group_id = null;
+        $this->usage_id = null;
+        $this->brand_id = null;
+        $this->type_id = null;
+        $this->model_id = null;
+        $this->vehicle_year = null;
+        $this->instalment_type = 'ADDB';
+        $this->coverage_type = 'comprehensive_then_tlo';
+        $this->stnk_ownership = 'own';
+        $this->funding_purpose = '';
+        $this->market_price = '';
+        $this->desired_amount = '';
+        $this->debtor_name = '';
+        $this->debtor_nik = '';
+        $this->debtor_birth_date = '';
+    }
+
+    private function clearComputedOptions(): void
+    {
+        unset($this->brands, $this->vehicleTypes, $this->vehicleModels, $this->vehicleYears);
+    }
+
     private function resetVehicleAfterUsage(): void
     {
         $this->reset('brand_id', 'type_id', 'model_id', 'vehicle_year');
@@ -577,8 +699,13 @@ final class CreditSimulation extends Component
     private function resetAgeGroupForLegalEntity(): void
     {
         if ($this->debtor_type === DebtorType::LEGAL_ENTITY->value) {
-            $this->reset('age_group_id');
+            $this->reset('age_group_id', 'debtor_nik', 'debtor_birth_date');
         }
+    }
+
+    private function needsPersonalDebtorIdentity(): bool
+    {
+        return $this->debtor_type !== DebtorType::LEGAL_ENTITY->value;
     }
 
     private function rupiah(int|float $amount): string

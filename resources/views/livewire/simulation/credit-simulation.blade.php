@@ -1,4 +1,5 @@
 <div class="band py-xl md:py-xxl"
+     data-motion-click-only
      x-data
      x-on:simulation-calculated.window="$nextTick(() => $el.querySelector('#simulation-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' }))">
     <x-ui.page-header title="Simulasi Kredit"
@@ -10,6 +11,7 @@
                 <div class="flex flex-col gap-sm sm:flex-row">
                     @foreach ([['DTN', 'Dana Tunai'], ['UCF', 'Pembiayaan Mobil Bekas']] as [$key, $label])
                         <button type="button" wire:click="$set('financing_type', '{{ $key }}')"
+                                data-motion-action
                                 @class([
                                     'flex flex-1 items-center gap-sm rounded-lg border px-[18px] py-3.5 text-left',
                                     'border-primary shadow-[0_0_0_1px_#181d26_inset]' => $financing_type === $key,
@@ -39,7 +41,7 @@
 
             <div x-data="{ expanded: true }">
                 <x-ui.card>
-                    <button type="button" class="mb-5 flex w-full items-center gap-sm md:cursor-default"
+                    <button type="button" class="mb-5 flex min-h-11 w-full items-center gap-sm md:cursor-default"
                             x-on:click="expanded = !expanded">
                         <span class="text-title-sm text-ink">2 · Profil Perhitungan</span>
                         <span class="ml-auto text-helper text-muted md:hidden" x-text="expanded ? 'Tutup' : 'Buka'"></span>
@@ -83,7 +85,7 @@
 
             <div x-data="{ expanded: true }">
                 <x-ui.card>
-                    <button type="button" class="mb-5 flex w-full items-center gap-sm md:cursor-default"
+                    <button type="button" class="mb-5 flex min-h-11 w-full items-center gap-sm md:cursor-default"
                             x-on:click="expanded = !expanded">
                         <span class="text-title-sm text-ink">3 · Data Kendaraan</span>
                         <span class="ml-auto text-helper text-muted md:hidden" x-text="expanded ? 'Tutup' : 'Buka'"></span>
@@ -181,8 +183,9 @@
                                 </x-ui.field>
                             @else
                                 <x-ui.field label="Harga Pasar" required :error="$errors->first('market_price')">
-                                    <x-ui.input wire:model.live.debounce.500ms="market_price" type="number" min="1"
-                                                inputmode="numeric" :invalid="$errors->has('market_price')" />
+                                    <x-ui.money-input wire:model.live.debounce.500ms="market_price"
+                                                      placeholder="Rp 50.000.000"
+                                                      :invalid="$errors->has('market_price')" />
                                 </x-ui.field>
                             @endif
 
@@ -207,11 +210,12 @@
                 <div class="grid grid-cols-1 gap-sm sm:grid-cols-2">
                     @foreach ($this->modeOptions() as $key => $option)
                         <button type="button" wire:click="$set('mode', '{{ $key }}')"
+                                data-motion-action
                                 @class([
                                     'rounded-lg border p-md text-left',
                                     'border-primary shadow-[0_0_0_1px_#181d26_inset]' => $mode === $key,
                                     'border-hairline' => $mode !== $key,
-                            ])>
+                                ])>
                             <p class="text-[14px] font-medium leading-[1.3] {{ $mode === $key ? 'text-ink' : 'text-muted' }}">
                                 {{ $option['label'] }}
                             </p>
@@ -221,18 +225,26 @@
                 </div>
 
                 @if ($mode === 'B')
-                    <div class="mt-md">
+                    <div class="mt-md" data-simulation-field-enter>
                         <x-ui.field :label="$financing_type === 'DTN' ? 'Dana yang dibutuhkan' : 'Total DP dikehendaki'"
                                     required :error="$errors->first('desired_amount')">
-                            <x-ui.input wire:model.live.debounce.500ms="desired_amount" type="number" min="1"
-                                        inputmode="numeric" :invalid="$errors->has('desired_amount')" />
+                            <x-ui.money-input wire:model.live.debounce.500ms="desired_amount"
+                                              placeholder="Rp 50.000.000"
+                                              :invalid="$errors->has('desired_amount')" />
                         </x-ui.field>
                     </div>
                 @endif
 
-                <div class="mt-lg">
+                <div class="mt-lg flex flex-col gap-sm sm:flex-row">
                     <x-ui.button type="submit" size="md" wire:loading.attr="disabled" wire:target="calculate">
                         Hitung Simulasi
+                    </x-ui.button>
+                    <x-ui.button type="button" variant="secondary" size="md"
+                                 wire:click="clearFormData"
+                                 wire:confirm="Hapus seluruh data sementara di form simulasi?"
+                                 wire:loading.attr="disabled"
+                                 wire:target="clearFormData">
+                        Hapus Data
                     </x-ui.button>
                 </div>
             </x-ui.card>
@@ -277,7 +289,50 @@
 
                 @if ($hasCalculated)
                     <div wire:loading.class="opacity-60" wire:target="calculate">
-                        <x-ui.table>
+                        <div class="sm:hidden">
+                            <div class="overflow-hidden rounded-lg border border-hairline">
+                                @foreach ($results as $row)
+                                    <div class="border-b border-divider px-md py-3 last:border-b-0"
+                                         wire:key="result-mobile-{{ $row['tenor'] }}">
+                                        <p @class([
+                                            'text-[13px] font-medium leading-[1.4]',
+                                            'text-border-strong' => $row['zero'],
+                                            'text-ink' => ! $row['zero'],
+                                        ])>
+                                            {{ $row['tenor'] }}
+                                        </p>
+                                        <div class="mt-2 grid grid-cols-2 gap-sm">
+                                            <div>
+                                                <p class="text-[11px] uppercase leading-[1.3] text-muted">
+                                                    {{ $this->disbursementHeading() }}
+                                                </p>
+                                                <p @class([
+                                                    'mt-1 text-[14px] leading-[1.4]',
+                                                    'text-border-strong' => $row['zero'],
+                                                    'font-medium text-ink' => ! $row['zero'],
+                                                ])>
+                                                    {{ $row['disbursement'] }}
+                                                </p>
+                                            </div>
+                                            <div class="text-right">
+                                                <p class="text-[11px] uppercase leading-[1.3] text-muted">
+                                                    Angsuran
+                                                </p>
+                                                <p @class([
+                                                    'mt-1 text-[14px] leading-[1.4]',
+                                                    'text-border-strong' => $row['zero'],
+                                                    'font-medium text-ink' => ! $row['zero'],
+                                                ])>
+                                                    {{ $row['instalment'] }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <x-ui.table class="hidden sm:block">
                             <x-slot:head>
                                 <x-ui.th>Tenor</x-ui.th>
                                 <x-ui.th align="right">{{ $this->disbursementHeading() }}</x-ui.th>
@@ -322,15 +377,17 @@
                                                 :invalid="$errors->has('debtor_name')" />
                                 </x-ui.field>
 
-                                <x-ui.field label="NIK" required :error="$errors->first('debtor_nik')">
-                                    <x-ui.input wire:model="debtor_nik" type="text" inputmode="numeric" maxlength="16"
-                                                :invalid="$errors->has('debtor_nik')" />
-                                </x-ui.field>
+                                @if ($debtor_type !== 'legal_entity')
+                                    <x-ui.field label="NIK" required :error="$errors->first('debtor_nik')">
+                                        <x-ui.input wire:model="debtor_nik" type="text" inputmode="numeric" maxlength="16"
+                                                    :invalid="$errors->has('debtor_nik')" />
+                                    </x-ui.field>
 
-                                <x-ui.field label="Tanggal Lahir" required :error="$errors->first('debtor_birth_date')">
-                                    <x-ui.input wire:model="debtor_birth_date" type="date"
-                                                :invalid="$errors->has('debtor_birth_date')" />
-                                </x-ui.field>
+                                    <x-ui.field label="Tanggal Lahir" required :error="$errors->first('debtor_birth_date')">
+                                        <x-ui.input wire:model="debtor_birth_date" type="date"
+                                                    :invalid="$errors->has('debtor_birth_date')" />
+                                    </x-ui.field>
+                                @endif
                             </div>
 
                             <div class="mt-md flex flex-wrap gap-sm">

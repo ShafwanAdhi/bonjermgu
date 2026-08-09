@@ -83,10 +83,10 @@
                         <x-ui.input wire:model="form.dp_rate" type="number" step="0.0001" min="0" max="100" :invalid="$errors->has('form.dp_rate')" />
                     </x-ui.field>
                     <x-ui.field label="Admin Minimal (Rp)" required :error="$errors->first('form.admin_min')">
-                        <x-ui.input wire:model="form.admin_min" type="number" min="0" :invalid="$errors->has('form.admin_min')" />
+                        <x-ui.money-input wire:model="form.admin_min" placeholder="Rp 500.000" :invalid="$errors->has('form.admin_min')" />
                     </x-ui.field>
                     <x-ui.field label="Admin Maksimal (Rp)" required :error="$errors->first('form.admin_max')">
-                        <x-ui.input wire:model="form.admin_max" type="number" min="0" :invalid="$errors->has('form.admin_max')" />
+                        <x-ui.money-input wire:model="form.admin_max" placeholder="Rp 5.000.000" :invalid="$errors->has('form.admin_max')" />
                     </x-ui.field>
                     <x-ui.field label="Provisi (%)" required :error="$errors->first('form.provisi_rate')">
                         <x-ui.input wire:model="form.provisi_rate" type="number" step="0.0001" min="0" max="100" :invalid="$errors->has('form.provisi_rate')" />
@@ -98,7 +98,7 @@
                         <x-ui.input wire:model="form.up_rate" type="number" step="0.0001" min="0" max="100" :invalid="$errors->has('form.up_rate')" />
                     </x-ui.field>
                     <x-ui.field label="Up Admin (Rp)" required :error="$errors->first('form.up_admin')">
-                        <x-ui.input wire:model="form.up_admin" type="number" min="0" :invalid="$errors->has('form.up_admin')" />
+                        <x-ui.money-input wire:model="form.up_admin" placeholder="Rp 0" :invalid="$errors->has('form.up_admin')" />
                     </x-ui.field>
                     <x-ui.field label="Up Provisi (%)" required :error="$errors->first('form.up_provisi')">
                         <x-ui.input wire:model="form.up_provisi" type="number" step="0.0001" min="0" max="100" :invalid="$errors->has('form.up_provisi')" />

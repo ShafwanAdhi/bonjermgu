@@ -11,9 +11,9 @@
             <x-ui.card title="Fiducia Fee" note="Band harus dimulai dari Rp 0, tanpa celah, dan band terakhir tanpa batas.">
                 @foreach ($fiduciaTiers as $index => $row)
                     <div class="grid grid-cols-[1fr_1fr_1fr_auto] gap-sm border-b border-divider py-2">
-                        <x-ui.input wire:model="fiduciaTiers.{{ $index }}.min_amount" type="number" min="0" placeholder="Min" />
-                        <x-ui.input wire:model="fiduciaTiers.{{ $index }}.max_amount" type="number" min="0" placeholder="Tanpa batas" />
-                        <x-ui.input wire:model="fiduciaTiers.{{ $index }}.fee" type="number" min="0" placeholder="Biaya" />
+                        <x-ui.money-input wire:model="fiduciaTiers.{{ $index }}.min_amount" placeholder="Rp 0" />
+                        <x-ui.money-input wire:model="fiduciaTiers.{{ $index }}.max_amount" placeholder="Tanpa batas" />
+                        <x-ui.money-input wire:model="fiduciaTiers.{{ $index }}.fee" placeholder="Rp 500.000" />
                         <button type="button" wire:click="removeFiduciaTier({{ $index }})" class="text-signature-coral">Hapus</button>
                     </div>
                 @endforeach

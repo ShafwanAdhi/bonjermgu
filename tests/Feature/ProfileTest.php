@@ -28,17 +28,20 @@ it('saves referral profile edits to the database', function () {
         ->test(ReferralProfile::class)
         ->call('edit')
         ->set('full_name', 'Budi Santoso Baru')
+        ->set('birth_date', '1991-02-03')
         ->set('email', 'baru@example.test')
         ->set('phone', '081200000000')
         ->set('branch_name', 'KCP Kebon Jeruk')
         ->call('save')
         ->assertHasNoErrors();
 
-    expect($referral->fresh())
+    $updatedReferral = $referral->fresh();
+    expect($updatedReferral)
         ->full_name->toBe('Budi Santoso Baru')
         ->email->toBe('baru@example.test')
         ->phone->toBe('081200000000')
         ->branch_name->toBe('KCP Kebon Jeruk');
+    expect($updatedReferral->birth_date?->format('Y-m-d'))->toBe('1991-02-03');
 });
 
 it('does not expose account NIK on the referral profile form', function () {
@@ -105,13 +108,16 @@ it('shows and saves the officer profile', function () {
         ->test(OfficerProfile::class)
         ->call('edit')
         ->set('full_name', 'Andi Prasetyo Baru')
+        ->set('birth_date', '1992-04-05')
         ->set('email', 'andi.baru@mtf.co.id')
         ->call('save')
         ->assertHasNoErrors();
 
-    expect($officer->fresh())
+    $updatedOfficer = $officer->fresh();
+    expect($updatedOfficer)
         ->full_name->toBe('Andi Prasetyo Baru')
         ->email->toBe('andi.baru@mtf.co.id');
+    expect($updatedOfficer->birth_date?->format('Y-m-d'))->toBe('1992-04-05');
 });
 
 it('refuses the profile page to admin', function () {

@@ -56,7 +56,7 @@ it('creates an application, its documents, and eleven stages from the form', fun
         ->set('debtor_type', DebtorType::PeroranganWiraswasta->value)
         ->set('spouse_income_type', SpouseIncomeType::Bekerja->value)
         ->set('referral_id', $this->referral->id)
-        ->set('amount_finance', '130000000')
+        ->set('amount_finance', 'Rp 130.000.000')
         ->call('save')
         ->assertHasNoErrors();
 
@@ -183,7 +183,7 @@ it('saves an edit to the application data', function () {
         ->test(ApplicationDetail::class, ['application' => $application])
         ->call('edit')
         ->set('debtor_name', 'Siti Rahayu Diperbarui')
-        ->set('amount_finance', '155000000')
+        ->set('amount_finance', 'Rp 155.000.000')
         ->call('save')
         ->assertHasNoErrors();
 

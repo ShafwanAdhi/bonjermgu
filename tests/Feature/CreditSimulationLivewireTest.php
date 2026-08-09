@@ -10,7 +10,10 @@ use App\Models\VehicleModel;
 use App\Models\VehicleUsage;
 use App\Repositories\ProductResolver;
 use Carbon\Carbon;
+use Database\Seeders\ReferralMasterSeeder;
+use Database\Seeders\SimulationConfigurationSeeder;
 use Livewire\Livewire;
+use Tests\Support\TestVehicleMaster;
 
 function validSimulationState(VehicleModel $model, int $year): array
 {
@@ -31,14 +34,21 @@ function validSimulationState(VehicleModel $model, int $year): array
 }
 
 test('Referral calculates both products and modes on the server then prints the active result', function () {
-    $this->seed();
+    $this->seed(ReferralMasterSeeder::class);
+    $this->seed(SimulationConfigurationSeeder::class);
+    TestVehicleMaster::seed();
 
-    $referral = Referral::query()
-        ->whereHas('category', fn ($query) => $query
-            ->where('segment', 'Reguler')
-            ->where('tier', 'Referral'))
-        ->with(['user', 'category'])
+    $category = ReferralCategory::query()
+        ->where('segment', 'Reguler')
+        ->where('tier', 'Referral')
+        ->with('subCategories')
         ->firstOrFail();
+    $referral = Referral::factory()->create([
+        'category_id' => $category->id,
+        'sub_category_id' => $category->subCategories->firstOrFail()->id,
+        'institution_id' => null,
+    ])->load(['user', 'category']);
+
     $model = VehicleModel::query()
         ->whereHas('type.brand.usage', fn ($query) => $query->where('name', 'Passenger'))
         ->whereHas('prices', fn ($query) => $query->where('price', '>', 0), '>=', 2)
@@ -72,7 +82,7 @@ test('Referral calculates both products and modes on the server then prints the 
 
     $component
         ->set('mode', 'B')
-        ->set('desired_amount', (string) intdiv($price->price, 2))
+        ->set('desired_amount', 'Rp '.number_format(intdiv($price->price, 2), 0, ',', '.'))
         ->call('calculate')
         ->assertHasNoErrors()
         ->assertSet('hasCalculated', true);
@@ -84,7 +94,7 @@ test('Referral calculates both products and modes on the server then prints the 
     $component
         ->set('financing_type', 'UCF')
         ->set('mode', 'A')
-        ->set('market_price', (string) $price->price)
+        ->set('market_price', 'Rp '.number_format($price->price, 0, ',', '.'))
         ->call('calculate')
         ->assertHasNoErrors()
         ->assertSet('hasCalculated', true)
@@ -96,7 +106,7 @@ test('Referral calculates both products and modes on the server then prints the 
 
     $component
         ->set('mode', 'B')
-        ->set('desired_amount', (string) round($price->price * 0.6))
+        ->set('desired_amount', 'Rp '.number_format((int) round($price->price * 0.6), 0, ',', '.'))
         ->call('calculate')
         ->assertHasNoErrors()
         ->assertSet('hasCalculated', true)
@@ -154,20 +164,133 @@ test('Referral calculates both products and modes on the server then prints the 
         ->and($download->getContent())->toStartWith('%PDF-1.4')
         ->and($download->getContent())->toContain('Rina Calon Debitur')
         ->and($download->getContent())->toContain('Berdasarkan Total DP')
-        ->and($download->getContent())->toContain($ucfModeB);
+        ->and($download->getContent())->toContain($ucfModeB)
+        ->and($download->getContent())->toContain('bonjemgu.com');
 
     Carbon::setTestNow();
 });
 
-test('simulation exposes validation and unavailable-price states while SRB calculates successfully', function () {
-    $this->seed();
+test('legal entity simulation print does not require personal identity fields', function () {
+    $this->seed(ReferralMasterSeeder::class);
+    $this->seed(SimulationConfigurationSeeder::class);
+    TestVehicleMaster::seed();
 
-    $validReferral = Referral::query()
-        ->whereHas('category', fn ($query) => $query
-            ->where('segment', 'Reguler')
-            ->where('tier', 'Referral'))
-        ->with('user')
+    $category = ReferralCategory::query()
+        ->where('segment', 'Reguler')
+        ->where('tier', 'Referral')
+        ->with('subCategories')
         ->firstOrFail();
+    $referral = Referral::factory()->create([
+        'category_id' => $category->id,
+        'sub_category_id' => $category->subCategories->firstOrFail()->id,
+        'institution_id' => null,
+    ])->load(['user', 'category']);
+
+    $model = VehicleModel::query()
+        ->whereHas('type.brand.usage', fn ($query) => $query->where('name', 'Passenger'))
+        ->whereHas('prices', fn ($query) => $query->where('price', '>', 0), '>=', 1)
+        ->with(['type.brand.usage', 'prices' => fn ($query) => $query->where('price', '>', 0)->orderByDesc('year')])
+        ->firstOrFail();
+    $price = $model->prices->first();
+    Carbon::setTestNow(Carbon::create($price->year + 1, 8, 4));
+
+    $state = validSimulationState($model, $price->year);
+    $state['debtor_type'] = 'legal_entity';
+    $state['age_group_id'] = null;
+
+    $component = Livewire::actingAs($referral->user)
+        ->test(CreditSimulation::class)
+        ->set($state)
+        ->call('calculate')
+        ->assertHasNoErrors()
+        ->call('openPrintForm')
+        ->assertSee('Data calon debitur untuk dokumen simulasi')
+        ->assertDontSee('NIK')
+        ->assertDontSee('Tanggal Lahir')
+        ->set('debtor_name', 'PT Calon Debitur')
+        ->set('debtor_nik', '123')
+        ->call('preparePrint')
+        ->assertHasNoErrors(['debtor_nik', 'debtor_birth_date'])
+        ->assertRedirect(route('simulation.print'));
+
+    $snapshot = session()->get('simulation.active');
+    expect($snapshot['subject']['debtor_name'])->toBe('PT Calon Debitur')
+        ->and($snapshot['subject']['debtor_nik'])->toBeNull()
+        ->and($snapshot['subject']['debtor_birth_date'])->toBeNull()
+        ->and($component->get('debtor_nik'))->toBe('');
+
+    Carbon::setTestNow();
+});
+
+test('simulation form state is kept temporarily and can be cleared', function () {
+    $this->seed(ReferralMasterSeeder::class);
+    $this->seed(SimulationConfigurationSeeder::class);
+    TestVehicleMaster::seed();
+
+    $category = ReferralCategory::query()
+        ->where('segment', 'Reguler')
+        ->where('tier', 'Referral')
+        ->with('subCategories')
+        ->firstOrFail();
+    $referral = Referral::factory()->create([
+        'category_id' => $category->id,
+        'sub_category_id' => $category->subCategories->firstOrFail()->id,
+        'institution_id' => null,
+    ])->load(['user', 'category']);
+
+    $model = VehicleModel::query()
+        ->whereHas('type.brand.usage', fn ($query) => $query->where('name', 'Passenger'))
+        ->whereHas('prices', fn ($query) => $query->where('price', '>', 0), '>=', 1)
+        ->with(['type.brand.usage', 'prices' => fn ($query) => $query->where('price', '>', 0)->orderByDesc('year')])
+        ->firstOrFail();
+    $price = $model->prices->first();
+    $state = validSimulationState($model, $price->year);
+
+    Livewire::actingAs($referral->user)
+        ->test(CreditSimulation::class)
+        ->set($state)
+        ->set('financing_type', 'UCF')
+        ->set('mode', 'B')
+        ->set('market_price', 'Rp '.number_format($price->price, 0, ',', '.'))
+        ->set('desired_amount', 'Rp 25.000.000');
+
+    expect(session('simulation.credit.form.financing_type'))->toBe('UCF')
+        ->and(session('simulation.credit.form.mode'))->toBe('B')
+        ->and(session('simulation.credit.form.market_price'))->toBe('Rp '.number_format($price->price, 0, ',', '.'))
+        ->and(session('simulation.credit.form.desired_amount'))->toBe('Rp 25.000.000');
+
+    Livewire::actingAs($referral->user)
+        ->test(CreditSimulation::class)
+        ->assertSet('financing_type', 'UCF')
+        ->assertSet('mode', 'B')
+        ->assertSet('market_price', 'Rp '.number_format($price->price, 0, ',', '.'))
+        ->assertSet('desired_amount', 'Rp 25.000.000')
+        ->call('clearFormData')
+        ->assertSet('financing_type', 'DTN')
+        ->assertSet('mode', 'A')
+        ->assertSet('market_price', '')
+        ->assertSet('desired_amount', '')
+        ->assertSet('hasCalculated', false);
+
+    expect(session()->has('simulation.credit.form'))->toBeFalse();
+});
+
+test('simulation exposes validation and unavailable-price states while SRB calculates successfully', function () {
+    $this->seed(ReferralMasterSeeder::class);
+    $this->seed(SimulationConfigurationSeeder::class);
+    TestVehicleMaster::seed();
+
+    $validCategory = ReferralCategory::query()
+        ->where('segment', 'Reguler')
+        ->where('tier', 'Referral')
+        ->with('subCategories')
+        ->firstOrFail();
+    $validReferral = Referral::factory()->create([
+        'category_id' => $validCategory->id,
+        'sub_category_id' => $validCategory->subCategories->firstOrFail()->id,
+        'institution_id' => null,
+    ])->load('user');
+
     $model = VehicleModel::query()
         ->whereHas('type.brand.usage', fn ($query) => $query->where('name', 'Passenger'))
         ->whereHas('prices', fn ($query) => $query->where('price', '>', 0), '>=', 2)
@@ -203,10 +326,15 @@ test('simulation exposes validation and unavailable-price states while SRB calcu
         ->assertSet('hasCalculated', false)
         ->assertSee('Harga kendaraan tidak tersedia');
 
-    $showroomReferral = Referral::query()
-        ->whereHas('category', fn ($query) => $query->where('code', 'SRB'))
-        ->with('user')
+    $showroomCategory = ReferralCategory::query()
+        ->where('code', 'SRB')
+        ->with('subCategories')
         ->firstOrFail();
+    $showroomReferral = Referral::factory()->create([
+        'category_id' => $showroomCategory->id,
+        'sub_category_id' => $showroomCategory->subCategories->firstOrFail()->id,
+        'institution_id' => null,
+    ])->load('user');
     $availablePrice = $model->prices()->where('price', '>', 0)->orderByDesc('year')->firstOrFail();
 
     Livewire::actingAs($showroomReferral->user)
@@ -238,7 +366,9 @@ test('simulation exposes validation and unavailable-price states while SRB calcu
 });
 
 test('Captive Internal only exposes Passenger and rejects Commercial server-side', function () {
-    $this->seed();
+    $this->seed(ReferralMasterSeeder::class);
+    $this->seed(SimulationConfigurationSeeder::class);
+    TestVehicleMaster::seed();
 
     $category = ReferralCategory::query()
         ->where('code', 'CIN')

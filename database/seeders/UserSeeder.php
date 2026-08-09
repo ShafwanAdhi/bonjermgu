@@ -170,7 +170,7 @@ class UserSeeder extends Seeder
         return [
             [
                 'username' => 'aorahmawati',
-                'password' => 'password',
+                'password' => 'ao-rahmawati',
                 'full_name' => 'Rahmawati Dewi',
                 'birth_date' => '1988-09-05',
                 'email' => 'rahmawati.dewi@example.test',
@@ -178,7 +178,7 @@ class UserSeeder extends Seeder
             ],
             [
                 'username' => 'aosetiawan',
-                'password' => 'password',
+                'password' => 'ao-setiawan',
                 'full_name' => 'Andi Setiawan',
                 'birth_date' => '1985-03-17',
                 'email' => 'andi.setiawan@example.test',
@@ -196,7 +196,7 @@ class UserSeeder extends Seeder
         return [
             [
                 'username' => 'budisantoso',
-                'password' => 'password',
+                'password' => 'ref-budisantoso',
                 'full_name' => 'Budi Santoso',
                 'birth_date' => '1990-08-12',
                 'email' => 'budi.santoso@example.test',
@@ -208,7 +208,7 @@ class UserSeeder extends Seeder
             ],
             [
                 'username' => 'sitinurhaliza',
-                'password' => 'password',
+                'password' => 'ref-sitinurhaliza',
                 'full_name' => 'Siti Nurhaliza',
                 'birth_date' => '1992-11-22',
                 'email' => 'siti.nurhaliza@example.test',
@@ -220,7 +220,7 @@ class UserSeeder extends Seeder
             ],
             [
                 'username' => 'dedikurniawan',
-                'password' => 'password',
+                'password' => 'ref-dedikurniawan',
                 'full_name' => 'Dedi Kurniawan',
                 'birth_date' => '1987-06-29',
                 'email' => 'dedi.kurniawan@example.test',

@@ -7,6 +7,7 @@ use App\Models\FiduciaTier;
 use App\Models\SimulationSetting;
 use App\Models\SumInsuredSchedule;
 use App\Services\ConfigurationIntegrityValidator;
+use App\Support\RupiahInput;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -63,6 +64,12 @@ final class Fees extends AuditedAdminComponent
 
     public function save(ConfigurationIntegrityValidator $integrity): void
     {
+        $this->fiduciaTiers = RupiahInput::normalizeRows($this->fiduciaTiers, [
+            'min_amount',
+            'max_amount',
+            'fee',
+        ]);
+
         $validated = $this->validate($this->rules(), [], $this->validationAttributes());
 
         DB::transaction(function () use ($validated, $integrity): void {

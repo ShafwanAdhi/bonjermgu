@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Configuration;
 use App\Livewire\Admin\AuditedAdminComponent;
 use App\Models\Product;
 use App\Services\ConfigurationIntegrityValidator;
+use App\Support\RupiahInput;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -75,6 +76,8 @@ final class Products extends AuditedAdminComponent
 
     public function save(ConfigurationIntegrityValidator $integrity): void
     {
+        $this->normalizeMoneyInputs();
+
         $validated = $this->validate($this->rules(), [], $this->validationAttributes());
 
         if (collect($validated['form']['rates'])->every(fn ($rate) => $rate === null || $rate === '')) {
@@ -118,6 +121,13 @@ final class Products extends AuditedAdminComponent
         $this->edit($productId);
         $this->refreshAudit();
         session()->flash('admin_success', 'Product dan upping berhasil disimpan. Simulasi berikutnya memakai nilai baru.');
+    }
+
+    private function normalizeMoneyInputs(): void
+    {
+        foreach (['admin_min', 'admin_max', 'up_admin'] as $key) {
+            $this->form[$key] = RupiahInput::normalize($this->form[$key] ?? '');
+        }
     }
 
     public function deleteProduct(ConfigurationIntegrityValidator $integrity): void

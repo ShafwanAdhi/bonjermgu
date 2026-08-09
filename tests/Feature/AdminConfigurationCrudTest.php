@@ -25,8 +25,8 @@ use App\Models\VehicleModel;
 use App\Repositories\SimulationConfigurationRepository;
 use Database\Seeders\ReferralMasterSeeder;
 use Database\Seeders\SimulationConfigurationSeeder;
-use Database\Seeders\VehicleSeeder;
 use Livewire\Livewire;
+use Tests\Support\TestVehicleMaster;
 
 function seedConfigurationWithoutVehicles(): void
 {
@@ -43,7 +43,7 @@ test('Admin manages complete Products and every change records actor and time', 
     $component = Livewire::actingAs($admin)
         ->test(Products::class)
         ->call('edit', $product->id)
-        ->set('form.admin_max', (string) $newAdminMax)
+        ->set('form.admin_max', 'Rp '.number_format($newAdminMax, 0, ',', '.'))
         ->call('save')
         ->assertHasNoErrors();
 
@@ -69,8 +69,8 @@ test('Admin manages complete Products and every change records actor and time', 
         ->set('form.name', 'Product CRUD Pengujian')
         ->set('form.rates.12', '10')
         ->set('form.dp_rate', '5')
-        ->set('form.admin_min', '1000000')
-        ->set('form.admin_max', '2000000')
+        ->set('form.admin_min', 'Rp 1.000.000')
+        ->set('form.admin_max', 'Rp 2.000.000')
         ->call('save')
         ->assertHasNoErrors()
         ->set('form.is_active', false)
@@ -119,7 +119,7 @@ test('Insurance Fee and Defaults reject incomplete data and roll it back', funct
     $originalMinimum = $secondTier->min_amount;
     Livewire::actingAs($admin)
         ->test(Fees::class)
-        ->set('fiduciaTiers.1.min_amount', (string) ($originalMinimum + 1))
+        ->set('fiduciaTiers.1.min_amount', 'Rp '.number_format($originalMinimum + 1, 0, ',', '.'))
         ->call('save')
         ->assertHasErrors(['configuration']);
 
@@ -128,7 +128,7 @@ test('Insurance Fee and Defaults reject incomplete data and roll it back', funct
     $warranty = (int) SimulationSetting::query()->where('key', 'engine_warranty_fee')->value('value');
     $defaults = Livewire::actingAs($admin)
         ->test(Defaults::class)
-        ->set('settings.engine_warranty_fee', (string) ($warranty + 1_000))
+        ->set('settings.engine_warranty_fee', 'Rp '.number_format($warranty + 1_000, 0, ',', '.'))
         ->call('save')
         ->assertHasNoErrors();
 
@@ -165,7 +165,7 @@ test('Admin manages domicile and age group together with mandatory ACP upping', 
 });
 
 test('Vehicle master edits only the selected cascade and audits PHPM changes', function () {
-    $this->seed(VehicleSeeder::class);
+    TestVehicleMaster::seed();
     $admin = User::factory()->admin()->create();
     $model = VehicleModel::query()->whereHas('prices')->with(['type.brand.usage', 'prices'])->firstOrFail();
     $price = $model->prices->first();
@@ -179,7 +179,7 @@ test('Vehicle master edits only the selected cascade and audits PHPM changes', f
 
     $priceIndex = collect($component->get('prices'))->search(fn ($row) => $row['id'] === $price->id);
     $component
-        ->set("prices.{$priceIndex}.price", (string) $newPrice)
+        ->set("prices.{$priceIndex}.price", 'Rp '.number_format($newPrice, 0, ',', '.'))
         ->call('savePrices')
         ->assertHasNoErrors();
 
