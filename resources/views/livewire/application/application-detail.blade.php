@@ -46,16 +46,6 @@
                         <x-ui.input wire:model="debtor_name" :invalid="$errors->has('debtor_name')" />
                     </x-ui.field>
 
-                    <x-ui.field label="NIK Debitur" required :error="$errors->first('debtor_nik')">
-                        <x-ui.input wire:model="debtor_nik" inputmode="numeric" maxlength="16"
-                                    :invalid="$errors->has('debtor_nik')" />
-                    </x-ui.field>
-
-                    <x-ui.field label="Tanggal Lahir Debitur" required :error="$errors->first('debtor_birth_date')">
-                        <x-ui.input wire:model="debtor_birth_date" type="date"
-                                    :invalid="$errors->has('debtor_birth_date')" />
-                    </x-ui.field>
-
                     <x-ui.field label="Type Debitur" required :error="$errors->first('debtor_type')">
                         <x-ui.select wire:model.live="debtor_type" :invalid="$errors->has('debtor_type')">
                             @foreach (DebtorType::cases() as $type)
@@ -63,6 +53,18 @@
                             @endforeach
                         </x-ui.select>
                     </x-ui.field>
+
+                    @if ($this->isIndividual)
+                        <x-ui.field label="NIK Debitur" required :error="$errors->first('debtor_nik')">
+                            <x-ui.input wire:model="debtor_nik" inputmode="numeric" maxlength="16"
+                                        :invalid="$errors->has('debtor_nik')" />
+                        </x-ui.field>
+
+                        <x-ui.field label="Tanggal Lahir Debitur" required :error="$errors->first('debtor_birth_date')">
+                            <x-ui.input wire:model="debtor_birth_date" type="date"
+                                        :invalid="$errors->has('debtor_birth_date')" />
+                        </x-ui.field>
+                    @endif
 
                     @if ($this->isIndividual)
                         <x-ui.field label="Konfirmasi Sumber Penghasilan Lainnya" required
@@ -114,10 +116,12 @@
                     {{ $application->financing_product->label() }}
                 </x-ui.key-value>
                 <x-ui.key-value label="Nama Debitur">{{ $application->debtor_name }}</x-ui.key-value>
-                <x-ui.key-value label="NIK">{{ $application->debtor_nik }}</x-ui.key-value>
-                <x-ui.key-value label="Tanggal Lahir">
-                    {{ Format::date($application->debtor_birth_date) }}
-                </x-ui.key-value>
+                @if ($application->debtor_type->isIndividual())
+                    <x-ui.key-value label="NIK">{{ $application->debtor_nik }}</x-ui.key-value>
+                    <x-ui.key-value label="Tanggal Lahir">
+                        {{ Format::date($application->debtor_birth_date) }}
+                    </x-ui.key-value>
+                @endif
                 <x-ui.key-value label="Referral">
                     {{ $application->referral?->full_name ?? '—' }}
                     <span class="block text-helper text-muted">

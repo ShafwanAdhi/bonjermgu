@@ -1,6 +1,15 @@
 @php
     $user = auth()->user();
     $navigation = $user->role->navigation();
+    $primaryNavigation = $navigation;
+    $moreNavigation = [];
+
+    if ($user->role->value === 'admin') {
+        $primaryNavigation = array_slice($navigation, 0, 3);
+        $moreNavigation = array_slice($navigation, 3);
+    }
+
+    $moreActive = collect($moreNavigation)->contains(fn ($item) => request()->routeIs($item['match']));
     $initials = collect(explode(' ', $user->displayName()))
         ->take(2)->map(fn ($w) => mb_substr($w, 0, 1))->implode('');
 @endphp
@@ -27,18 +36,18 @@
     @endif
 
     <header class="border-b border-hairline bg-canvas">
-        <div class="band flex h-16 items-center gap-xl">
+        <div class="band flex h-16 items-center gap-md xl:gap-xl">
             <a href="{{ route('dashboard') }}" class="flex min-h-11 shrink-0 items-center">
                 <x-ui.wordmark />
             </a>
 
             {{-- Desktop menu. On small screens this moves to the bottom bar. --}}
-            <nav class="hidden self-stretch lg:flex lg:gap-7">
-                @foreach ($navigation as $item)
+            <nav class="hidden min-w-0 flex-1 self-stretch lg:flex lg:justify-center lg:gap-4 xl:gap-7">
+                @foreach ($primaryNavigation as $item)
                     <a href="{{ route($item['route']) }}"
                        data-motion-action
                        @class([
-                           '-mb-px flex items-center gap-1.5 border-b-2 px-2 lg:px-2.5 text-body-md',
+                           '-mb-px flex shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-2 text-body-md xl:px-2.5',
                            'border-primary text-ink' => request()->routeIs($item['match']),
                            'border-transparent text-muted' => ! request()->routeIs($item['match']),
                        ])>
@@ -46,17 +55,69 @@
                         <span>{{ $item['label'] }}</span>
                     </a>
                 @endforeach
+
+                @if ($moreNavigation !== [])
+                    <div class="relative -mb-px flex shrink-0 items-center"
+                         x-data="{ open: false }"
+                         x-on:keydown.escape.window="open = false"
+                         x-on:click.outside="open = false">
+                        <button type="button"
+                                data-motion-action
+                                x-on:click="open = ! open"
+                                x-bind:aria-expanded="open.toString()"
+                                aria-haspopup="menu"
+                                @class([
+                                    'flex h-full items-center gap-1.5 whitespace-nowrap border-b-2 px-2 text-body-md transition-colors xl:px-2.5',
+                                    'border-primary text-ink' => $moreActive,
+                                    'border-transparent text-muted hover:text-ink' => ! $moreActive,
+                                ])>
+                            <span>Lainnya</span>
+                            <svg class="h-4 w-4 shrink-0 transition-transform"
+                                 x-bind:class="{ 'rotate-180': open }"
+                                 xmlns="http://www.w3.org/2000/svg"
+                                 viewBox="0 0 24 24"
+                                 fill="none"
+                                 stroke="currentColor"
+                                 stroke-width="2.25"
+                                 stroke-linecap="round"
+                                 stroke-linejoin="round"
+                                 aria-hidden="true">
+                                <path d="m6 9 6 6 6-6" />
+                            </svg>
+                        </button>
+
+                        <div x-cloak
+                             x-show="open"
+                             x-transition.origin.top
+                             class="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-md border border-hairline bg-canvas py-1 shadow-[0_18px_40px_rgba(24,29,38,0.12)]"
+                             role="menu">
+                            @foreach ($moreNavigation as $item)
+                                <a href="{{ route($item['route']) }}"
+                                   data-motion-action
+                                   role="menuitem"
+                                   @class([
+                                       'flex min-h-11 items-center gap-2 px-3 text-[13px] transition-colors',
+                                       'bg-surface-soft font-medium text-ink' => request()->routeIs($item['match']),
+                                       'text-muted hover:bg-surface-soft hover:text-ink' => ! request()->routeIs($item['match']),
+                                   ])>
+                                    <x-ui.nav-icon :route="$item['route']" class="h-3.5 w-3.5 opacity-70" />
+                                    <span>{{ $item['label'] }}</span>
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
             </nav>
 
-            <div class="ml-auto flex items-center gap-sm">
-                <span class="flex h-8 w-8 items-center justify-center rounded-pill text-[12px] font-medium {{ $user->role->avatarClasses() }}">
+            <div class="ml-auto flex shrink-0 items-center gap-sm">
+                <span class="flex aspect-square h-8 w-8 shrink-0 items-center justify-center rounded-full text-[12px] font-medium leading-none {{ $user->role->avatarClasses() }}">
                     {{ $initials }}
                 </span>
                 <span class="hidden flex-col gap-0.5 xl:flex">
                     <span class="text-[13px] font-medium leading-none text-ink">{{ $user->displayName() }}</span>
                     <span class="text-[11px] leading-none text-muted">{{ $user->role->label() }}</span>
                 </span>
-                <form method="POST" action="{{ route('logout') }}" class="ml-sm border-l border-hairline pl-sm md:pl-md">
+                <form method="POST" action="{{ route('logout') }}" class="ml-sm shrink-0 border-l border-hairline pl-sm md:pl-md">
                     @csrf
                     <button type="submit" class="inline-flex min-h-11 items-center rounded-sm px-3 text-[13px] leading-none text-muted transition-colors hover:text-ink">
                         Keluar

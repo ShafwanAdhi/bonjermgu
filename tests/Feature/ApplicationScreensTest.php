@@ -89,7 +89,33 @@ it('clears the spouse income type when the debtor becomes a legal entity', funct
     Livewire::actingAs($this->officer->user)
         ->test(CreateApplication::class)
         ->set('debtor_type', DebtorType::BadanHukumUsaha->value)
-        ->assertSet('spouse_income_type', null);
+        ->assertSet('spouse_income_type', null)
+        ->assertSet('debtor_nik', '')
+        ->assertSet('debtor_birth_date', '')
+        ->assertDontSee('NIK Debitur')
+        ->assertDontSee('Tanggal Lahir Debitur');
+});
+
+it('creates a legal entity application without debtor nik and birth date', function () {
+    Livewire::actingAs($this->officer->user)
+        ->test(CreateApplication::class)
+        ->set('financing_product', FinancingProduct::DanaTunai->value)
+        ->set('debtor_name', 'PT Maju Bersama')
+        ->set('debtor_type', DebtorType::BadanHukumUsaha->value)
+        ->set('referral_id', $this->referral->id)
+        ->set('amount_finance', 'Rp 250.000.000')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $this->actingAs($this->officer->user);
+
+    $application = Application::where('debtor_name', 'PT Maju Bersama')->first();
+
+    expect($application)->not->toBeNull()
+        ->and($application->debtor_type)->toBe(DebtorType::BadanHukumUsaha)
+        ->and($application->debtor_nik)->toBeNull()
+        ->and($application->debtor_birth_date)->toBeNull()
+        ->and($application->spouse_income_type)->toBeNull();
 });
 
 it('finds a referral by search without shipping the full list', function () {
@@ -217,6 +243,26 @@ it('rebuilds the document list when the debtor type changes and keeps what still
     expect($documents['PMH-KTP'])->toBe(DocumentStatus::Lengkap)
         ->and($documents->has('PMH-SLIP'))->toBeFalse()
         ->and($documents['PMH-USAHA'])->toBe(DocumentStatus::Belum);
+});
+
+it('hides personal identity fields when editing an application into a legal entity', function () {
+    $application = makeApplication();
+
+    Livewire::actingAs($this->officer->user)
+        ->test(ApplicationDetail::class, ['application' => $application])
+        ->call('edit')
+        ->set('debtor_type', DebtorType::BadanHukumUsaha->value)
+        ->assertSet('debtor_nik', '')
+        ->assertSet('debtor_birth_date', '')
+        ->assertDontSee('NIK Debitur')
+        ->assertDontSee('Tanggal Lahir Debitur')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    expect($application->fresh())
+        ->debtor_type->toBe(DebtorType::BadanHukumUsaha)
+        ->debtor_nik->toBeNull()
+        ->debtor_birth_date->toBeNull();
 });
 
 it('keeps the product locked once the application is go live', function () {

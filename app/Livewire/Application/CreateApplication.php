@@ -97,8 +97,8 @@ class CreateApplication extends Component
         return [
             'financing_product' => ['required', Rule::enum(FinancingProduct::class)],
             'debtor_name' => ['required', 'string', 'max:150'],
-            'debtor_nik' => ['required', 'digits:16'],
-            'debtor_birth_date' => ['required', 'date', 'before:today'],
+            'debtor_nik' => [$this->isIndividual ? 'required' : 'nullable', 'digits:16'],
+            'debtor_birth_date' => [$this->isIndividual ? 'required' : 'nullable', 'date', 'before:today'],
             'debtor_type' => ['required', Rule::enum(DebtorType::class)],
             'spouse_income_type' => [
                 $this->isIndividual ? 'required' : 'nullable',
@@ -140,6 +140,11 @@ class CreateApplication extends Component
             ? SpouseIncomeType::TidakAda->value
             : null;
 
+        if (! $this->isIndividual) {
+            $this->reset('debtor_nik', 'debtor_birth_date');
+            $this->resetValidation(['debtor_nik', 'debtor_birth_date', 'spouse_income_type']);
+        }
+
         unset($this->isIndividual);
     }
 
@@ -169,10 +174,10 @@ class CreateApplication extends Component
             'referral_id' => $validated['referral_id'],
             'financing_product' => $validated['financing_product'],
             'debtor_name' => $validated['debtor_name'],
-            'debtor_nik' => $validated['debtor_nik'],
-            'debtor_birth_date' => $validated['debtor_birth_date'],
+            'debtor_nik' => $this->isIndividual ? $validated['debtor_nik'] : null,
+            'debtor_birth_date' => $this->isIndividual ? $validated['debtor_birth_date'] : null,
             'debtor_type' => $validated['debtor_type'],
-            'spouse_income_type' => $validated['spouse_income_type'],
+            'spouse_income_type' => $this->isIndividual ? $validated['spouse_income_type'] : null,
             'amount_finance' => $validated['amount_finance'] !== null && $validated['amount_finance'] !== ''
                 ? (int) $validated['amount_finance']
                 : null,

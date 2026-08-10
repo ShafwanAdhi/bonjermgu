@@ -135,7 +135,32 @@ it('renders the admin dashboard variant', function () {
     $this->get('/dashboard')
         ->assertOk()
         ->assertSee('Actual Lending')
-        ->assertSee('Pipe Line');
+        ->assertSee('Pipe Line')
+        ->assertSee('1 bulan')
+        ->assertSee('3 bulan')
+        ->assertSee('12 bulan')
+        ->assertSee('Semua')
+        ->assertSee('Komposisi Lending')
+        ->assertSee('Performa Produk')
+        ->assertDontSee('6 bulan')
+        ->assertDontSee('Visualisasi Data')
+        ->assertDontSee('Insight Lending')
+        ->assertDontSee('Ringkasan visual untuk membaca proporsi portofolio')
+        ->assertDontSee('Buka Konfigurasi')
+        ->assertDontSee('Buka Lending')
+        ->assertDontSee('satu-satunya pengecualian akses Admin terhadap data application');
+});
+
+it('renders testimonial content on the landing page', function () {
+    $this->get('/')
+        ->assertOk()
+        ->assertSee('Testimoni')
+        ->assertSee('Tri')
+        ->assertSee('SM-Honda Jakarta Center')
+        ->assertSee('Simulasinya sangat mudah digunakan')
+        ->assertSee('Gito Purnomo')
+        ->assertSee('BM DSO BSD')
+        ->assertSee('Website sangat membantu, top &amp; keren', escape: false);
 });
 
 it('renders a birthday greeting on the referral dashboard', function () {

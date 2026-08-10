@@ -10,6 +10,6 @@
 @endphp
 
 <span {{ $attributes->class('flex min-w-0 items-center gap-2 sm:gap-2.5') }}>
-    <span class="{{ $box }} flex shrink-0 items-center justify-center bg-primary font-semibold text-on-primary">M</span>
-    <span class="{{ $label }}">{{ $slot->isEmpty() ? 'Kebon Jeruk Multiguna' : $slot }}</span>
+    <span class="{{ $box }} flex aspect-square shrink-0 items-center justify-center bg-primary font-semibold leading-none text-on-primary">M</span>
+    <span class="{{ $label }} min-w-0 truncate">{{ $slot->isEmpty() ? 'Kebon Jeruk Multiguna' : $slot }}</span>
 </span>

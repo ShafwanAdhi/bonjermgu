@@ -100,6 +100,54 @@
         </div>
     </section>
 
+    {{-- Testimonials. --}}
+    <section class="band pb-xl md:pb-xxl">
+        <div class="grid gap-xl lg:grid-cols-[0.72fr_1.28fr] lg:items-start">
+            <div data-reveal>
+                <p class="mb-2 text-eyebrow uppercase text-muted">Testimoni</p>
+                <h2 class="max-w-[420px] font-display text-display-md text-ink">
+                    Cerita singkat dari mitra yang mencoba simulasi.
+                </h2>
+            </div>
+
+            <div class="grid gap-lg md:grid-cols-2">
+                @foreach ([
+                    [
+                        'name' => 'Tri',
+                        'role' => 'SM-Honda Jakarta Center',
+                        'quote' => 'Simulasinya sangat mudah digunakan, semoga prosesnya semudah simulasinya.',
+                        'image' => asset('images/testimonials/tri.jpeg'),
+                    ],
+                    [
+                        'name' => 'Gito Purnomo',
+                        'role' => 'BM DSO BSD',
+                        'quote' => 'Website sangat membantu, top & keren...',
+                        'image' => asset('images/testimonials/gito-purnomo.jpeg'),
+                    ],
+                ] as $index => $testimonial)
+                    <figure class="flex h-full flex-col rounded-md border border-hairline bg-canvas p-lg" data-reveal="card" style="--reveal-delay: {{ 100 + ($index * 90) }}ms">
+                        <div class="mb-lg flex items-center gap-md">
+                            <img src="{{ $testimonial['image'] }}"
+                                 alt="Foto sementara {{ $testimonial['name'] }}"
+                                 class="h-14 w-14 shrink-0 rounded-full object-cover"
+                                 width="56"
+                                 height="56"
+                                 loading="lazy">
+                            <figcaption>
+                                <p class="text-label-md text-ink">{{ $testimonial['name'] }}</p>
+                                <p class="mt-1 text-helper text-muted">{{ $testimonial['role'] }}</p>
+                            </figcaption>
+                        </div>
+
+                        <blockquote class="mt-auto text-[14px] leading-[1.6] text-body">
+                            "{{ $testimonial['quote'] }}"
+                        </blockquote>
+                    </figure>
+                @endforeach
+            </div>
+        </div>
+    </section>
+
     {{-- Light gray CTA band before the footer. --}}
     <section class="band pb-xl md:pb-xxl">
         <div class="flex flex-wrap items-center gap-lg rounded-lg bg-surface-strong p-xxl" data-reveal>

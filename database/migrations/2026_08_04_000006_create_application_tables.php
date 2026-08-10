@@ -56,8 +56,8 @@ return new class extends Migration
             $table->foreignId('referral_id')->constrained('referrals');
             $table->string('financing_product', 3);
             $table->string('debtor_name', 150);
-            $table->string('debtor_nik', 20);
-            $table->date('debtor_birth_date');
+            $table->string('debtor_nik', 20)->nullable();
+            $table->date('debtor_birth_date')->nullable();
             $table->string('debtor_type', 40);
             $table->string('spouse_income_type', 80)->nullable();
             $table->bigInteger('amount_finance')->nullable();

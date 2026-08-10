@@ -48,7 +48,7 @@
                     </x-ui.field>
                 </section>
 
-                {{-- Name, NIK, birth date. No other debtor field belongs here. --}}
+                {{-- Name plus identity fields that depend on debtor type. --}}
                 <section class="flex flex-col gap-md border-t border-hairline pt-lg">
                     <p class="text-eyebrow uppercase text-muted">Data Debitur</p>
 
@@ -58,16 +58,6 @@
                             <x-ui.input wire:model="debtor_name" :invalid="$errors->has('debtor_name')" />
                         </x-ui.field>
 
-                        <x-ui.field label="NIK Debitur" required :error="$errors->first('debtor_nik')">
-                            <x-ui.input wire:model="debtor_nik" inputmode="numeric" maxlength="16"
-                                        :invalid="$errors->has('debtor_nik')" />
-                        </x-ui.field>
-
-                        <x-ui.field label="Tanggal Lahir Debitur" required :error="$errors->first('debtor_birth_date')">
-                            <x-ui.input wire:model="debtor_birth_date" type="date"
-                                        :invalid="$errors->has('debtor_birth_date')" />
-                        </x-ui.field>
-
                         <x-ui.field label="Type Debitur" required :error="$errors->first('debtor_type')">
                             <x-ui.select wire:model.live="debtor_type" :invalid="$errors->has('debtor_type')">
                                 @foreach (DebtorType::cases() as $type)
@@ -75,6 +65,18 @@
                                 @endforeach
                             </x-ui.select>
                         </x-ui.field>
+
+                        @if ($this->isIndividual)
+                            <x-ui.field label="NIK Debitur" required :error="$errors->first('debtor_nik')">
+                                <x-ui.input wire:model="debtor_nik" inputmode="numeric" maxlength="16"
+                                            :invalid="$errors->has('debtor_nik')" />
+                            </x-ui.field>
+
+                            <x-ui.field label="Tanggal Lahir Debitur" required :error="$errors->first('debtor_birth_date')">
+                                <x-ui.input wire:model="debtor_birth_date" type="date"
+                                            :invalid="$errors->has('debtor_birth_date')" />
+                            </x-ui.field>
+                        @endif
                     </div>
                 </section>
 
