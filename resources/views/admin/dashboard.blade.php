@@ -3,6 +3,7 @@
 @php
     $actualPercent = $charts['composition']['actualPercent'];
     $pipelinePercent = $charts['composition']['pipelinePercent'];
+    $singleMonthTrend = count($charts['monthlyTrend']) === 1;
 @endphp
 
 <x-layouts.app title="Ringkasan - Kebon Jeruk Multiguna">
@@ -166,9 +167,16 @@
                                         aria-hidden="true"
                                     ></span>
                                 @endforeach
-                                <div class="absolute inset-x-0 bottom-0 flex h-full items-end gap-2 px-1">
+                                <div @class([
+                                    'absolute inset-x-0 bottom-0 flex h-full items-end gap-2 px-1',
+                                    'justify-start' => $singleMonthTrend,
+                                ])>
                                     @foreach ($charts['monthlyTrend'] as $month)
-                                        <div class="flex h-full flex-1 items-end">
+                                        <div @class([
+                                            'flex h-full items-end',
+                                            'w-[31%] max-w-[120px]' => $singleMonthTrend,
+                                            'flex-1' => ! $singleMonthTrend,
+                                        ])>
                                             <div
                                                 class="w-full rounded-t-sm bg-primary/85 transition-all hover:bg-primary"
                                                 style="height: {{ max(4, $month['percent']) }}%"
@@ -180,9 +188,16 @@
                                 </div>
                             </div>
                             <div aria-hidden="true"></div>
-                            <div class="mt-2 flex gap-2 px-1">
+                            <div @class([
+                                'mt-2 flex gap-2 px-1',
+                                'justify-start' => $singleMonthTrend,
+                            ])>
                                 @foreach ($charts['monthlyTrend'] as $month)
-                                    <span class="flex-1 text-center text-[11px] font-medium text-muted">{{ $month['label'] }}</span>
+                                    <span @class([
+                                        'text-center text-[11px] font-medium text-muted',
+                                        'w-[31%] max-w-[120px]' => $singleMonthTrend,
+                                        'flex-1' => ! $singleMonthTrend,
+                                    ])>{{ $month['label'] }}</span>
                                 @endforeach
                             </div>
                         </div>
