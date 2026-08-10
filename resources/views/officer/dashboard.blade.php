@@ -1,12 +1,12 @@
 @use('App\Support\Format')
 
 <x-layouts.app title="Dashboard — Kebon Jeruk Multiguna">
-    <div class="band py-xl md:py-xxl">
+    <div class="band py-xl md:py-xxl" data-motion-page>
         @if ($isBirthday)
             <x-ui.birthday-fireworks />
         @endif
 
-        <div class="mb-9 flex flex-wrap items-baseline gap-md py-1">
+        <div class="mb-9 flex flex-wrap items-baseline gap-md py-1" data-reveal="hero">
             <h1 class="font-display text-display-md text-ink">
                 <span class="block">Selamat datang, {{ Str::before(auth()->user()->displayName(), ' ') }}.</span>
                 @if ($isBirthday)
@@ -16,12 +16,14 @@
             <span class="text-body-md text-muted">{{ Format::date(now()) }}</span>
         </div>
 
-        <div class="mb-xxl grid grid-cols-1 gap-lg sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1.4fr]">
+        <div class="mb-xxl grid grid-cols-1 gap-lg sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1.4fr]"
+             data-motion-stagger>
             <x-ui.stat tone="cream" label="Aplikasi ditangani" :value="$handled"
-                       :note="'Dari '.$referralCount.' mitra Referral'" />
-            <x-ui.stat tone="peach" label="Belum Go Live" :value="$pipeline" note="Pipe Line berjalan" />
+                       :note="'Dari '.$referralCount.' mitra Referral'" data-motion-card />
+            <x-ui.stat tone="peach" label="Belum Go Live" :value="$pipeline" note="Pipe Line berjalan" data-motion-card />
 
-            <div class="flex flex-col items-start gap-2.5 rounded-lg bg-surface-dark p-xl text-on-dark">
+            <div class="flex flex-col items-start gap-2.5 rounded-lg bg-surface-dark p-xl text-on-dark"
+                 data-motion-card>
                 <p class="text-title-md">Buat Credit Application</p>
                 <p class="text-[14px] leading-[1.6] text-white/80">
                     Input manual dari hasil simulasi yang diserahkan Referral.
@@ -32,9 +34,9 @@
             </div>
         </div>
 
-        <h2 class="mb-md text-title-lg text-ink">Tahapan tertunda</h2>
+        <h2 class="mb-md text-title-lg text-ink" data-reveal>Tahapan tertunda</h2>
 
-        <x-ui.table min-width="760px">
+        <x-ui.table min-width="760px" data-reveal="table">
             <x-slot:head>
                 <x-ui.th>Kode Aplikasi</x-ui.th>
                 <x-ui.th>Nama Debitur</x-ui.th>
@@ -44,7 +46,7 @@
             </x-slot:head>
 
             @forelse ($pending as $application)
-                <tr>
+                <tr data-motion-row>
                     <x-ui.td mono>
                         <a href="{{ route('applications.show', $application) }}" class="text-ink">
                             {{ $application->code }}

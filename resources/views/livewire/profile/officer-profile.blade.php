@@ -12,6 +12,10 @@
         <x-ui.callout class="mb-md">{{ session('profile_success') }}</x-ui.callout>
     @endif
 
+    @if (session('password_success'))
+        <x-ui.callout class="mb-md">{{ session('password_success') }}</x-ui.callout>
+    @endif
+
     <x-ui.card>
         <div class="mb-7 flex items-center gap-md">
             <span class="flex h-14 w-14 items-center justify-center rounded-pill bg-signature-peach text-[20px] font-medium text-ink">
@@ -70,5 +74,41 @@
                 </x-ui.key-value>
             </div>
         @endif
+    </x-ui.card>
+
+    <x-ui.card title="Keamanan Akun" class="mt-lg">
+        <form wire:submit="changePassword" class="flex flex-col gap-md">
+            <div class="grid grid-cols-1 gap-md sm:grid-cols-2">
+                <x-ui.field label="Kata Sandi Saat Ini" required class="sm:col-span-2"
+                            :error="$errors->first('current_password')">
+                    <x-ui.input wire:model="current_password" type="password"
+                                autocomplete="current-password"
+                                placeholder="Masukkan kata sandi saat ini"
+                                :invalid="$errors->has('current_password')" />
+                </x-ui.field>
+
+                <x-ui.field label="Kata Sandi Baru" required :error="$errors->first('password')">
+                    <x-ui.input wire:model="password" type="password"
+                                autocomplete="new-password"
+                                placeholder="Minimal 8 karakter"
+                                :invalid="$errors->has('password')" />
+                </x-ui.field>
+
+                <x-ui.field label="Konfirmasi Kata Sandi Baru" required
+                            :error="$errors->first('password_confirmation')">
+                    <x-ui.input wire:model="password_confirmation" type="password"
+                                autocomplete="new-password"
+                                placeholder="Ulangi kata sandi baru"
+                                :invalid="$errors->has('password_confirmation')" />
+                </x-ui.field>
+            </div>
+
+            <div class="flex flex-wrap gap-sm border-t border-hairline pt-lg">
+                <x-ui.button type="submit" size="md" wire:loading.attr="disabled" wire:target="changePassword">
+                    Simpan Kata Sandi
+                </x-ui.button>
+                <span wire:loading wire:target="changePassword" class="self-center text-helper text-muted">Menyimpan...</span>
+            </div>
+        </form>
     </x-ui.card>
 </div>

@@ -281,6 +281,23 @@ it('saves a tracking status change', function () {
 });
 
 /* Stages are markable out of order — application-tracking.md §6. */
+it('shows officer document and tracking updates on the referral application detail', function () {
+    $application = makeApplication();
+    $document = ApplicationDocument::where('application_id', $application->id)->first();
+    $documentCount = ApplicationDocument::where('application_id', $application->id)->count();
+
+    Livewire::actingAs($this->officer->user)
+        ->test(ApplicationDetail::class, ['application' => $application])
+        ->call('setDocumentStatus', $document->id, DocumentStatus::Lengkap->value)
+        ->call('toggleStage', 3);
+
+    Livewire::actingAs($this->referral->user)
+        ->test(ApplicationDetail::class, ['application' => $application->fresh()])
+        ->assertSet('canEdit', false)
+        ->assertSee("1 / {$documentCount} lengkap")
+        ->assertSee('1 / 11 selesai');
+});
+
 it('accepts a later stage while earlier ones are still Belum', function () {
     $application = makeApplication();
 

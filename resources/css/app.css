@@ -218,6 +218,12 @@
     animation: birthday-rainbow-text 7000ms linear both;
 }
 
+@media (min-width: 1024px) {
+    .application-finance-field > span:first-child {
+        min-height: 38px;
+    }
+}
+
 .motion-focus-ring:focus-within {
     border-color: theme('colors.info.border');
     box-shadow: 0 0 0 1px theme('colors.info.border');

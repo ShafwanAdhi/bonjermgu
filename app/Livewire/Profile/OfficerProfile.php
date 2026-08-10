@@ -4,6 +4,7 @@ namespace App\Livewire\Profile;
 
 use App\Models\AccountOfficer;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
@@ -25,6 +26,12 @@ class OfficerProfile extends Component
     public string $email = '';
 
     public string $phone = '';
+
+    public string $current_password = '';
+
+    public string $password = '';
+
+    public string $password_confirmation = '';
 
     public function mount(): void
     {
@@ -86,6 +93,32 @@ class OfficerProfile extends Component
         $this->editing = false;
 
         session()->flash('profile_success', 'Profil berhasil diperbarui.');
+    }
+
+    public function changePassword(): void
+    {
+        $validated = $this->validate([
+            'current_password' => ['required', 'string'],
+            'password' => ['required', 'string', 'min:8', 'max:72', 'confirmed'],
+        ], [
+            'password.confirmed' => 'Konfirmasi Kata Sandi tidak sama.',
+        ], [
+            'current_password' => 'Kata Sandi Saat Ini',
+            'password' => 'Kata Sandi Baru',
+            'password_confirmation' => 'Konfirmasi Kata Sandi Baru',
+        ]);
+
+        if (! Hash::check($validated['current_password'], Auth::user()->password)) {
+            $this->addError('current_password', 'Kata Sandi Saat Ini tidak cocok.');
+
+            return;
+        }
+
+        Auth::user()->update(['password' => $validated['password']]);
+
+        $this->reset('current_password', 'password', 'password_confirmation');
+
+        session()->flash('password_success', 'Kata sandi berhasil diperbarui.');
     }
 
     private function fillFromProfile(): void

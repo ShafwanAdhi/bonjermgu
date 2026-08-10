@@ -8,6 +8,7 @@ use App\Models\Referral;
 use App\Models\ReferralCategory;
 use App\Models\ReferralSubCategory;
 use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 use Livewire\Livewire;
 
 it('shows the referral profile from the database, not placeholder data', function () {
@@ -118,6 +119,38 @@ it('shows and saves the officer profile', function () {
         ->full_name->toBe('Andi Prasetyo Baru')
         ->email->toBe('andi.baru@mtf.co.id');
     expect($updatedOfficer->birth_date?->format('Y-m-d'))->toBe('1992-04-05');
+});
+
+it('lets an officer change their own password from profile', function () {
+    $officer = AccountOfficer::factory()->create();
+
+    Livewire::actingAs($officer->user)
+        ->test(OfficerProfile::class)
+        ->set('current_password', 'password')
+        ->set('password', 'password-baru-aman')
+        ->set('password_confirmation', 'password-baru-aman')
+        ->call('changePassword')
+        ->assertHasNoErrors()
+        ->assertSet('current_password', '')
+        ->assertSet('password', '')
+        ->assertSet('password_confirmation', '');
+
+    expect(Hash::check('password-baru-aman', $officer->user->fresh()->password))->toBeTrue();
+});
+
+it('rejects an officer password change when the current password is wrong', function () {
+    $officer = AccountOfficer::factory()->create();
+    $hashBefore = $officer->user->password;
+
+    Livewire::actingAs($officer->user)
+        ->test(OfficerProfile::class)
+        ->set('current_password', 'salah')
+        ->set('password', 'password-baru-aman')
+        ->set('password_confirmation', 'password-baru-aman')
+        ->call('changePassword')
+        ->assertHasErrors('current_password');
+
+    expect($officer->user->fresh()->password)->toBe($hashBefore);
 });
 
 it('refuses the profile page to admin', function () {

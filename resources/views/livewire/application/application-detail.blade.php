@@ -148,11 +148,6 @@
 
     {{-- ------------------------------------------------------------- Dokumen --}}
     <x-ui.card title="Dokumen" :meta="$this->documentSummary.' lengkap'" class="mb-lg">
-        @if ($this->canEdit)
-            <x-slot:actions>
-                <span class="text-helper text-muted">Klik untuk menandai status</span>
-            </x-slot:actions>
-        @endif
 
         <div class="flex flex-col gap-sm md:hidden">
             @foreach ($this->documents as $document)
@@ -165,22 +160,10 @@
                         </div>
 
                         @if ($this->canEdit)
-                            <span class="inline-flex shrink-0 overflow-hidden rounded-sm border border-hairline">
-                                <button type="button"
-                                        wire:click="setDocumentStatus({{ $document->id }}, '{{ DocumentStatus::Belum->value }}')"
-                                        @class([
-                                            'px-3.5 py-1.5 text-[12px] font-medium leading-[1.2]',
-                                            'bg-muted text-canvas' => ! $document->status->isComplete(),
-                                            'bg-canvas text-muted' => $document->status->isComplete(),
-                                        ])>&#10007; Belum</button>
-                                <button type="button"
-                                        wire:click="setDocumentStatus({{ $document->id }}, '{{ DocumentStatus::Lengkap->value }}')"
-                                        @class([
-                                            'border-l border-hairline px-3.5 py-1.5 text-[12px] font-medium leading-[1.2]',
-                                            'bg-primary text-on-primary' => $document->status->isComplete(),
-                                            'bg-canvas text-muted' => ! $document->status->isComplete(),
-                                        ])>&#10003; Lengkap</button>
-                            </span>
+                            <x-ui.status-toggle :is-active="$document->status->isComplete()" active-label="Lengkap">
+                                <x-slot:inactive wire:click="setDocumentStatus({{ $document->id }}, '{{ DocumentStatus::Belum->value }}')"></x-slot:inactive>
+                                <x-slot:active wire:click="setDocumentStatus({{ $document->id }}, '{{ DocumentStatus::Lengkap->value }}')"></x-slot:active>
+                            </x-ui.status-toggle>
                         @else
                             <x-ui.chip :tone="$document->status->isComplete() ? 'success' : 'neutral'" class="shrink-0">
                                 {{ $document->status->isComplete() ? '✓ Lengkap' : '✕ Belum' }}
@@ -206,22 +189,10 @@
                     <x-ui.td class="text-[13px] text-muted">{{ $document->requirement->subject }}</x-ui.td>
                     <x-ui.td align="right">
                         @if ($this->canEdit)
-                            <span class="inline-flex overflow-hidden rounded-sm border border-hairline">
-                                <button type="button"
-                                        wire:click="setDocumentStatus({{ $document->id }}, '{{ DocumentStatus::Belum->value }}')"
-                                        @class([
-                                            'px-3.5 py-1.5 text-[12px] font-medium leading-[1.2]',
-                                            'bg-muted text-canvas' => ! $document->status->isComplete(),
-                                            'bg-canvas text-muted' => $document->status->isComplete(),
-                                        ])>&#10007; Belum</button>
-                                <button type="button"
-                                        wire:click="setDocumentStatus({{ $document->id }}, '{{ DocumentStatus::Lengkap->value }}')"
-                                        @class([
-                                            'border-l border-hairline px-3.5 py-1.5 text-[12px] font-medium leading-[1.2]',
-                                            'bg-primary text-on-primary' => $document->status->isComplete(),
-                                            'bg-canvas text-muted' => ! $document->status->isComplete(),
-                                        ])>&#10003; Lengkap</button>
-                            </span>
+                            <x-ui.status-toggle :is-active="$document->status->isComplete()" active-label="Lengkap">
+                                <x-slot:inactive wire:click="setDocumentStatus({{ $document->id }}, '{{ DocumentStatus::Belum->value }}')"></x-slot:inactive>
+                                <x-slot:active wire:click="setDocumentStatus({{ $document->id }}, '{{ DocumentStatus::Lengkap->value }}')"></x-slot:active>
+                            </x-ui.status-toggle>
                         @else
                             <x-ui.chip :tone="$document->status->isComplete() ? 'success' : 'neutral'">
                                 {{ $document->status->isComplete() ? '✓ Lengkap' : '✕ Belum' }}
@@ -235,12 +206,6 @@
 
     {{-- ------------------------------------------------------------ Tracking --}}
     <x-ui.card title="Tracking" :meta="$this->trackingSummary.' selesai'">
-        @if ($this->canEdit)
-            <x-slot:actions>
-                <span class="text-helper text-muted">Dapat ditandai tanpa urutan</span>
-            </x-slot:actions>
-        @endif
-
         <div class="flex flex-col">
             @foreach ($this->trackings as $tracking)
                 <div class="flex items-center gap-md border-b border-divider px-2 py-3"
@@ -252,11 +217,11 @@
 
                     @if ($this->canEdit)
                         {{-- Never disabled because an earlier stage is unfinished. --}}
-                        <button type="button" wire:click="toggleStage({{ $tracking->stage_no }})">
-                            <x-ui.chip :tone="$tracking->status->isDone() ? 'success' : 'neutral'">
+                        <x-ui.status-toggle :is-active="$tracking->status->isDone()" active-label="Selesai">
+                            <x-slot:inactive wire:click="toggleStage({{ $tracking->stage_no }})"></x-slot:inactive>
                                 {{ $tracking->status->isDone() ? '✓ Selesai' : '✕ Belum' }}
-                            </x-ui.chip>
-                        </button>
+                            <x-slot:active wire:click="toggleStage({{ $tracking->stage_no }})"></x-slot:active>
+                        </x-ui.status-toggle>
                     @else
                         <x-ui.chip :tone="$tracking->status->isDone() ? 'success' : 'neutral'">
                             {{ $tracking->status->isDone() ? '✓ Selesai' : '✕ Belum' }}
