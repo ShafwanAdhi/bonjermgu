@@ -321,7 +321,7 @@ class ApplicationDetail extends Component
     {
         $this->financing_product = $this->application->financing_product->value;
         $this->debtor_name = $this->application->debtor_name;
-        $this->debtor_nik = $this->application->debtor_nik;
+        $this->debtor_nik = $this->application->debtor_nik ?? '';
         $this->debtor_birth_date = $this->application->debtor_birth_date?->format('Y-m-d') ?? '';
         $this->debtor_type = $this->application->debtor_type->value;
         $this->spouse_income_type = $this->application->spouse_income_type?->value;

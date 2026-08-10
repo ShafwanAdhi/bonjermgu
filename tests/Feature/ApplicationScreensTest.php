@@ -473,3 +473,19 @@ it('renders the detail screen end to end for the owning officer', function () {
         ->assertSee('Rp 120.000.000')
         ->assertSee('Golive &amp; Payment', escape: false);
 });
+
+it('renders legal entity application details when debtor identity fields are null', function () {
+    $application = makeApplication([
+        'debtor_name' => 'PT Maju Bersama',
+        'debtor_nik' => null,
+        'debtor_birth_date' => null,
+        'debtor_type' => DebtorType::BadanHukumUsaha,
+        'spouse_income_type' => null,
+    ]);
+
+    Livewire::actingAs($this->officer->user)
+        ->test(ApplicationDetail::class, ['application' => $application])
+        ->assertOk()
+        ->assertSee('PT Maju Bersama')
+        ->assertSee(DebtorType::BadanHukumUsaha->label());
+});
