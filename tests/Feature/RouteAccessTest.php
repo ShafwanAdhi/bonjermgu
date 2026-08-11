@@ -67,16 +67,22 @@ it('refuses admin screens to referral and officer', function (string $path, stri
 
     $this->get($path)->assertForbidden();
 })->with([
+    '/configuration',
     '/configuration/products',
     '/configuration/insurance',
     '/configuration/fees',
     '/configuration/defaults',
+    '/master',
     '/master/vehicles',
     '/master/referral',
     '/master/lookups',
+    '/accounts',
+    '/accounts/profile',
     '/accounts/referrals',
     '/accounts/officers',
     '/lending',
+    '/lending/ao',
+    '/lending/referrals',
 ])->with(['referral', 'accountOfficer']);
 
 /* Simulation belongs to Referral. AO and Admin do not get a calculator. */

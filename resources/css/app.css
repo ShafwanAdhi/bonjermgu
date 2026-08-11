@@ -62,6 +62,66 @@
     animation: motion-page-enter 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+.admin-motion-prep [data-admin-motion-page] {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0);
+}
+
+[data-admin-motion-page].admin-motion-ready {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    transition:
+        opacity 360ms ease,
+        transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+[data-admin-animate] {
+    opacity: 0;
+    transform: translate3d(0, 12px, 0);
+}
+
+[data-admin-animate].admin-motion-in {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    transition:
+        opacity 420ms ease,
+        transform 520ms cubic-bezier(0.22, 1, 0.36, 1),
+        border-color 180ms ease,
+        box-shadow 220ms ease,
+        background-color 180ms ease;
+    transition-delay: var(--admin-motion-delay, 0ms);
+}
+
+.admin-scroll-ready [data-admin-scroll] {
+    opacity: 0;
+    transform: translate3d(0, 26px, 0) scale(0.985);
+}
+
+.admin-scroll-ready [data-admin-scroll].admin-scroll-visible {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+    transition:
+        opacity 560ms ease,
+        transform 680ms cubic-bezier(0.22, 1, 0.36, 1),
+        border-color 180ms ease,
+        box-shadow 220ms ease;
+    transition-delay: var(--admin-scroll-delay, 0ms);
+}
+
+@media (hover: hover) {
+    [data-admin-motion-page] nav[aria-label='Navigasi modul'] a:hover {
+        border-color: theme('colors.border-strong');
+        box-shadow: 0 16px 36px rgba(13, 18, 24, 0.09);
+        transform: translate3d(0, -2px, 0);
+    }
+}
+
+[data-admin-motion-page] nav[aria-label='Navigasi modul'] a:active,
+[data-admin-motion-page] input:active,
+[data-admin-motion-page] select:active {
+    transform: scale(0.99);
+}
+
 .reveal-ready [data-reveal='hero'] {
     transform: translate3d(0, 14px, 0);
 }
@@ -353,6 +413,16 @@
 
     .motion-page-ready {
         animation: none;
+    }
+
+    [data-admin-motion-page],
+    [data-admin-animate],
+    [data-admin-animate].admin-motion-in,
+    [data-admin-scroll],
+    [data-admin-scroll].admin-scroll-visible {
+        opacity: 1;
+        transform: none;
+        transition: none;
     }
 
     [data-simulation-field-enter] {

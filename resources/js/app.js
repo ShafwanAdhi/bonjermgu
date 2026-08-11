@@ -1,6 +1,7 @@
 import "./bootstrap";
 
 let revealObserver;
+let adminScrollObserver;
 let scrollProgressBound = false;
 let progressFrame;
 
@@ -106,6 +107,150 @@ const prepareMotionPage = () => {
     });
 };
 
+const adminMotionTargets = [
+    ".band > .mb-md",
+    ".band > .mb-xl",
+    ".band > .mb-5",
+    ".band > .mb-1\\.5",
+    ".band > [aria-label='Navigasi modul'] > a",
+    ".band > .grid > *",
+    ".band > .rounded-lg",
+    ".band > .rounded-md",
+    ".band > form",
+    ".band > section",
+    ".band > article",
+    ".band > [data-admin-animate]",
+    ".band table tbody tr",
+    ".band .overflow-x-auto",
+    "[data-admin-motion-page] > .mx-auto > .mb-md",
+    "[data-admin-motion-page] > .mx-auto > .mb-xl",
+    "[data-admin-motion-page] > .mx-auto > .rounded-lg",
+    "[data-admin-motion-page] > .mx-auto > form",
+];
+
+const isAdminModuleLeafPage = () => {
+    const path = window.location.pathname;
+
+    return [
+        "/configuration/",
+        "/master/",
+        "/accounts/",
+        "/lending/",
+    ].some((prefix) => path.startsWith(prefix));
+};
+
+const prepareAdminDashboardScrollMotion = () => {
+    if (
+        document.body?.dataset.role !== "admin" ||
+        window.location.pathname !== "/dashboard"
+    ) {
+        return;
+    }
+
+    const targets = [
+        ...document.querySelectorAll(
+            "[data-admin-scroll]:not(.admin-scroll-visible)",
+        ),
+    ];
+
+    document.documentElement.classList.add("admin-scroll-ready");
+
+    if (!targets.length) {
+        return;
+    }
+
+    if (prefersReducedMotion() || !("IntersectionObserver" in window)) {
+        targets.forEach((target) =>
+            target.classList.add("admin-scroll-visible"),
+        );
+
+        return;
+    }
+
+    adminScrollObserver ??= new IntersectionObserver(
+        (entries) => {
+            entries.forEach((entry) => {
+                if (!entry.isIntersecting) {
+                    return;
+                }
+
+                entry.target.classList.add("admin-scroll-visible");
+                adminScrollObserver.unobserve(entry.target);
+            });
+        },
+        {
+            rootMargin: "0px 0px -14% 0px",
+            threshold: 0.16,
+        },
+    );
+
+    targets.forEach((target, index) => {
+        if (!target.style.getPropertyValue("--admin-scroll-delay")) {
+            target.style.setProperty(
+                "--admin-scroll-delay",
+                `${Math.min(index * 80, 240)}ms`,
+            );
+        }
+
+        adminScrollObserver.observe(target);
+    });
+};
+
+const prepareAdminMotion = () => {
+    if (document.body?.dataset.role !== "admin") {
+        return;
+    }
+
+    const page = document.querySelector("[data-admin-motion-page]");
+
+    page?.classList.remove("admin-motion-ready");
+
+    if (isAdminModuleLeafPage()) {
+        document.documentElement.classList.remove("admin-motion-prep");
+        page?.classList.add("admin-motion-ready");
+        document.querySelectorAll("[data-admin-animate]").forEach((target) => {
+            target.removeAttribute("data-admin-animate");
+            target.classList.remove("admin-motion-in");
+            target.style.removeProperty("--admin-motion-delay");
+        });
+
+        return;
+    }
+
+    document.documentElement.classList.add("admin-motion-prep");
+
+    const targets = [
+        ...new Set(
+            adminMotionTargets.flatMap((selector) => [
+                ...document.querySelectorAll(selector),
+            ]),
+        ),
+    ].filter((target) => !target.closest("[data-no-admin-motion]"));
+
+    targets.forEach((target, index) => {
+        target.setAttribute("data-admin-animate", "");
+        target.style.setProperty(
+            "--admin-motion-delay",
+            `${Math.min(index * 34, 360)}ms`,
+        );
+    });
+
+    document
+        .querySelectorAll(
+            ".band table tbody tr:not([data-motion-row]), .band [role='menuitem']:not([data-motion-action])",
+        )
+        .forEach((target) => target.setAttribute("data-motion-row", ""));
+
+    requestAnimationFrame(() => {
+        page?.classList.add("admin-motion-ready");
+        targets.forEach((target) => target.classList.add("admin-motion-in"));
+        prepareAdminDashboardScrollMotion();
+        window.setTimeout(() => {
+            document.documentElement.classList.remove("admin-motion-prep");
+        }, 760);
+    });
+};
+
 const rupiahDigits = (value) => value.replace(/\D/g, "");
 
 const formatRupiah = (value) => {
@@ -140,17 +285,19 @@ const initRupiahInputs = (root = document) => {
 
 const scrollProfileFormIntoView = () => {
     requestAnimationFrame(() => {
-        const target = document.getElementById("profile-data-diri");
+        const target =
+            document.querySelector("[data-profile-focus-target]") ??
+            document.getElementById("profile-data-diri");
 
         if (!target) {
             return;
         }
 
-        const extraOffset = 56;
+        const rect = target.getBoundingClientRect();
         const targetTop =
-            target.getBoundingClientRect().top + window.scrollY + extraOffset;
+            rect.top + window.scrollY - window.innerHeight / 2 + rect.height / 2;
 
-        window.scrollTo({ top: targetTop, behavior: "smooth" });
+        window.scrollTo({ top: Math.max(targetTop, 0), behavior: "smooth" });
     });
 };
 
@@ -158,7 +305,12 @@ const initMotion = () => {
     initRupiahInputs();
     applyStagger();
     prepareMotionPage();
-    revealElements();
+    if (document.body?.dataset.role === "admin") {
+        prepareAdminMotion();
+        prepareAdminDashboardScrollMotion();
+    } else {
+        revealElements();
+    }
     setupScrollProgress();
 };
 

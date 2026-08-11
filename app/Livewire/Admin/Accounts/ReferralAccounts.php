@@ -26,6 +26,8 @@ class ReferralAccounts extends Component
 {
     use WithPagination;
 
+    public string $pageMode = 'list';
+
     #[Url(as: 'q', except: '')]
     public string $search = '';
 
@@ -48,6 +50,14 @@ class ReferralAccounts extends Component
     public string $branch_name = '';
 
     public bool $is_active = true;
+
+    public function mount(?Referral $referral = null): void
+    {
+        if ($referral?->exists) {
+            $this->pageMode = 'edit';
+            $this->edit($referral->id);
+        }
+    }
 
     public function updatedSearch(): void
     {
@@ -170,11 +180,16 @@ class ReferralAccounts extends Component
             'category_id', 'sub_category_id', 'institution_id', 'branch_name', 'is_active',
         ]);
         $this->resetValidation();
+
+        if ($this->pageMode === 'edit') {
+            $this->redirectRoute('accounts.referrals', navigate: true);
+        }
     }
 
     public function save(): void
     {
         $validated = $this->validate();
+        $isEditPage = $this->pageMode === 'edit';
 
         $referral = Referral::with('user')->findOrFail($this->editingId);
 
@@ -193,9 +208,17 @@ class ReferralAccounts extends Component
         $referral->user->update(['is_active' => $validated['is_active']]);
 
         unset($this->accounts);
-        $this->cancel();
+        $this->reset([
+            'editingId', 'full_name', 'birth_date', 'email', 'phone',
+            'category_id', 'sub_category_id', 'institution_id', 'branch_name', 'is_active',
+        ]);
+        $this->resetValidation();
 
         session()->flash('account_success', 'Profil Referral berhasil diperbarui.');
+
+        if ($isEditPage) {
+            $this->redirectRoute('accounts.referrals', navigate: true);
+        }
     }
 
     public function render()

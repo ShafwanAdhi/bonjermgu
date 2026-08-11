@@ -1,8 +1,10 @@
 <?php
 
 use App\Livewire\Profile\OfficerProfile;
+use App\Livewire\Profile\AdminProfile;
 use App\Livewire\Profile\ReferralProfile;
 use App\Models\AccountOfficer;
+use App\Models\Admin;
 use App\Models\Institution;
 use App\Models\Referral;
 use App\Models\ReferralCategory;
@@ -157,6 +159,42 @@ it('refuses the profile page to admin', function () {
     $this->actingAs(User::factory()->admin()->create())
         ->get('/profile')
         ->assertForbidden();
+});
+
+it('shows and saves the admin account profile from the accounts module', function () {
+    $admin = Admin::factory()->create(['full_name' => 'Administrator Lama']);
+
+    $this->actingAs($admin->user)
+        ->get('/accounts/profile')
+        ->assertOk()
+        ->assertSee('Administrator Lama')
+        ->assertSee($admin->user->username);
+
+    Livewire::actingAs($admin->user)
+        ->test(AdminProfile::class)
+        ->call('edit')
+        ->set('full_name', 'Administrator Baru')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    expect($admin->fresh()->full_name)->toBe('Administrator Baru');
+});
+
+it('lets an admin change their own password from the accounts module', function () {
+    $admin = Admin::factory()->create();
+
+    Livewire::actingAs($admin->user)
+        ->test(AdminProfile::class)
+        ->set('current_password', 'password')
+        ->set('password', 'password-admin-baru')
+        ->set('password_confirmation', 'password-admin-baru')
+        ->call('changePassword')
+        ->assertHasNoErrors()
+        ->assertSet('current_password', '')
+        ->assertSet('password', '')
+        ->assertSet('password_confirmation', '');
+
+    expect(Hash::check('password-admin-baru', $admin->user->fresh()->password))->toBeTrue();
 });
 
 it('rejects an invalid email on either profile', function () {

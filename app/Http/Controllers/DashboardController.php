@@ -78,8 +78,8 @@ class DashboardController extends Controller
 
     private function admin(): View
     {
-        $period = request()->query('period', '1');
-        $period = in_array($period, ['1', '3', '12', 'all'], true) ? $period : '1';
+        $period = request()->query('period', 'all');
+        $period = in_array($period, ['1', '3', '12', 'all'], true) ? $period : 'all';
 
         $periodMonths = $period === 'all' ? null : (int) $period;
         $periodFrom = $periodMonths
@@ -123,7 +123,7 @@ class DashboardController extends Controller
                 '3' => '3 bulan terakhir',
                 '12' => '12 bulan terakhir',
                 'all' => 'seluruh periode',
-                default => '1 bulan terakhir',
+                default => 'seluruh periode',
             },
             'composition' => [
                 'actualPercent' => round(($totals->actualAmount / $totalAmount) * 100, 1),

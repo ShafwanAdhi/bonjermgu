@@ -40,16 +40,21 @@ function screenMap(): array
         '/applications/create' => ['ao', 'Buat Credit Application'],
 
         // Admin
+        '/configuration' => ['admin', 'Pilih modul konfigurasi'],
         '/configuration/products' => ['admin', 'Product dan Upping'],
         '/configuration/insurance' => ['admin', 'Casco dan TLO'],
         '/configuration/fees' => ['admin', 'Fiducia Fee'],
         '/configuration/defaults' => ['admin', 'Nilai Default Simulasi'],
+        '/master' => ['admin', 'Pilih modul master data'],
         '/master/vehicles' => ['admin', 'Harga per Tahun'],
         '/master/referral' => ['admin', 'Tambah Kategori'],
         '/master/lookups' => ['admin', 'Kelompok Usia'],
+        '/accounts' => ['admin', 'Pilih kelompok akun'],
+        '/accounts/profile' => ['admin', 'Profil Admin'],
         '/accounts/referrals' => ['admin', 'registrasi mandiri'],
         '/accounts/officers' => ['admin', 'Buat Akun AO'],
-        '/lending' => ['admin', 'Pipe Line A/F'],
+        '/lending' => ['admin', 'Pilih sudut pandang laporan lending'],
+        '/lending/ao' => ['admin', 'Pipe Line A/F'],
     ];
 }
 
@@ -140,6 +145,7 @@ it('renders the admin dashboard variant', function () {
         ->assertSee('3 bulan')
         ->assertSee('12 bulan')
         ->assertSee('Semua')
+        ->assertSee('seluruh periode')
         ->assertSee('Komposisi Lending')
         ->assertSee('Performa Produk')
         ->assertDontSee('6 bulan')
@@ -205,13 +211,13 @@ it('keeps the normal dashboard greeting when today is not the user birthday', fu
         ->assertDontSee('birthday-fireworks', escape: false);
 });
 
-it('renders both lending tabs', function (string $tab, string $expected) {
+it('renders both lending reports', function (string $path, string $expected) {
     $this->actingAs(actingAsRole('admin'));
 
-    $this->get('/lending?tab='.$tab)->assertOk()->assertSee($expected);
+    $this->get($path)->assertOk()->assertSee($expected);
 })->with([
-    ['ao', 'Account Officer'],
-    ['referral', 'Referral'],
+    ['/lending/ao', 'Referral'],
+    ['/lending/referrals', 'Account Officer'],
 ]);
 
 /*

@@ -28,6 +28,8 @@ class OfficerAccounts extends Component
 {
     use WithPagination;
 
+    public string $pageMode = 'list';
+
     #[Url(as: 'q', except: '')]
     public string $search = '';
 
@@ -54,6 +56,21 @@ class OfficerAccounts extends Component
     public ?string $initialPassword = null;
 
     public ?string $createdName = null;
+
+    public function mount(?AccountOfficer $officer = null): void
+    {
+        if (request()->routeIs('accounts.officers.create')) {
+            $this->pageMode = 'create';
+            $this->create();
+
+            return;
+        }
+
+        if ($officer?->exists) {
+            $this->pageMode = 'edit';
+            $this->edit($officer->id);
+        }
+    }
 
     public function updatedSearch(): void
     {
@@ -139,6 +156,10 @@ class OfficerAccounts extends Component
     public function cancel(): void
     {
         $this->resetForm();
+
+        if ($this->pageMode !== 'list') {
+            $this->redirectRoute('accounts.officers', navigate: true);
+        }
     }
 
     public function save(): void
@@ -203,6 +224,10 @@ class OfficerAccounts extends Component
         $this->resetForm();
 
         session()->flash('account_success', 'Akun AO berhasil diperbarui.');
+
+        if ($this->pageMode === 'edit') {
+            $this->redirectRoute('accounts.officers', navigate: true);
+        }
     }
 
     private function resetForm(): void

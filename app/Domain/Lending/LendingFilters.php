@@ -13,6 +13,7 @@ class LendingFilters
     public function __construct(
         public readonly ?string $from = null,
         public readonly ?string $to = null,
+        public readonly ?string $month = null,
         public readonly ?string $product = null,
         public readonly ?int $categoryId = null,
         public readonly ?int $subCategoryId = null,
@@ -21,9 +22,19 @@ class LendingFilters
 
     public static function fromArray(array $input): self
     {
+        $month = self::month($input['month'] ?? null);
+        $from = self::date($input['from'] ?? null);
+        $to = self::date($input['to'] ?? null);
+
+        if ($month !== null) {
+            $from = $month.'-01';
+            $to = date('Y-m-t', strtotime($from));
+        }
+
         return new self(
-            from: self::date($input['from'] ?? null),
-            to: self::date($input['to'] ?? null),
+            from: $from,
+            to: $to,
+            month: $month,
             product: ($input['product'] ?? '') !== '' ? $input['product'] : null,
             categoryId: ($input['category_id'] ?? '') !== '' ? (int) $input['category_id'] : null,
             subCategoryId: ($input['sub_category_id'] ?? '') !== '' ? (int) $input['sub_category_id'] : null,
@@ -39,6 +50,15 @@ class LendingFilters
         }
 
         return preg_match('/^\d{4}-\d{2}-\d{2}$/', $value) === 1 ? $value : null;
+    }
+
+    private static function month(?string $value): ?string
+    {
+        if (! $value) {
+            return null;
+        }
+
+        return preg_match('/^\d{4}-\d{2}$/', $value) === 1 ? $value : null;
     }
 
     public function hasAny(): bool

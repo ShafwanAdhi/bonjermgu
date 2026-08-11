@@ -210,13 +210,25 @@ it('ignores a malformed period rather than interpolating it', function () {
         ->and(LendingQuery::totals($filters)->actualAmount)->toBe(100_000_000);
 });
 
+it('turns a month filter into a go live date range', function () {
+    lendingApplication($this->officerA, $this->referralX, 100_000_000, '2026-06-15');
+    lendingApplication($this->officerA, $this->referralX, 200_000_000, '2026-07-01');
+
+    $filters = LendingFilters::fromArray(['month' => '2026-06']);
+
+    expect($filters->month)->toBe('2026-06')
+        ->and($filters->from)->toBe('2026-06-01')
+        ->and($filters->to)->toBe('2026-06-30')
+        ->and(LendingQuery::totals($filters)->actualAmount)->toBe(100_000_000);
+});
+
 /* ------------------------------------------------------------------ Akses */
 
 it('shows the lending page to admin with real figures', function () {
     lendingApplication($this->officerA, $this->referralX, 100_000_000, '2026-06-15');
 
     $this->actingAs(Admin::factory()->create()->user)
-        ->get('/lending')
+        ->get('/lending/ao')
         ->assertOk()
         ->assertSee('Rp 100.000.000')
         ->assertSee('Budi Santoso')
@@ -227,4 +239,6 @@ it('refuses lending to officer and referral', function (string $state) {
     $this->actingAs(User::factory()->{$state}()->create());
 
     $this->get('/lending')->assertForbidden();
+    $this->get('/lending/ao')->assertForbidden();
+    $this->get('/lending/referrals')->assertForbidden();
 })->with(['referral', 'accountOfficer']);

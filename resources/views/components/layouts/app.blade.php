@@ -30,7 +30,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
 </head>
-<body class="bg-canvas pb-[72px] lg:pb-0">
+<body class="bg-canvas pb-[72px] lg:pb-0" data-role="{{ $user->role->value }}">
     @if ($user->role->value === 'referral')
         <div class="referral-scroll-progress" data-scroll-progress aria-hidden="true"></div>
     @endif
@@ -127,7 +127,7 @@
         </div>
     </header>
 
-    <main class="bg-canvas">
+    <main class="bg-canvas" @if ($user->role->value === 'admin') data-admin-motion-page @endif>
         {{ $slot }}
     </main>
 

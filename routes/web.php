@@ -20,6 +20,7 @@ use App\Livewire\Application\ApplicationList;
 use App\Livewire\Application\CreateApplication;
 use App\Livewire\Auth\Login;
 use App\Livewire\Auth\Register;
+use App\Livewire\Profile\AdminProfile;
 use App\Livewire\Simulation\CreditSimulation;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -130,6 +131,7 @@ Route::middleware(['auth', 'role:referral,ao'])->group(function () {
 */
 
 Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::view('/configuration', 'admin.configuration.index')->name('configuration.index');
     Route::get('/configuration/products', ConfigurationProducts::class)->name('configuration.products');
     Route::get('/configuration/insurance', ConfigurationInsurance::class)->name('configuration.insurance');
     Route::get('/configuration/fees', ConfigurationFees::class)->name('configuration.fees');
@@ -138,12 +140,30 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     // Tanpa data debitur, tanpa cetak, tanpa penyimpanan hasil.
     Route::get('/configuration/simulation', ConfigurationSimulation::class)->name('configuration.simulation');
 
+    Route::view('/master', 'admin.master.index')->name('master.index');
     Route::get('/master/vehicles', MasterVehicles::class)->name('master.vehicles');
     Route::get('/master/referral', ReferralMaster::class)->name('master.referral');
     Route::get('/master/lookups', MasterLookups::class)->name('master.lookups');
 
+    Route::view('/accounts', 'admin.accounts.index')->name('accounts.index');
+    Route::get('/accounts/profile', AdminProfile::class)->name('accounts.profile');
     Route::get('/accounts/referrals', ReferralAccounts::class)->name('accounts.referrals');
+    Route::get('/accounts/referrals/{referral}/edit', ReferralAccounts::class)->name('accounts.referrals.edit');
     Route::get('/accounts/officers', OfficerAccounts::class)->name('accounts.officers');
+    Route::get('/accounts/officers/create', OfficerAccounts::class)->name('accounts.officers.create');
+    Route::get('/accounts/officers/{officer}/edit', OfficerAccounts::class)->name('accounts.officers.edit');
 
-    Route::get('/lending', LendingController::class)->name('lending');
+    Route::get('/lending', function (\Illuminate\Http\Request $request) {
+        if ($request->query('tab') === 'ao') {
+            return redirect()->route('lending.ao', $request->except('tab'));
+        }
+
+        if ($request->query('tab') === 'referral') {
+            return redirect()->route('lending.referrals', $request->except('tab'));
+        }
+
+        return view('admin.lending-index');
+    })->name('lending.index');
+    Route::get('/lending/ao', [LendingController::class, 'perOfficer'])->name('lending.ao');
+    Route::get('/lending/referrals', [LendingController::class, 'perReferral'])->name('lending.referrals');
 });

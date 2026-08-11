@@ -68,9 +68,9 @@
             </div>
         </div>
 
-        <section class="mt-8 md:mt-10" aria-label="Visualisasi lending admin">
+        <section class="mt-8 md:mt-10" aria-label="Visualisasi lending admin" data-no-admin-motion>
             <div class="grid grid-cols-1 gap-lg xl:grid-cols-[0.9fr_1.15fr_1.1fr]">
-                <article class="rounded-lg border border-hairline bg-surface p-lg md:p-xl">
+                <article class="rounded-lg border border-hairline bg-surface p-lg md:p-xl" data-admin-scroll>
                     <div class="flex flex-col gap-lg sm:flex-row sm:items-center xl:flex-col xl:items-start">
                         <div
                             class="relative mx-auto aspect-square w-44 shrink-0 rounded-full sm:mx-0"
@@ -108,7 +108,7 @@
                     </div>
                 </article>
 
-                <article class="relative rounded-lg border border-hairline bg-surface p-lg md:p-xl">
+                <article class="relative rounded-lg border border-hairline bg-surface p-lg md:p-xl" data-admin-scroll>
                     <div class="pr-28">
                         <div>
                             <p class="text-caption text-muted">Performa Produk</p>
@@ -138,7 +138,7 @@
                     </div>
                 </article>
 
-                <article class="rounded-lg border border-hairline bg-surface p-lg md:p-xl">
+                <article class="rounded-lg border border-hairline bg-surface p-lg md:p-xl" data-admin-scroll>
                     <div class="flex items-start justify-between gap-md">
                         <div>
                             <p class="text-caption text-muted">Trend Actual</p>

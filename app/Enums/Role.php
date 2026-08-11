@@ -52,10 +52,10 @@ enum Role: string
             ],
             self::Admin => [
                 ['label' => 'Dashboard', 'route' => 'dashboard', 'match' => 'dashboard'],
-                ['label' => 'Konfigurasi', 'route' => 'configuration.products', 'match' => 'configuration.*'],
-                ['label' => 'Master Data', 'route' => 'master.vehicles', 'match' => 'master.*'],
-                ['label' => 'Akun', 'route' => 'accounts.referrals', 'match' => 'accounts.*'],
-                ['label' => 'Lending', 'route' => 'lending', 'match' => 'lending'],
+                ['label' => 'Konfigurasi', 'route' => 'configuration.index', 'match' => 'configuration.*'],
+                ['label' => 'Master Data', 'route' => 'master.index', 'match' => 'master.*'],
+                ['label' => 'Akun', 'route' => 'accounts.index', 'match' => 'accounts.*'],
+                ['label' => 'Lending', 'route' => 'lending.index', 'match' => 'lending.*'],
             ],
         };
     }
