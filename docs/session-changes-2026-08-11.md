@@ -65,6 +65,7 @@ Dokumen ini mencatat perubahan penting yang dikerjakan dalam sesi pengembangan 2
 - Card collapsible pada simulasi AO, seperti Asuransi serta Upping dan Pengurang Pencairan, kini membuka dan menutup dengan animasi height/opacity yang halus.
 - Halaman Uji Konfigurasi Admin diselaraskan dengan layout simulasi AO: step cards, hasil lima tenor di panel kanan, scroll otomatis ke hasil setelah Hitung Simulasi, selector tenor ter-highlight, kolom Jejak dihapus, dan copy internal yang tidak perlu dipangkas.
 - Pada halaman Uji Konfigurasi Admin, "Rate Product Terpilih" diubah dari grid tile menjadi table ringkas agar lebih terbaca dan tidak overlap di mobile.
+- Migration idempotent ditambahkan untuk memastikan setting `acp_max_loan_amount` tersedia pada database existing, sehingga simulasi tidak gagal ketika database lama belum pernah di-seed ulang.
 - Laporan Lending Admin diperbaiki agar `/lending/ao` benar-benar mengelompokkan berdasarkan Account Officer dan `/lending/referrals` mengelompokkan berdasarkan Referral.
 
 ---
