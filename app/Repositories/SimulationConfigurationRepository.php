@@ -20,6 +20,7 @@ use App\Models\Referral;
 use App\Models\SimulationSetting;
 use App\Models\SumInsuredSchedule;
 use App\Models\TjhTier;
+use App\Support\SimulationSettingDefaults;
 use Illuminate\Support\Facades\Cache;
 use RuntimeException;
 
@@ -63,7 +64,10 @@ final class SimulationConfigurationRepository
 
     private function buildForProduct(Product $product, ?string $rateVariant = null): SimulationConfig
     {
-        $settings = SimulationSetting::query()->pluck('value', 'key')->all();
+        $settings = array_replace(
+            SimulationSettingDefaults::values(),
+            SimulationSetting::query()->pluck('value', 'key')->all(),
+        );
         $zone = $this->stringSetting($settings, 'active_insurance_zone');
         $variant = $rateVariant ?? $this->stringSetting($settings, 'active_rate_variant');
 

@@ -7,6 +7,7 @@ use App\Models\InsuranceCascoRate;
 use App\Models\SimulationSetting;
 use App\Services\ConfigurationIntegrityValidator;
 use App\Support\RupiahInput;
+use App\Support\SimulationSettingDefaults;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -90,10 +91,11 @@ final class Defaults extends AuditedAdminComponent
         $databaseSettings = SimulationSetting::query()
             ->whereIn('key', array_keys(self::DEFINITIONS))
             ->pluck('value', 'key');
+        $defaults = SimulationSettingDefaults::values();
         $this->settings = [];
 
         foreach (self::DEFINITIONS as $key => $definition) {
-            $this->settings[$key] = (string) $databaseSettings->get($key, '');
+            $this->settings[$key] = (string) $databaseSettings->get($key, $defaults[$key] ?? '');
         }
 
         $this->resetValidation();

@@ -8,17 +8,22 @@ use App\Models\SimulationSetting;
 use App\Models\SumInsuredSchedule;
 use App\Services\ConfigurationIntegrityValidator;
 use App\Support\RupiahInput;
+use App\Support\SimulationSettingDefaults;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
 final class Fees extends AuditedAdminComponent
 {
-    private const SETTING_LABELS = [
+    private const NET_DP_SETTING_LABELS = [
         'dtn_standard_net_dp_rate' => 'DTN · Standard',
         'dtn_high_risk_net_dp_rate' => 'DTN · Risiko Tinggi',
         'ucf_standard_net_dp_rate' => 'UCF · Standard',
+        'ucf_non_japan_net_dp_rate' => 'UCF · Non Japan',
         'ucf_entrepreneur_net_dp_rate' => 'UCF · Wiraswasta',
+    ];
+
+    private const REFUND_SETTING_LABELS = [
         'ucf_insurance_refund_base_rate' => 'Refund Asuransi · Dasar',
         'ucf_insurance_refund_rate' => 'Refund Asuransi',
         'ucf_interest_refund_rate' => 'Refund Bunga',
@@ -111,7 +116,8 @@ final class Fees extends AuditedAdminComponent
     public function render(): View
     {
         return view('admin.configuration.fees', [
-            'settingLabels' => self::SETTING_LABELS,
+            'netDpSettingLabels' => self::NET_DP_SETTING_LABELS,
+            'refundSettingLabels' => self::REFUND_SETTING_LABELS,
         ])->layout('components.layouts.app', ['title' => 'Biaya dan Down Payment — Kebon Jeruk Multiguna']);
     }
 
@@ -132,12 +138,13 @@ final class Fees extends AuditedAdminComponent
             ])->all();
 
         $databaseSettings = SimulationSetting::query()
-            ->whereIn('key', array_keys(self::SETTING_LABELS))
+            ->whereIn('key', array_keys($this->settingLabels()))
             ->pluck('value', 'key');
+        $defaults = SimulationSettingDefaults::values();
         $this->settings = [];
 
-        foreach (self::SETTING_LABELS as $key => $label) {
-            $value = $databaseSettings->get($key);
+        foreach ($this->settingLabels() as $key => $label) {
+            $value = $databaseSettings->get($key, $defaults[$key] ?? null);
             $this->settings[$key] = is_numeric($value) ? $this->percent((float) $value) : '';
         }
 
@@ -180,7 +187,7 @@ final class Fees extends AuditedAdminComponent
             'sumInsured.*.percentage' => ['required', 'numeric', 'between:0,100'],
         ];
 
-        foreach (array_keys(self::SETTING_LABELS) as $key) {
+        foreach (array_keys($this->settingLabels()) as $key) {
             $rules["settings.{$key}"] = ['required', 'numeric', 'between:0,100'];
         }
 
@@ -213,6 +220,12 @@ final class Fees extends AuditedAdminComponent
     private function fraction(string|int|float $percent): float
     {
         return (float) $percent / 100;
+    }
+
+    /** @return array<string, string> */
+    private function settingLabels(): array
+    {
+        return self::NET_DP_SETTING_LABELS + self::REFUND_SETTING_LABELS;
     }
 
     private function percent(float $fraction): string

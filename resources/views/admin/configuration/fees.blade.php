@@ -46,7 +46,7 @@
 
                 <x-ui.card title="Ketentuan Net DP per Produk">
                     <div class="grid grid-cols-1 gap-md sm:grid-cols-2">
-                        @foreach (array_slice($settingLabels, 0, 4, true) as $key => $label)
+                        @foreach ($netDpSettingLabels as $key => $label)
                             <x-ui.field :label="$label.' (%)'" :error="$errors->first('settings.'.$key)">
                                 <x-ui.input wire:model="settings.{{ $key }}" type="number" step="0.0001" min="0" max="100"
                                             :invalid="$errors->has('settings.'.$key)" />
@@ -90,7 +90,7 @@
 
                 <x-ui.card title="Persentase Refund">
                     <div class="grid grid-cols-1 gap-md sm:grid-cols-2">
-                        @foreach (array_slice($settingLabels, 4, null, true) as $key => $label)
+                        @foreach ($refundSettingLabels as $key => $label)
                             <x-ui.field :label="$label.' (%)'" :error="$errors->first('settings.'.$key)">
                                 <x-ui.input wire:model="settings.{{ $key }}" type="number" step="0.0001" min="0" max="100"
                                             :invalid="$errors->has('settings.'.$key)" />

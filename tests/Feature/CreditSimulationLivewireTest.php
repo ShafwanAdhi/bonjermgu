@@ -6,12 +6,14 @@ use App\Models\AgeGroup;
 use App\Models\Domicile;
 use App\Models\Referral;
 use App\Models\ReferralCategory;
+use App\Models\SimulationSetting;
 use App\Models\VehicleModel;
 use App\Models\VehicleUsage;
 use App\Repositories\ProductResolver;
 use Carbon\Carbon;
 use Database\Seeders\ReferralMasterSeeder;
 use Database\Seeders\SimulationConfigurationSeeder;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Livewire;
 use Tests\Support\TestVehicleMaster;
 
@@ -168,6 +170,49 @@ test('Referral calculates both products and modes on the server then prints the 
         ->and($download->getContent())->toContain('bonjemgu.com');
 
     Carbon::setTestNow();
+});
+
+test('simulation keeps calculating when legacy databases are missing newer default settings', function () {
+    $this->seed(ReferralMasterSeeder::class);
+    $this->seed(SimulationConfigurationSeeder::class);
+    TestVehicleMaster::seed();
+
+    SimulationSetting::query()
+        ->whereIn('key', ['ucf_non_japan_net_dp_rate', 'acp_max_loan_amount'])
+        ->delete();
+    Cache::flush();
+
+    $category = ReferralCategory::query()
+        ->where('segment', 'Reguler')
+        ->where('tier', 'Referral')
+        ->with('subCategories')
+        ->firstOrFail();
+    $referral = Referral::factory()->create([
+        'category_id' => $category->id,
+        'sub_category_id' => $category->subCategories->firstOrFail()->id,
+        'institution_id' => null,
+    ])->load(['user', 'category']);
+
+    $model = VehicleModel::query()
+        ->whereHas('type.brand.usage', fn ($query) => $query->where('name', 'Passenger'))
+        ->whereHas('prices', fn ($query) => $query->where('price', '>', 0), '>=', 2)
+        ->with(['type.brand.usage', 'prices' => fn ($query) => $query->where('price', '>', 0)->orderByDesc('year')])
+        ->firstOrFail();
+    $price = $model->prices->first();
+    Carbon::setTestNow(Carbon::create($price->year + 1, 8, 4));
+
+    Livewire::actingAs($referral->user)
+        ->test(CreditSimulation::class)
+        ->set(validSimulationState($model, $price->year))
+        ->set('financing_type', 'UCF')
+        ->set('mode', 'B')
+        ->set('market_price', 'Rp '.number_format($price->price, 0, ',', '.'))
+        ->set('desired_amount', 'Rp '.number_format((int) round($price->price * 0.6), 0, ',', '.'))
+        ->call('calculate')
+        ->assertHasNoErrors()
+        ->assertSet('hasCalculated', true)
+        ->assertDontSee('Simulation setting')
+        ->assertCount('results', 5);
 });
 
 test('legal entity simulation print does not require personal identity fields', function () {
