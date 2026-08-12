@@ -40,6 +40,7 @@ Prinsip yang berlaku pada seluruh halaman:
 | Route                  | Halaman                 | Akses |
 | ---------------------- | ----------------------- | ----- |
 | `/dashboard`           | Dashboard               | AO    |
+| `/simulation/officer`  | Simulasi Kredit         | AO    |
 | `/applications`        | Daftar Aplikasi         | AO    |
 | `/applications/create` | Buat Credit Application | AO    |
 | `/applications/{code}` | Detail Aplikasi         | AO    |
@@ -50,16 +51,26 @@ Prinsip yang berlaku pada seluruh halaman:
 | Route                      | Halaman                    | Akses |
 | -------------------------- | -------------------------- | ----- |
 | `/dashboard`               | Dashboard                  | Admin |
+| `/configuration`           | Modul Konfigurasi          | Admin |
 | `/configuration/products`  | Product dan Upping         | Admin |
 | `/configuration/insurance` | Konfigurasi Asuransi       | Admin |
 | `/configuration/fees`      | Biaya dan Down Payment     | Admin |
 | `/configuration/defaults`  | Nilai Default Simulasi     | Admin |
+| `/configuration/simulation` | Uji Konfigurasi           | Admin |
+| `/master`                  | Modul Master Data          | Admin |
 | `/master/vehicles`         | Master Kendaraan           | Admin |
 | `/master/referral`         | Master Referral            | Admin |
 | `/master/lookups`          | Domisili dan Kelompok Usia | Admin |
+| `/accounts`                | Modul Akun                 | Admin |
+| `/accounts/profile`        | Profil Admin               | Admin |
 | `/accounts/referrals`      | Akun Referral              | Admin |
+| `/accounts/referrals/{id}/edit` | Ubah Profil Referral | Admin |
 | `/accounts/officers`       | Akun AO                    | Admin |
+| `/accounts/officers/create` | Buat Akun AO              | Admin |
+| `/accounts/officers/{id}/edit` | Ubah Akun AO          | Admin |
 | `/lending`                 | Lending                    | Admin |
+| `/lending/ao`              | Lending Per AO             | Admin |
+| `/lending/referrals`       | Lending Per Referral       | Admin |
 
 Route `/dashboard`, `/applications`, dan `/profile` digunakan bersama oleh lebih dari satu role. Isinya berbeda mengikuti role yang sedang masuk.
 
@@ -76,7 +87,7 @@ Dashboard · Simulasi Kredit · Aplikasi · Profil
 ### Account Officer
 
 ```text
-Dashboard · Aplikasi · Profil
+Dashboard · Simulasi Kredit · Aplikasi · Profil
 ```
 
 ### Admin
@@ -86,6 +97,8 @@ Dashboard · Konfigurasi · Master Data · Akun · Lending
 ```
 
 Menu yang tidak dapat diakses sebuah role tidak ditampilkan. Menyembunyikan menu bukan pengganti pemeriksaan otorisasi di backend.
+
+Pada Admin, `/configuration`, `/master`, `/accounts`, dan `/lending` adalah halaman module grid. Setiap tile membuka route subpage sendiri, bukan mengganti konten inline di bawah grid. Pada mobile, pola ini menggantikan navbar subpage horizontal agar halaman tidak penuh oleh tab yang harus discroll.
 
 ---
 
@@ -158,8 +171,42 @@ Pintasan ke Buat Credit Application
 ```text
 Ringkasan Actual Lending dan Pipe Line
 Jumlah akun Referral dan AO
-Pintasan ke Konfigurasi dan Lending
+Visualisasi komposisi lending, performa produk, dan trend Actual bulanan
 ```
+
+Dashboard Admin memiliki filter waktu: 1 bulan, 3 bulan, 12 bulan, dan Semua. Nilai default adalah **Semua**. Grafik dashboard boleh memakai scroll animation untuk reveal konten, namun animasi ini dibatasi pada dashboard Admin dan tidak berlaku untuk page module/leaf Admin lain.
+
+---
+
+## 6b. Simulasi Kredit — Account Officer
+
+Route `/simulation/officer`. Layar terpisah dari Simulasi Kredit Referral, dengan engine yang sama pada profil Account Officer.
+
+Tiga perbedaan terhadap layar Referral:
+
+| Aspek            | Referral                          | Account Officer                                            |
+| ---------------- | --------------------------------- | ---------------------------------------------------------- |
+| Sumber Product   | Kategori Referral yang login      | Kategori Referral dipilih manual pada bagian Asal Pengajuan |
+| Parameter        | Ditetapkan Admin, tidak dapat diubah | Upping dan input asuransi dapat diubah per simulasi      |
+| Keluaran         | Lima tenor, dapat diunduh sebagai PDF | Lima tenor beserta rincian perhitungan, tanpa unduhan   |
+
+Bagian pada halaman:
+
+```text
+1 · Produk Pembiayaan
+2 · Asal Pengajuan               Kategori dan Sub Kategori Referral
+3 · Profil Debitur               Type Debitur dan Usia, tanpa identitas
+4 · Data Kendaraan               termasuk Harga Taksasi atau Harga Pasar
+5 · Asuransi                     coverage, varian rate, TJH, pengemudi, penumpang, perluasan
+6 · Upping dan Pengurang Pencairan
+7 · Dasar Simulasi               Mode A atau Mode B
+```
+
+Nilai pada bagian 5 dan 6 berlaku untuk satu simulasi saja. Tidak ada yang ditulis kembali ke Product maupun ke parameter Admin.
+
+Halaman ini tidak meminta Nama, NIK, maupun Tanggal Lahir. Tidak ada dokumen yang dihasilkan, sehingga tidak ada alasan menyentuh identitas debitur.
+
+Panel hasil menampilkan lima tenor beserta jejak penurunan angka per tenor, memakai `CalculationTrace` yang sama dengan Uji Konfigurasi Admin. AO membutuhkan angka LTV untuk mengisi Amount Finance pada Credit Application.
 
 ---
 
@@ -455,6 +502,7 @@ Nilai tunggal: batas usia maksimal unit, garansi mesin, wilayah asuransi aktif, 
 
 - Perubahan berlaku pada simulasi berikutnya.
 - Setiap halaman konfigurasi menampilkan waktu perubahan terakhir dan pelakunya.
+- Catatan perubahan terakhir dipisahkan per module. Misalnya perubahan `simulation_settings` dari `Biaya dan Down Payment` tidak boleh tampil sebagai perubahan terakhir pada `Nilai Default Simulasi`, walaupun keduanya memakai tabel yang sama.
 - Nilai persentase ditampilkan sebagai persen dan disimpan sebagai pecahan.
 
 ---
@@ -489,17 +537,19 @@ Daftar sederhana dengan urutan tampilan.
 
 Daftar seluruh Referral. Admin dapat melihat dan menyunting profil.
 
-Admin **tidak** dapat melihat aplikasi milik Referral. Halaman ini hanya memuat profil.
+Admin **tidak** dapat melihat aplikasi milik Referral. Page edit profil Referral berada pada route sendiri (`/accounts/referrals/{id}/edit`) dan form edit tidak ditampilkan inline di bawah tabel.
 
 ### Akun AO
 
-Daftar AO, dengan kemampuan membuat akun baru. Kata sandi awal dibuat otomatis dan ditampilkan sekali setelah akun dibuat.
+Daftar AO, dengan kemampuan membuat akun baru. Page buat akun AO dan page ubah profil AO berada pada route sendiri, bukan form inline di bawah tabel.
+
+Kata sandi awal dibuat otomatis dan ditampilkan sekali setelah akun dibuat. Tampilan kata sandi awal berupa popup sederhana, bukan card inline. Popup harus menyediakan tombol ikon salin untuk menyalin kata sandi, feedback setelah tersalin, dan kontrol untuk menutup popup. Setelah ditutup atau terjadi interaksi Livewire berikutnya, kata sandi tidak dapat dimunculkan kembali.
 
 ---
 
 ## 15. Halaman Admin — Lending
 
-Dua pengelompokan, dipilih melalui tab.
+Dua pengelompokan, dipilih melalui module Lending.
 
 ```text
 Per AO        baris berisi Referral
@@ -518,13 +568,7 @@ Kolom pada kedua tab:
 
 Baris TOTAL wajib ada dan mengikuti penyaring aktif.
 
-Penyaring: periode, produk pembiayaan, dan atribut Referral.
-
-Periode hanya berlaku pada kolom Actual. Keterangan wajib ditampilkan:
-
-```text
-Pipe Line menggambarkan posisi saat ini dan tidak dipotong periode.
-```
+Penyaring: bulan Go Live, produk pembiayaan, dan kategori Referral. Filter diperbarui secara asynchronous dengan Livewire; tidak ada tombol Terapkan. Query string tetap disinkronkan agar URL laporan dapat dibagikan. Tombol Bersihkan hanya muncul saat ada filter aktif dan berjalan asynchronous.
 
 ---
 
@@ -592,3 +636,4 @@ Baris terakhir penting: bagi AO yang membuka aplikasi milik AO lain, sistem mena
 | `application-tracking.md` | Struktur application dan tahapan        |
 | `lending.md`              | Agregasi dan penyaring Lending          |
 | `architecture.md`         | Keputusan teknis                        |
+| `session-changes-2026-08-11.md` | Ringkasan perubahan penting sesi 2026-08-11 |

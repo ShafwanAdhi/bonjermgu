@@ -36,6 +36,13 @@ Ini **bukan** Credit Simulation dalam arti operasional. Tiga pembatas berikut me
 
 Halaman ini menampilkan seluruh langkah perhitungan beserta rumusnya, dibaca langsung dari hasil engine tanpa perhitungan ulang. Tujuannya agar setiap angka dapat diperiksa terhadap `credit-simulation.md`.
 
+Dua kendali tambahan, keduanya berlaku hanya untuk satu pengujian dan tidak pernah ditulis kembali ke Product maupun ke parameter Admin:
+
+- **Profil Simulasi** memilih aturan layar mana yang diperiksa, Referral atau Account Officer. Profil AO memakai Harga Taksasi, memberi Deviasi pada Dana Tunai, dan membulatkan Net DP ke atas. Tanpa pemilih ini separuh perilaku engine tidak pernah terperiksa dari layar konfigurasi.
+- **Upping pengujian** menimpa Up Rate, Up Admin, Up Provisi, dan Up ACP, sehingga Admin dapat melihat dampak sebuah nilai upping sebelum menyimpannya ke Product.
+
+Pembiayaan Mobil Bekas hanya menerima unit Passenger, jadi Commercial tidak ditawarkan ketika produk tersebut dipilih.
+
 ### Access Matrix
 
 | Feature                         | Admin                |
@@ -90,6 +97,7 @@ Referral tidak dapat mengubah status dokumen maupun status tracking. Akses bersi
 ### Responsibilities
 
 - Menerima informasi application dari Referral.
+- Menjalankan simulasi kredit untuk memeriksa ulang angka yang diterima, dengan upping dan input asuransi sesuai kondisi pengajuan.
 - Menginput data awal customer.
 - Membuat Credit Application.
 - Menginput Amount Finance.
@@ -99,17 +107,23 @@ Referral tidak dapat mengubah status dokumen maupun status tracking. Akses bersi
 
 ### Access Matrix
 
-| Feature                         | AO                  |
-| ------------------------------- | ------------------- |
-| Credit Simulation               | No                  |
-| Credit Simulation Configuration | No                  |
-| Master Data                     | No                  |
-| Credit Application              | Create / Manage Own |
-| Document Verification           | Own Application     |
-| Application Tracking            | Own Application     |
-| Application History             | Own Application     |
-| Lending                         | No                  |
-| Report                          | No                  |
+| Feature                         | AO                        |
+| ------------------------------- | ------------------------- |
+| Credit Simulation               | Yes, tanpa unduhan PDF    |
+| Credit Simulation Configuration | No                        |
+| Master Data                     | No                        |
+| Credit Application              | Create / Manage Own       |
+| Document Verification           | Own Application           |
+| Application Tracking            | Own Application           |
+| Application History             | Own Application           |
+| Lending                         | No                        |
+| Report                          | No                        |
+
+Simulasi AO berjalan pada profil Account Officer: harga Dana Tunai berasal dari
+Harga Taksasi yang diinput AO, dan upping serta input asuransi dapat disesuaikan
+per simulasi. Layar ini tidak menghasilkan dokumen, sehingga tidak meminta
+identitas debitur. Rinciannya pada `pages.md` bagian 6b dan
+`credit-simulation.md` bagian 14b.
 
 Detail persyaratan dokumen dan Application Tracking berada pada:
 

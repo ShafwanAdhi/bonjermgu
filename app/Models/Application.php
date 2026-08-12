@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Domain\Application\ApplicationCodeGenerator;
+use App\Domain\Application\ApplicationStatus;
 use App\Domain\Application\DebtorType;
 use App\Domain\Application\DocumentStatus;
 use App\Domain\Application\FinancingProduct;
@@ -40,6 +41,7 @@ class Application extends Model
         'amount_finance',
         'unit_count',
         'go_live_date',
+        'application_status',
     ];
 
     protected function casts(): array
@@ -52,6 +54,7 @@ class Application extends Model
             'spouse_income_type' => SpouseIncomeType::class,
             'amount_finance' => 'integer',
             'unit_count' => 'integer',
+            'application_status' => ApplicationStatus::class,
         ];
     }
 
@@ -98,6 +101,29 @@ class Application extends Model
     public function isGoLive(): bool
     {
         return $this->go_live_date !== null;
+    }
+
+    public function isCanceled(): bool
+    {
+        return $this->application_status === ApplicationStatus::Canceled;
+    }
+
+    public function statusLabel(): string
+    {
+        if ($this->isCanceled()) {
+            return ApplicationStatus::Canceled->value;
+        }
+
+        return $this->isGoLive() ? 'Go Live' : ApplicationStatus::Pipeline->value;
+    }
+
+    public function statusTone(): string
+    {
+        return match (true) {
+            $this->isCanceled() => 'danger',
+            $this->isGoLive() => 'success',
+            default => 'neutral',
+        };
     }
 
     public function completedDocumentCount(): int

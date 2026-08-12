@@ -9,6 +9,7 @@ use App\Domain\Simulation\Insurance\InsuranceCalculator;
 use App\Domain\Simulation\Output\SimulationResult;
 use App\Domain\Simulation\Output\TenorResult;
 use App\Domain\Simulation\Rate\FlatRateConverter;
+use App\Domain\Simulation\Refund\RefundBreakdown;
 use App\Domain\Simulation\Refund\RefundCalculator;
 use InvalidArgumentException;
 
@@ -26,6 +27,10 @@ final class MobilBekasCalculator
     {
         if ($input->financingType !== FinancingType::UCF) {
             throw new InvalidArgumentException('MobilBekasCalculator hanya menerima pembiayaan UCF.');
+        }
+
+        if ($input->vehicleUsage !== VehicleUsage::PASSENGER) {
+            throw new InvalidArgumentException('Pembiayaan Mobil Bekas hanya tersedia untuk unit Passenger.');
         }
 
         $results = [];
@@ -59,14 +64,25 @@ final class MobilBekasCalculator
 
         $otrPrice = $input->marketPrice;
         $deviationAmount = max($otrPrice - $input->phpmPrice, 0);
-        $deviationRate = $deviationAmount / $otrPrice;
+        // Measured against the master price, so the surcharge tracks how far
+        // the asking price runs ahead of PHPM rather than diluting into it.
+        $deviationRate = $deviationAmount / $input->phpmPrice;
         $minimumNetDpRate = $this->minimumNetDpRate($input, $config) + $deviationRate;
         $modeANetDpAmount = $otrPrice * $minimumNetDpRate;
         $modeALtvAmount = $otrPrice - $modeANetDpAmount;
+
+        // A deviation large enough to push Net DP past the whole price leaves
+        // nothing to finance, so the tenor normalises to zero rather than
+        // reporting a negative instalment and disbursement.
+        if ($modeALtvAmount <= 0) {
+            return TenorResult::zero($tenorMonths, $score, $eligible, $rateAvailable);
+        }
+
         $flatRate = $this->flatRateConverter->convert($effectiveRate, $tenorMonths, $input->instalmentType);
         $flatRateFinal = $flatRate + $config->product->upRate;
         $sellingInterestRate = $flatRateFinal * ($tenorMonths / 12);
-        $insurance = $this->insuranceCalculator->calculate($input, $config, $otrPrice, $tenorMonths, $currentYear);
+        $modeATotalAr = $modeALtvAmount * (1 + $sellingInterestRate);
+        $insurance = $this->insuranceCalculator->calculate($input, $config, $otrPrice, $tenorMonths, $currentYear, $modeATotalAr);
         $fees = $this->feeCalculator->calculate(FinancingType::UCF, $config, $modeALtvAmount, $otrPrice);
 
         if ($input->mode === SimulationMode::A) {
@@ -114,15 +130,9 @@ final class MobilBekasCalculator
             $firstInstalment = $meetsMinimum ? $firstInstalment : 0;
             $interestAmount = $ltvAmount * $sellingInterestRate;
             $totalAccountsReceivable = $ltvAmount + $interestAmount;
-            $refund = $this->refundCalculator->calculate(
-                $insurance,
-                $config->product,
-                $config->refund,
-                $ltvAmount,
-                $tenorMonths,
-                $sellingInterestRate,
-                $fees->provision,
-            );
+            // Mode B quotes an instalment against a chosen Total DP; there is
+            // no disbursement for a refund to be added back to.
+            $refund = RefundBreakdown::zero();
             $totalDownPayment = $input->desiredAmount;
             $desiredAmount = $input->desiredAmount;
             $grossDisbursement = 0;
@@ -168,8 +178,12 @@ final class MobilBekasCalculator
 
     private function minimumNetDpRate(SimulationInput $input, SimulationConfig $config): float
     {
-        return $input->debtorType === DebtorType::ENTREPRENEUR
-            ? $config->downPayment->ucfEntrepreneurRate
+        if ($input->debtorType === DebtorType::ENTREPRENEUR) {
+            return $config->downPayment->ucfEntrepreneurRate;
+        }
+
+        return $input->vehicleOrigin === VehicleOrigin::NON_JAPAN
+            ? $config->downPayment->ucfNonJapanStandardRate
             : $config->downPayment->ucfStandardRate;
     }
 }

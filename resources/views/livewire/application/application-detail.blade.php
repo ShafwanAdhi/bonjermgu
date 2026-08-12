@@ -9,10 +9,10 @@
 
     <x-ui.back-link :href="route('applications.index')" wire:navigate class="mb-md" />
 
-    <div class="mb-lg flex flex-wrap items-center gap-md">
+    <div class="mb-lg flex flex-col items-start gap-2">
         <h1 class="m-0 font-display text-display-md text-ink">{{ $application->code }}</h1>
-        <x-ui.chip :tone="$application->go_live_date ? 'success' : 'neutral'" class="px-3 py-1.5 text-[13px]">
-            {{ $application->go_live_date ? 'Go Live' : 'Pipe Line' }}
+        <x-ui.chip :tone="$application->statusTone()" class="px-3 py-1.5 text-[13px]">
+            {{ $application->statusLabel() }}
         </x-ui.chip>
     </div>
 
@@ -24,7 +24,26 @@
     <x-ui.card title="Data" class="mb-lg">
         @if ($this->canEdit && ! $editing)
             <x-slot:actions>
-                <x-ui.button variant="secondary" size="md" wire:click="edit">Ubah Data</x-ui.button>
+                <div class="grid w-full grid-cols-2 gap-sm sm:flex sm:w-auto sm:flex-wrap sm:justify-end">
+                    @if (! $application->isCanceled())
+                        <x-ui.button variant="secondary" size="md" wire:click="edit"
+                                     class="min-h-10 w-full whitespace-nowrap !px-2.5 !py-2 text-[12px] leading-none sm:w-auto sm:!px-5 sm:!py-[11px] sm:text-button">
+                            Ubah Data
+                        </x-ui.button>
+                    @endif
+
+                    @if (! $application->isGoLive() && ! $application->isCanceled())
+                        <x-ui.button variant="secondary" size="md" wire:click="askCancelApplication"
+                                     class="min-h-10 w-full whitespace-nowrap !px-2.5 !py-2 text-[12px] leading-none text-red-700 sm:w-auto sm:!px-5 sm:!py-[11px] sm:text-button">
+                            Batalkan Aplikasi
+                        </x-ui.button>
+                    @elseif ($application->isCanceled())
+                        <x-ui.button variant="secondary" size="md" wire:click="restoreApplication"
+                                     class="col-span-2 min-h-10 w-full !px-2.5 !py-2 text-[12px] leading-none sm:w-auto sm:!px-5 sm:!py-[11px] sm:text-button">
+                            Aktifkan Kembali
+                        </x-ui.button>
+                    @endif
+                </div>
             </x-slot:actions>
         @endif
 
@@ -163,7 +182,7 @@
                             <p class="mt-1 text-[13px] text-muted">{{ $document->requirement->subject }}</p>
                         </div>
 
-                        @if ($this->canEdit)
+                        @if ($this->canEdit && ! $application->isCanceled())
                             <x-ui.status-toggle :is-active="$document->status->isComplete()" active-label="Lengkap">
                                 <x-slot:inactive wire:click="setDocumentStatus({{ $document->id }}, '{{ DocumentStatus::Belum->value }}')"></x-slot:inactive>
                                 <x-slot:active wire:click="setDocumentStatus({{ $document->id }}, '{{ DocumentStatus::Lengkap->value }}')"></x-slot:active>
@@ -192,7 +211,7 @@
                     <x-ui.td>{{ $document->requirement->name }}</x-ui.td>
                     <x-ui.td class="text-[13px] text-muted">{{ $document->requirement->subject }}</x-ui.td>
                     <x-ui.td align="right">
-                        @if ($this->canEdit)
+                        @if ($this->canEdit && ! $application->isCanceled())
                             <x-ui.status-toggle :is-active="$document->status->isComplete()" active-label="Lengkap">
                                 <x-slot:inactive wire:click="setDocumentStatus({{ $document->id }}, '{{ DocumentStatus::Belum->value }}')"></x-slot:inactive>
                                 <x-slot:active wire:click="setDocumentStatus({{ $document->id }}, '{{ DocumentStatus::Lengkap->value }}')"></x-slot:active>
@@ -219,7 +238,7 @@
                     </span>
                     <span class="flex-1 text-body-md text-body">{{ $tracking->stage->name }}</span>
 
-                    @if ($this->canEdit)
+                    @if ($this->canEdit && ! $application->isCanceled())
                         {{-- Never disabled because an earlier stage is unfinished. --}}
                         <x-ui.status-toggle :is-active="$tracking->status->isDone()" active-label="Selesai">
                             <x-slot:inactive wire:click="toggleStage({{ $tracking->stage_no }})"></x-slot:inactive>
@@ -250,6 +269,23 @@
                 <div class="flex justify-end gap-sm">
                     <x-ui.button variant="secondary" size="md" wire:click="cancelGoLive">Batal</x-ui.button>
                     <x-ui.button size="md" wire:click="confirmGoLive">Tandai Selesai</x-ui.button>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    @if ($confirmingCancel)
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-primary/45 p-lg"
+             wire:click="cancelCancelApplication">
+            <div class="max-w-[460px] rounded-lg bg-canvas p-xl shadow-[0_24px_64px_rgba(13,18,24,0.25)]"
+                 wire:click.stop>
+                <p class="mb-sm text-title-sm text-ink">Batalkan aplikasi ini?</p>
+                <p class="mb-lg text-[14px] leading-[1.7] text-body">
+                    Aplikasi akan keluar dari status Pipe Line dan tampil sebagai Canceled pada daftar aplikasi.
+                </p>
+                <div class="flex justify-end gap-sm">
+                    <x-ui.button variant="secondary" size="md" wire:click="cancelCancelApplication">Batal</x-ui.button>
+                    <x-ui.button size="md" wire:click="confirmCancelApplication">Batalkan Aplikasi</x-ui.button>
                 </div>
             </div>
         </div>

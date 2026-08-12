@@ -1,0 +1,48 @@
+- generic [ref=f1e1]:
+  - banner [ref=f1e2]:
+    - generic [ref=f1e3]:
+      - link "M Kebon Jeruk Multiguna" [ref=f1e4] [cursor=pointer]:
+        - /url: http://127.0.0.1:8123
+        - generic [ref=f1e5]:
+          - generic [ref=f1e6]: M
+          - generic [ref=f1e7]: Kebon Jeruk Multiguna
+      - link "Masuk" [ref=f1e8] [cursor=pointer]:
+        - /url: http://127.0.0.1:8123/login
+      - link "Registrasi" [ref=f1e9] [cursor=pointer]:
+        - /url: http://127.0.0.1:8123/register
+  - main [ref=f1e10]:
+    - generic [ref=f1e12]:
+      - link "Kembali" [ref=f1e13] [cursor=pointer]:
+        - /url: http://127.0.0.1:8123
+      - generic [ref=f1e18]:
+        - heading "Masuk" [level=1] [ref=f1e19]
+        - paragraph [ref=f1e20]: Gunakan nama user dan kata sandi Anda.
+        - generic [ref=f1e21]:
+          - generic [ref=f1e22]:
+            - generic [ref=f1e23]: Nama User
+            - textbox "Masukkan nama user" [active] [ref=f1e24]
+          - generic [ref=f1e25]:
+            - generic [ref=f1e26]: Kata Sandi
+            - generic [ref=f1e27]:
+              - textbox "Masukkan kata sandi" [ref=f1e28]
+              - button "Tampilkan kata sandi" [ref=f1e29] [cursor=pointer]
+          - generic [ref=f1e33]:
+            - generic [ref=f1e34]:
+              - checkbox "Ingat saya" [ref=f1e35]
+              - text: Ingat saya
+            - link "Lupa kata sandi?" [ref=f1e36] [cursor=pointer]:
+              - /url: http://127.0.0.1:8123/forgot-password
+          - button "Masuk" [ref=f1e37] [cursor=pointer]
+        - paragraph [ref=f1e39]:
+          - text: Belum punya akun?
+          - link "Registrasi" [ref=f1e40] [cursor=pointer]:
+            - /url: http://127.0.0.1:8123/register
+  - contentinfo [ref=f1e41]:
+    - generic [ref=f1e42]:
+      - generic [ref=f1e44]:
+        - generic [ref=f1e45]: M
+        - generic [ref=f1e46]: Kebon Jeruk Multiguna
+      - link "Registrasi" [ref=f1e47] [cursor=pointer]:
+        - /url: http://127.0.0.1:8123/register
+      - link "Masuk" [ref=f1e48] [cursor=pointer]:
+        - /url: http://127.0.0.1:8123/login

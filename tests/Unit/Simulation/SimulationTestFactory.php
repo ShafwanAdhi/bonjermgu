@@ -14,13 +14,14 @@ use App\Domain\Simulation\Input\SimulationConfig;
 use App\Domain\Simulation\Input\SimulationInput;
 use App\Domain\Simulation\InstalmentType;
 use App\Domain\Simulation\SimulationMode;
+use App\Domain\Simulation\SimulationProfile;
 use App\Domain\Simulation\StnkOwnership;
 use App\Domain\Simulation\VehicleOrigin;
 use App\Domain\Simulation\VehicleUsage;
 
 final class SimulationTestFactory
 {
-    public static function dtnConfig(?ProductConfig $product = null): SimulationConfig
+    public static function dtnConfig(?ProductConfig $product = null, SimulationProfile $profile = SimulationProfile::REFERRAL): SimulationConfig
     {
         return self::config($product ?? new ProductConfig(
             name: 'Reguler Passenger Sales Dealer',
@@ -32,10 +33,10 @@ final class SimulationTestFactory
                 60 => 0.1926,
             ],
             adminMax: 5_350_000,
-        ));
+        ), $profile);
     }
 
-    public static function ucfConfig(?ProductConfig $product = null): SimulationConfig
+    public static function ucfConfig(?ProductConfig $product = null, SimulationProfile $profile = SimulationProfile::REFERRAL): SimulationConfig
     {
         return self::config($product ?? new ProductConfig(
             name: 'Captive Passenger Low Rate',
@@ -48,7 +49,7 @@ final class SimulationTestFactory
             ],
             adminMax: 4_700_000,
             upRate: 0.005,
-        ));
+        ), $profile);
     }
 
     public static function dtnInput(
@@ -57,6 +58,7 @@ final class SimulationTestFactory
         string $ageGroup = '36-45 tahun',
         int $vehicleYear = 2017,
         float $phpmPrice = 110_000_026,
+        float $marketPrice = 0,
     ): SimulationInput {
         return new SimulationInput(
             financingType: FinancingType::DTN,
@@ -70,6 +72,7 @@ final class SimulationTestFactory
             phpmPrice: $phpmPrice,
             instalmentType: $instalmentType,
             coverageType: CoverageType::COMPREHENSIVE_THEN_TLO,
+            marketPrice: $marketPrice,
             desiredAmount: 60_000_000,
         );
     }
@@ -81,14 +84,16 @@ final class SimulationTestFactory
         float $marketPrice = 110_000_000,
         int $vehicleYear = 2017,
         float $phpmPrice = 110_000_026,
+        VehicleOrigin $vehicleOrigin = VehicleOrigin::JAPAN,
+        VehicleUsage $vehicleUsage = VehicleUsage::PASSENGER,
     ): SimulationInput {
         return new SimulationInput(
             financingType: FinancingType::UCF,
             mode: $mode,
             debtorType: $debtorType,
             ageGroup: $debtorType === DebtorType::LEGAL_ENTITY ? null : '36-45 tahun',
-            vehicleUsage: VehicleUsage::PASSENGER,
-            vehicleOrigin: VehicleOrigin::JAPAN,
+            vehicleUsage: $vehicleUsage,
+            vehicleOrigin: $vehicleOrigin,
             stnkOwnership: StnkOwnership::OWN,
             vehicleYear: $vehicleYear,
             phpmPrice: $phpmPrice,
@@ -99,10 +104,11 @@ final class SimulationTestFactory
         );
     }
 
-    private static function config(ProductConfig $product): SimulationConfig
+    private static function config(ProductConfig $product, SimulationProfile $profile = SimulationProfile::REFERRAL): SimulationConfig
     {
         return new SimulationConfig(
             product: $product,
+            profile: $profile,
             insurance: new InsuranceConfig(
                 activeZone: 'Wilayah 2',
                 activeVariant: 'Batas Bawah',
@@ -131,6 +137,8 @@ final class SimulationTestFactory
                     ['limit' => null, 'rate' => 0.0015],
                 ],
                 engineWarrantyFee: 1_500_000,
+                acpMaxLoanAmount: 1_000_000_000,
+                ucfAcpEnabled: true,
             ),
             fees: new FeeConfig([
                 ['min' => 0, 'max' => 25_000_000, 'fee' => 350_000],
@@ -141,7 +149,7 @@ final class SimulationTestFactory
                 ['min' => 500_000_001, 'max' => 1_000_000_000, 'fee' => 1_150_000],
                 ['min' => 1_000_000_001, 'max' => null, 'fee' => 2_250_000],
             ]),
-            downPayment: new DownPaymentConfig(0.05, 0.15, 0.10, 0.30),
+            downPayment: new DownPaymentConfig(0.05, 0.15, 0.10, 0.15, 0.30),
             refund: new RefundConfig(0.10, 1.00, 0.80, 0.80, 0.80),
             maxVehicleAge: 16,
         );

@@ -37,7 +37,6 @@ final class Products extends AuditedAdminComponent
             'admin_min' => '',
             'admin_max' => '',
             'provisi_rate' => '0',
-            'up_acp' => '0',
             'up_rate' => '0',
             'up_admin' => '0',
             'up_provisi' => '0',
@@ -65,7 +64,6 @@ final class Products extends AuditedAdminComponent
             'admin_min' => (string) $product->admin_min,
             'admin_max' => (string) $product->admin_max,
             'provisi_rate' => $this->percent($product->provisi_rate),
-            'up_acp' => $this->percent($product->up_acp),
             'up_rate' => $this->percent($product->up_rate),
             'up_admin' => (string) $product->up_admin,
             'up_provisi' => $this->percent($product->up_provisi),
@@ -98,7 +96,6 @@ final class Products extends AuditedAdminComponent
                 'admin_min' => $values['admin_min'],
                 'admin_max' => $values['admin_max'],
                 'provisi_rate' => $this->fraction($values['provisi_rate']),
-                'up_acp' => $this->fraction($values['up_acp']),
                 'up_rate' => $this->fraction($values['up_rate']),
                 'up_admin' => $values['up_admin'],
                 'up_provisi' => $this->fraction($values['up_provisi']),
@@ -171,7 +168,6 @@ final class Products extends AuditedAdminComponent
             'form.admin_min' => ['required', 'integer', 'min:0', 'lte:form.admin_max'],
             'form.admin_max' => ['required', 'integer', 'min:0', 'gte:form.admin_min'],
             'form.provisi_rate' => ['required', 'numeric', 'between:0,100'],
-            'form.up_acp' => ['required', 'numeric', 'between:0,100'],
             'form.up_rate' => ['required', 'numeric', 'between:0,100'],
             'form.up_admin' => ['required', 'integer', 'min:0'],
             'form.up_provisi' => ['required', 'numeric', 'between:0,100'],
@@ -194,7 +190,6 @@ final class Products extends AuditedAdminComponent
             'form.admin_min' => 'Admin Minimal',
             'form.admin_max' => 'Admin Maksimal',
             'form.provisi_rate' => 'Provisi',
-            'form.up_acp' => 'Up ACP',
             'form.up_rate' => 'Up Rate',
             'form.up_admin' => 'Up Admin',
             'form.up_provisi' => 'Up Provisi',
@@ -204,6 +199,11 @@ final class Products extends AuditedAdminComponent
     protected function auditTables(): array
     {
         return ['products', 'product_rates'];
+    }
+
+    protected function auditModule(): string
+    {
+        return 'configuration.products';
     }
 
     private function fraction(string|int|float $percent): float

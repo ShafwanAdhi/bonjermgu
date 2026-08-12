@@ -352,4 +352,9 @@ final class Vehicles extends AuditedAdminComponent
     {
         return ['vehicle_usages', 'vehicle_brands', 'vehicle_types', 'vehicle_models', 'vehicle_prices'];
     }
+
+    protected function auditModule(): string
+    {
+        return 'master.vehicles';
+    }
 }

@@ -7,7 +7,7 @@
             <div class="rounded-md border border-signature-coral bg-danger-bg px-md py-3 text-[13px] text-signature-coral">{{ $message }}</div>
         @enderror
 
-        <x-ui.card title="Nilai Default Simulasi" note="Seluruh key wajib lengkap; wilayah aktif hanya dapat dipilih setelah matriks Insurance lengkap.">
+        <x-ui.card title="Parameter Default" note="Wilayah aktif hanya dapat dipilih setelah matriks Insurance lengkap.">
             <div class="grid grid-cols-1 gap-md md:grid-cols-2">
                 @foreach ($definitions as $key => $definition)
                     <x-ui.field :label="$definition['label']" required :error="$errors->first('settings.'.$key)">
@@ -39,11 +39,6 @@
                 @endforeach
             </div>
         </x-ui.card>
-
-        <x-ui.callout>
-            Penyimpanan ditolak bila key hilang, tipe nilainya salah, TJH tidak mengikuti kelipatan,
-            atau wilayah dan varian Insurance yang dipilih belum mempunyai seluruh band.
-        </x-ui.callout>
 
         <div class="flex items-center gap-sm">
             <x-ui.button type="submit" size="md" wire:loading.attr="disabled">Simpan Nilai Default</x-ui.button>

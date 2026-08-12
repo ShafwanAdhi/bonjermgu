@@ -52,18 +52,37 @@ final class DanaTunaiCalculator
         $effectiveRate = $config->product->effectiveRateFor($tenorMonths);
         $rateAvailable = $effectiveRate !== null;
 
-        if (! $eligible || ! $rateAvailable || $input->phpmPrice <= 0) {
+        // The Account Officer appraises the unit; Referral is always priced
+        // straight off the PHPM master.
+        $officer = $config->profile === SimulationProfile::OFFICER;
+
+        if (! $eligible || ! $rateAvailable || $input->phpmPrice <= 0 || ($officer && $input->marketPrice <= 0)) {
             return TenorResult::zero($tenorMonths, $score, $eligible, $rateAvailable);
         }
 
-        $otrPrice = Rounding::down($input->phpmPrice, 100);
-        $minimumNetDpRate = $this->minimumNetDpRate($input, $config);
-        $modeANetDpAmount = $otrPrice * $minimumNetDpRate;
+        $otrPrice = $officer
+            ? $input->marketPrice
+            : Rounding::down($input->phpmPrice, 100);
+        $deviationAmount = $officer ? max($otrPrice - $input->phpmPrice, 0) : 0;
+        $deviationRate = $officer ? $deviationAmount / $input->phpmPrice : 0.0;
+        $minimumNetDpRate = $this->minimumNetDpRate($input, $config) + $deviationRate;
+        $modeANetDpAmount = $officer
+            ? Rounding::up($otrPrice * $minimumNetDpRate, 1000)
+            : $otrPrice * $minimumNetDpRate;
         $modeALtvAmount = $otrPrice - $modeANetDpAmount;
+
+        // An appraised value far above PHPM can drive Net DP past the whole
+        // price. Nothing is financed, so the tenor normalises to zero instead
+        // of reporting a negative disbursement.
+        if ($modeALtvAmount <= 0) {
+            return TenorResult::zero($tenorMonths, $score, $eligible, $rateAvailable);
+        }
+
         $flatRate = $this->flatRateConverter->convert($effectiveRate, $tenorMonths, $input->instalmentType);
         $flatRateFinal = $flatRate + $config->product->upRate;
         $sellingInterestRate = $flatRateFinal * ($tenorMonths / 12);
-        $insurance = $this->insuranceCalculator->calculate($input, $config, $otrPrice, $tenorMonths, $currentYear);
+        $modeATotalAr = $modeALtvAmount * (1 + $sellingInterestRate);
+        $insurance = $this->insuranceCalculator->calculate($input, $config, $otrPrice, $tenorMonths, $currentYear, $modeATotalAr);
         $fees = $this->feeCalculator->calculate(FinancingType::DTN, $config, $modeALtvAmount, $otrPrice);
 
         if ($input->mode === SimulationMode::A) {
@@ -106,8 +125,8 @@ final class DanaTunaiCalculator
             eligibilityScore: $score,
             phpmPrice: $input->phpmPrice,
             otrPrice: $otrPrice,
-            deviationAmount: 0,
-            deviationRate: 0,
+            deviationAmount: $deviationAmount,
+            deviationRate: $deviationRate,
             minimumNetDpRate: $minimumNetDpRate,
             effectiveRate: $effectiveRate,
             flatRate: $flatRate,

@@ -148,4 +148,9 @@ final class Lookups extends AuditedAdminComponent
     {
         return ['domiciles', 'age_groups', 'acp_uppings'];
     }
+
+    protected function auditModule(): string
+    {
+        return 'master.lookups';
+    }
 }

@@ -43,22 +43,29 @@ final class SimulationConfigurationRepository
         return $this->forProduct($this->productResolver->resolve($referral, $usage));
     }
 
-    public function forProduct(Product $product): SimulationConfig
+    /**
+     * @param  string|null  $rateVariant  Overrides the Admin default. The Account
+     *                                    Officer screen exposes the insurance
+     *                                    rate variant per simulation, and the
+     *                                    Casco rows must be re-read for it.
+     */
+    public function forProduct(Product $product, ?string $rateVariant = null): SimulationConfig
     {
         $version = Cache::get(self::CACHE_VERSION_KEY, '0');
+        $variantKey = $rateVariant === null ? '' : ':variant:'.md5($rateVariant);
 
         return Cache::remember(
-            "simulation_config:{$version}:product:{$product->id}",
+            "simulation_config:{$version}:product:{$product->id}{$variantKey}",
             now()->addHours(12),
-            fn () => $this->buildForProduct($product),
+            fn () => $this->buildForProduct($product, $rateVariant),
         );
     }
 
-    private function buildForProduct(Product $product): SimulationConfig
+    private function buildForProduct(Product $product, ?string $rateVariant = null): SimulationConfig
     {
         $settings = SimulationSetting::query()->pluck('value', 'key')->all();
         $zone = $this->stringSetting($settings, 'active_insurance_zone');
-        $variant = $this->stringSetting($settings, 'active_rate_variant');
+        $variant = $rateVariant ?? $this->stringSetting($settings, 'active_rate_variant');
 
         return new SimulationConfig(
             product: $this->productConfig($product),
@@ -111,6 +118,7 @@ final class SimulationConfigurationRepository
                         'rate' => $tier->rate,
                     ])->all(),
                 engineWarrantyFee: $this->floatSetting($settings, 'engine_warranty_fee'),
+                acpMaxLoanAmount: $this->floatSetting($settings, 'acp_max_loan_amount'),
                 dtnAcpEnabled: $this->boolSetting($settings, 'dtn_acp_enabled'),
                 ucfAcpEnabled: $this->boolSetting($settings, 'ucf_acp_enabled'),
             ),
@@ -128,6 +136,7 @@ final class SimulationConfigurationRepository
                 dtnStandardRate: $this->floatSetting($settings, 'dtn_standard_net_dp_rate'),
                 dtnHighRiskRate: $this->floatSetting($settings, 'dtn_high_risk_net_dp_rate'),
                 ucfStandardRate: $this->floatSetting($settings, 'ucf_standard_net_dp_rate'),
+                ucfNonJapanStandardRate: $this->floatSetting($settings, 'ucf_non_japan_net_dp_rate'),
                 ucfEntrepreneurRate: $this->floatSetting($settings, 'ucf_entrepreneur_net_dp_rate'),
             ),
             refund: new RefundConfig(
@@ -176,7 +185,6 @@ final class SimulationConfigurationRepository
             upRate: $product->up_rate,
             upAdmin: (float) $product->up_admin,
             upProvision: $product->up_provisi,
-            upAcp: $product->up_acp,
         );
     }
 

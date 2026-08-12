@@ -65,7 +65,7 @@ it('shows the configuration simulation to admin', function () {
         ->get('/configuration/simulation')
         ->assertOk()
         ->assertSee('Uji Konfigurasi')
-        ->assertSee('Parameter Uji');
+        ->assertSee('Product');
 });
 
 it('refuses it to referral and officer', function (string $state) {
@@ -185,6 +185,7 @@ it('renders the calculation trace for the traced tenor', function () {
         ->call('calculate')
         ->assertHasNoErrors()
         ->assertSet('hasCalculated', true)
+        ->assertDispatched('simulation-calculated')
         ->assertSee('Rincian Perhitungan')
         ->assertSee('Net DP dan LTV')
         ->assertSee('Bunga jual')
@@ -205,9 +206,10 @@ it('switches the trace to another tenor', function () {
         ->set('market_price', 'Rp 110.000.000')
         ->call('calculate')
         ->assertSet('traced_tenor', 12)
+        ->assertSet('hasCalculated', true)
         ->call('traceTenor', 60)
         ->assertSet('traced_tenor', 60)
-        ->assertSee('tenor 60 bulan');
+        ->assertSee('Tenor 60 bulan');
 });
 
 /**
@@ -240,4 +242,82 @@ it('explains a tenor that produces nothing instead of showing bare zeros', funct
 
     expect($trace[0]['title'])->toBe('Tenor tidak menghasilkan pembiayaan')
         ->and($trace[0]['note'])->toContain('Kosong berarti tenor tidak tersedia');
+});
+
+/*
+ * Pembiayaan Mobil Bekas is Passenger-only. The screen must stop offering
+ * Commercial rather than let the engine throw and be reported as a generic
+ * failure the admin cannot act on.
+ */
+it('stops offering Commercial once Pembiayaan Mobil Bekas is selected', function () {
+    $commercial = VehicleModel::query()
+        ->whereHas('type.brand.usage', fn ($q) => $q->where('name', 'Commercial'))
+        ->whereHas('prices', fn ($q) => $q->where('price', '>', 0))
+        ->with(['type.brand', 'prices' => fn ($q) => $q->where('price', '>', 0)->orderByDesc('year')])
+        ->firstOrFail();
+
+    $component = Livewire::actingAs($this->admin)
+        ->test(ConfigurationSimulation::class)
+        ->set('financing_type', 'DTN')
+        ->set('usage_id', (string) $commercial->type->brand->usage_id)
+        ->set('brand_id', (string) $commercial->type->brand_id)
+        ->set('type_id', (string) $commercial->type_id)
+        ->set('model_id', (string) $commercial->id);
+
+    expect(collect($component->instance()->usages())->pluck('name'))->toContain('Commercial');
+
+    $component->set('financing_type', 'UCF');
+
+    expect(collect($component->instance()->usages())->pluck('name'))->not->toContain('Commercial')
+        ->and($component->get('usage_id'))->toBeNull()
+        ->and($component->get('model_id'))->toBeNull();
+});
+
+/*
+ * Two profiles now produce different figures from the same configuration. A
+ * verification screen that can only reach one of them verifies half the engine.
+ */
+it('verifies the Account Officer profile as well as the Referral profile', function () {
+    $product = Product::where('is_active', true)->orderBy('name')->firstOrFail();
+    $phpm = $this->model->prices()->where('year', $this->year)->value('price');
+
+    $instalmentFor = fn (string $profile) => Livewire::actingAs($this->admin)
+        ->test(ConfigurationSimulation::class)
+        ->set('product_id', (string) $product->id)
+        ->set('financing_type', 'DTN')
+        ->set('simulation_profile', $profile)
+        ->set('usage_id', (string) $this->model->type->brand->usage_id)
+        ->set('brand_id', (string) $this->model->type->brand_id)
+        ->set('type_id', (string) $this->model->type_id)
+        ->set('model_id', (string) $this->model->id)
+        ->set('vehicle_year', (string) $this->year)
+        // Appraised well above PHPM: only the Officer profile charges deviation.
+        ->set('market_price', (string) ((int) $phpm * 2))
+        ->call('calculate')
+        ->assertHasNoErrors()
+        ->get('rows')[0]['instalment'];
+
+    expect($instalmentFor('referral'))->not->toEqual($instalmentFor('officer'));
+});
+
+it('applies upping entered on the test screen without touching the Product', function () {
+    $product = Product::where('is_active', true)->orderBy('name')->firstOrFail();
+    $before = $product->up_rate;
+
+    $instalmentFor = fn (string $upRate) => Livewire::actingAs($this->admin)
+        ->test(ConfigurationSimulation::class)
+        ->set('product_id', (string) $product->id)
+        ->set('financing_type', 'DTN')
+        ->set('usage_id', (string) $this->model->type->brand->usage_id)
+        ->set('brand_id', (string) $this->model->type->brand_id)
+        ->set('type_id', (string) $this->model->type_id)
+        ->set('model_id', (string) $this->model->id)
+        ->set('vehicle_year', (string) $this->year)
+        ->set('up_rate', $upRate)
+        ->call('calculate')
+        ->assertHasNoErrors()
+        ->get('rows')[0]['instalment'];
+
+    expect($instalmentFor('0'))->not->toEqual($instalmentFor('3'));
+    expect($product->fresh()->up_rate)->toEqual($before);
 });

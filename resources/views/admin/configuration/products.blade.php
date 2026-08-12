@@ -1,10 +1,6 @@
 <x-admin.configuration-shell title="Product dan Upping" :last-change="$this->lastChange">
-    <div class="mb-md flex flex-wrap items-center gap-sm">
-        <div>
-            <h2 class="m-0 text-title-md text-ink">Product dan Upping</h2>
-            <p class="mt-1 text-helper text-muted">Persentase diisi sebagai persen; database menyimpan pecahan.</p>
-        </div>
-        <x-ui.button type="button" size="md" class="ml-auto" wire:click="createProduct">Tambah Product</x-ui.button>
+    <div class="mb-md flex justify-start">
+        <x-ui.button type="button" size="md" wire:click="createProduct">Tambah Product</x-ui.button>
     </div>
 
     @if (session('admin_success'))
@@ -14,23 +10,21 @@
         <div class="mb-md rounded-md border border-signature-coral bg-danger-bg px-md py-3 text-[13px] text-signature-coral">{{ $message }}</div>
     @enderror
 
-    <x-ui.callout class="mb-md">
-        <span class="font-medium">Kosong ≠ nol.</span>
-        Rate kosong berarti tenor tidak tersedia; angka 0 berarti tenor tersedia dengan rate 0%.
-    </x-ui.callout>
-
     <div class="grid grid-cols-1 items-start gap-lg xl:grid-cols-[320px_1fr]">
         <x-ui.card title="Daftar Product" note="Pilih satu Product untuk disunting.">
-            <div class="max-h-[680px] overflow-y-auto">
+            <div class="max-h-[680px] space-y-1 overflow-y-auto p-1">
                 @forelse ($products as $product)
                     @php
                         $rateByTenor = $product->rates->pluck('effective_rate', 'tenor_months');
                     @endphp
 
                     <button type="button" wire:click="edit({{ $product->id }})"
+                            x-on:click="$dispatch('configuration-product-selected')"
+                            @if ($productId === $product->id) aria-current="true" @endif
                             @class([
-                                'block w-full border-b border-divider px-2 py-2.5 text-left',
-                                'bg-surface-soft' => $productId === $product->id,
+                                'block w-full rounded-md border px-3 py-3 text-left transition-colors',
+                                'border-hairline bg-surface-soft shadow-[inset_2px_0_0_#181d26]' => $productId === $product->id,
+                                'border-transparent hover:border-hairline hover:bg-surface-soft' => $productId !== $product->id,
                             ])>
                         <span class="flex items-center gap-sm">
                             <span class="text-[13px] font-medium text-ink">{{ $product->name }}</span>
@@ -65,7 +59,7 @@
             </div>
         </x-ui.card>
 
-        <form wire:submit="save" class="flex flex-col gap-lg">
+        <form wire:submit="save" class="flex flex-col gap-lg" data-product-editor-target>
             <x-ui.card :title="$productId ? 'Ubah Product' : 'Tambah Product'">
                 <div class="grid grid-cols-1 gap-md md:grid-cols-2">
                     <x-ui.field label="Nama Product" required class="md:col-span-2" :error="$errors->first('form.name')">
@@ -90,9 +84,6 @@
                     </x-ui.field>
                     <x-ui.field label="Provisi (%)" required :error="$errors->first('form.provisi_rate')">
                         <x-ui.input wire:model="form.provisi_rate" type="number" step="0.0001" min="0" max="100" :invalid="$errors->has('form.provisi_rate')" />
-                    </x-ui.field>
-                    <x-ui.field label="Up ACP (%)" required :error="$errors->first('form.up_acp')">
-                        <x-ui.input wire:model="form.up_acp" type="number" step="0.0001" min="0" max="100" :invalid="$errors->has('form.up_acp')" />
                     </x-ui.field>
                     <x-ui.field label="Up Rate (%)" required :error="$errors->first('form.up_rate')">
                         <x-ui.input wire:model="form.up_rate" type="number" step="0.0001" min="0" max="100" :invalid="$errors->has('form.up_rate')" />

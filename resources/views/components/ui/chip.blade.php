@@ -5,6 +5,7 @@
     $tones = [
         'success' => 'border-success-border text-success',
         'neutral' => 'border-hairline text-muted',
+        'danger' => 'border-red-200 text-red-700',
     ];
 @endphp
 

@@ -7,31 +7,91 @@
         <x-ui.callout class="mb-md">{{ session('account_success') }}</x-ui.callout>
     @endif
 
-    @if ($pageMode === 'list')
-        @if ($initialPassword)
-            <div class="mb-5 flex flex-wrap items-center gap-5 rounded-lg border border-success-border bg-canvas px-lg py-5">
-                <span class="flex h-10 w-10 items-center justify-center rounded-pill border-[1.5px] border-success-border text-[18px] text-success">
-                    &check;
-                </span>
-                <div>
-                    <p class="text-[15px] font-medium leading-[1.4] text-ink">Akun AO dibuat - {{ $createdName }}</p>
-                    <p class="text-[13px] leading-[1.5] text-muted">
-                        Kata sandi awal dibuat otomatis dan
-                        <span class="font-medium text-signature-coral">hanya ditampilkan sekali</span>.
-                        Catat sekarang sebelum meninggalkan halaman ini.
-                    </p>
+    @if ($initialPassword)
+        <div
+            class="fixed inset-0 z-50 flex items-center justify-center bg-ink/35 px-lg py-xl"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="initial-password-title"
+            x-data="{
+                copied: false,
+                password: @js($initialPassword),
+                async copyPassword() {
+                    try {
+                        await navigator.clipboard.writeText(this.password);
+                    } catch (error) {
+                        const input = this.$refs.passwordText;
+                        input.select();
+                        document.execCommand('copy');
+                        input.setSelectionRange(input.value.length, input.value.length);
+                    }
+
+                    this.copied = true;
+                    window.setTimeout(() => this.copied = false, 1800);
+                },
+            }"
+            x-on:keydown.escape.window="$wire.dismissInitialPassword()"
+        >
+            <div class="w-full max-w-[440px] rounded-lg border border-hairline bg-canvas p-lg shadow-[0_24px_70px_rgba(13,18,24,0.22)] md:p-xl">
+                <div class="flex items-start justify-between gap-md">
+                    <div>
+                        <p id="initial-password-title" class="text-title-sm text-ink">Akun AO dibuat</p>
+                        <p class="mt-1 text-body-md text-muted">{{ $createdName }}</p>
+                    </div>
+                    <button type="button"
+                            wire:click="dismissInitialPassword"
+                            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-hairline text-muted transition-colors hover:text-ink"
+                            aria-label="Tutup popup kata sandi">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                             fill="none" stroke="currentColor" stroke-width="2"
+                             stroke-linecap="round" stroke-linejoin="round"
+                             class="h-4 w-4" aria-hidden="true">
+                            <path d="M18 6 6 18" />
+                            <path d="m6 6 12 12" />
+                        </svg>
+                    </button>
                 </div>
-                <div class="ml-auto rounded-md border border-dashed border-border-strong px-5 py-3">
-                    <p class="mb-1 text-[11px] font-medium uppercase leading-[1.35] tracking-[0.12em] text-muted">
-                        Kata sandi awal
-                    </p>
-                    <p class="font-mono text-[18px] font-medium leading-[1.2] tracking-[0.1em] text-ink">
-                        {{ $initialPassword }}
-                    </p>
+
+                <p class="mt-md text-[13px] leading-[1.55] text-muted">
+                    Kata sandi awal hanya ditampilkan sekali. Salin sekarang sebelum menutup popup ini.
+                </p>
+
+                <div class="mt-lg flex items-center gap-sm rounded-md border border-dashed border-border-strong bg-surface-soft p-3">
+                    <input x-ref="passwordText"
+                           type="text"
+                           readonly
+                           value="{{ $initialPassword }}"
+                           class="min-w-0 flex-1 border-0 bg-transparent p-0 font-mono text-[18px] font-medium tracking-[0.08em] text-ink focus:ring-0">
+                    <button type="button"
+                            x-on:click="copyPassword"
+                            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary text-on-primary transition-colors active:bg-primary-active"
+                            x-bind:aria-label="copied ? 'Kata sandi tersalin' : 'Salin kata sandi'">
+                        <svg x-show="! copied" xmlns="http://www.w3.org/2000/svg"
+                             viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                             class="h-4 w-4" aria-hidden="true">
+                            <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+                            <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+                        </svg>
+                        <svg x-show="copied" x-cloak xmlns="http://www.w3.org/2000/svg"
+                             viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                             class="h-4 w-4" aria-hidden="true">
+                            <path d="M20 6 9 17l-5-5" />
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="mt-lg flex justify-end">
+                    <x-ui.button variant="secondary" size="md" type="button" wire:click="dismissInitialPassword">
+                        Selesai
+                    </x-ui.button>
                 </div>
             </div>
-        @endif
+        </div>
+    @endif
 
+    @if ($pageMode === 'list')
         <div class="mb-5 flex flex-wrap items-center gap-sm">
             <div class="min-w-[260px] flex-1">
                 <x-ui.input wire:model.live.debounce.400ms="search" type="search"
@@ -82,30 +142,6 @@
             <x-ui.button size="md" href="{{ route('accounts.officers.create') }}" wire:navigate>Buat Akun AO</x-ui.button>
         </div>
     @else
-        @if ($initialPassword)
-            <div class="mb-5 flex flex-wrap items-center gap-5 rounded-lg border border-success-border bg-canvas px-lg py-5">
-                <span class="flex h-10 w-10 items-center justify-center rounded-pill border-[1.5px] border-success-border text-[18px] text-success">
-                    &check;
-                </span>
-                <div>
-                    <p class="text-[15px] font-medium leading-[1.4] text-ink">Akun AO dibuat - {{ $createdName }}</p>
-                    <p class="text-[13px] leading-[1.5] text-muted">
-                        Kata sandi awal dibuat otomatis dan
-                        <span class="font-medium text-signature-coral">hanya ditampilkan sekali</span>.
-                        Catat sekarang sebelum meninggalkan halaman ini.
-                    </p>
-                </div>
-                <div class="ml-auto rounded-md border border-dashed border-border-strong px-5 py-3">
-                    <p class="mb-1 text-[11px] font-medium uppercase leading-[1.35] tracking-[0.12em] text-muted">
-                        Kata sandi awal
-                    </p>
-                    <p class="font-mono text-[18px] font-medium leading-[1.2] tracking-[0.1em] text-ink">
-                        {{ $initialPassword }}
-                    </p>
-                </div>
-            </div>
-        @endif
-
         <form wire:submit="save">
             <x-ui.card :title="$pageMode === 'edit' ? 'Data AO' : 'Data Akun Baru'">
                 <div class="grid grid-cols-1 gap-md sm:grid-cols-2">

@@ -8,6 +8,7 @@ final readonly class DownPaymentConfig
         public float $dtnStandardRate,
         public float $dtnHighRiskRate,
         public float $ucfStandardRate,
+        public float $ucfNonJapanStandardRate,
         public float $ucfEntrepreneurRate,
     ) {}
 }

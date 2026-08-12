@@ -141,6 +141,51 @@ test('Insurance Fee and Defaults reject incomplete data and roll it back', funct
         ->assertHasErrors(['settings.tjh_step_amount']);
 });
 
+test('configuration audit last change is isolated per module', function () {
+    seedConfigurationWithoutVehicles();
+    $admin = User::factory()->admin()->create();
+
+    $feeComponent = Livewire::actingAs($admin)->test(Fees::class);
+    $originalRefund = (float) $feeComponent->get('settings.ucf_admin_refund_rate');
+
+    $feeComponent
+        ->set('settings.ucf_admin_refund_rate', (string) ($originalRefund + 0.01))
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $feeAudit = AdminChangeLog::query()
+        ->where('audit_module', 'configuration.fees')
+        ->where('subject_table', 'simulation_settings')
+        ->latest('id')
+        ->firstOrFail();
+
+    $defaultsComponent = Livewire::actingAs($admin)->test(Defaults::class);
+    $originalWarranty = (int) $defaultsComponent->get('settings.engine_warranty_fee');
+
+    $defaultsComponent
+        ->set('settings.engine_warranty_fee', 'Rp '.number_format($originalWarranty + 2_000, 0, ',', '.'))
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $defaultAudit = AdminChangeLog::query()
+        ->where('audit_module', 'configuration.defaults')
+        ->where('subject_table', 'simulation_settings')
+        ->latest('id')
+        ->firstOrFail();
+
+    expect($feeAudit->audit_module)->toBe('configuration.fees')
+        ->and($defaultAudit->audit_module)->toBe('configuration.defaults')
+        ->and($feeAudit->id)->not->toBe($defaultAudit->id);
+
+    Livewire::actingAs($admin)
+        ->test(Fees::class)
+        ->assertSet('lastChange.id', $feeAudit->id);
+
+    Livewire::actingAs($admin)
+        ->test(Defaults::class)
+        ->assertSet('lastChange.id', $defaultAudit->id);
+});
+
 test('Admin manages domicile and age group together with mandatory ACP upping', function () {
     seedConfigurationWithoutVehicles();
     $admin = User::factory()->admin()->create();

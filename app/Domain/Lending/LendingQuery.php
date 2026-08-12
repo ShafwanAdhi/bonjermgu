@@ -20,16 +20,16 @@ use Illuminate\Support\Facades\DB;
  */
 class LendingQuery
 {
-    /** Rows for the Per AO tab: which Referrals contributed to each officer. */
+    /** Rows for the Per AO report: one row per Account Officer. */
     public static function perOfficer(LendingFilters $filters): Collection
     {
-        return self::aggregate($filters, 'referral', 'referrals.full_name');
+        return self::aggregate($filters, 'officer', 'account_officers.full_name');
     }
 
-    /** Rows for the Per Referral tab: which officers handled each Referral. */
+    /** Rows for the Per Referral report: one row per Referral. */
     public static function perReferral(LendingFilters $filters): Collection
     {
-        return self::aggregate($filters, 'officer', 'account_officers.full_name');
+        return self::aggregate($filters, 'referral', 'referrals.full_name');
     }
 
     /**

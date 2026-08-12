@@ -73,7 +73,7 @@ class LendingReport extends Component
     public function render()
     {
         return view('livewire.admin.lending-report', [
-            'nameHeading' => $this->tab === 'ao' ? 'Referral' : 'Account Officer',
+            'nameHeading' => $this->tab === 'ao' ? 'Account Officer' : 'Referral',
             'reportTitle' => $this->tab === 'ao' ? 'Lending Per AO' : 'Lending Per Referral',
         ]);
     }

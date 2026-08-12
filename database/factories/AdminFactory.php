@@ -19,6 +19,7 @@ class AdminFactory extends Factory
         return [
             'user_id' => User::factory()->state(['role' => Role::Admin]),
             'full_name' => fake()->name(),
+            'email' => fake()->unique()->safeEmail(),
         ];
     }
 }

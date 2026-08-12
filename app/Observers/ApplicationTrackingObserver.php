@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use App\Domain\Application\ApplicationStatus;
 use App\Domain\Application\TrackingStatus;
 use App\Models\ApplicationTracking;
 use App\Models\Scopes\ApplicationVisibilityScope;
@@ -45,10 +46,20 @@ class ApplicationTrackingObserver
             ? Carbon::now()->toDateString()
             : null;
 
-        if ($application->go_live_date?->toDateString() === $goLiveDate) {
+        $status = $goLiveDate === null
+            ? $application->application_status
+            : ApplicationStatus::Pipeline;
+
+        if (
+            $application->go_live_date?->toDateString() === $goLiveDate
+            && $application->application_status === $status
+        ) {
             return;
         }
 
-        $application->forceFill(['go_live_date' => $goLiveDate])->saveQuietly();
+        $application->forceFill([
+            'go_live_date' => $goLiveDate,
+            'application_status' => $status,
+        ])->saveQuietly();
     }
 }

@@ -28,8 +28,9 @@ final readonly class InsuranceConfig
         public array $acpUppings,
         public array $tjhTiers,
         public float $engineWarrantyFee,
+        public float $acpMaxLoanAmount = 0,
         public bool $dtnAcpEnabled = true,
-        public bool $ucfAcpEnabled = false,
+        public bool $ucfAcpEnabled = true,
     ) {}
 
     public function cascoRateFor(
@@ -77,5 +78,33 @@ final readonly class InsuranceConfig
     public function acpUpping(?string $ageGroup): float
     {
         return $ageGroup === null ? 0.0 : ($this->acpUppings[$ageGroup] ?? 0.0);
+    }
+
+    /**
+     * Upping an Account Officer set for one simulation, over the age-group
+     * default. Only the group being simulated moves; the rest of the table
+     * stays as Admin configured it.
+     */
+    public function withAcpUpping(?string $ageGroup, float $upping): self
+    {
+        if ($ageGroup === null) {
+            return $this;
+        }
+
+        return new self(
+            activeZone: $this->activeZone,
+            activeVariant: $this->activeVariant,
+            cascoRates: $this->cascoRates,
+            sumInsuredSchedule: $this->sumInsuredSchedule,
+            loadingRates: $this->loadingRates,
+            extensionRates: $this->extensionRates,
+            acpBaseRates: $this->acpBaseRates,
+            acpUppings: [...$this->acpUppings, $ageGroup => $upping],
+            tjhTiers: $this->tjhTiers,
+            engineWarrantyFee: $this->engineWarrantyFee,
+            acpMaxLoanAmount: $this->acpMaxLoanAmount,
+            dtnAcpEnabled: $this->dtnAcpEnabled,
+            ucfAcpEnabled: $this->ucfAcpEnabled,
+        );
     }
 }

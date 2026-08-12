@@ -169,13 +169,14 @@ Cabang tidak memiliki tabel master. Pada draft, cabang merupakan isian teks beba
 | admin_min    | bigint       | not null            |
 | admin_max    | bigint       | not null            |
 | provisi_rate | numeric(6,4) | not null, default 0 |
-| up_acp       | numeric(6,4) | not null, default 0 |
 | up_rate      | numeric(6,4) | not null, default 0 |
 | up_admin     | bigint       | not null, default 0 |
 | up_provisi   | numeric(6,4) | not null, default 0 |
 | is_active    | boolean      | default true        |
 
 `check (admin_min <= admin_max)`
+
+Kunci `simulation_settings` yang ditambahkan 11 Agustus 2026: `ucf_non_japan_net_dp_rate` (Net DP dasar Mobil Bekas untuk unit Non Japan) dan `acp_max_loan_amount` (batas Total A/R di atas mana ACP tidak berlaku). Kolom `products.up_acp` dihapus karena menggandakan upping ACP yang sudah diatur per kelompok usia.
 
 ### product_rates
 
@@ -359,6 +360,7 @@ Tabel ini bukan tempat pembuangan. Parameter yang memiliki struktur harus memili
 | actor_name    | varchar(150) | snapshot nama pelaku                           |
 | subject_type  | varchar(180) | class model                                    |
 | subject_table | varchar(80)  | nama tabel untuk ringkasan halaman             |
+| audit_module  | varchar(80)  | module Admin, nullable untuk log lama          |
 | subject_id    | bigint       | ID record saat perubahan                       |
 | action        | varchar(20)  | check in (created, updated, deleted)            |
 | before_values | jsonb        | nullable, snapshot sebelum perubahan           |
@@ -366,6 +368,8 @@ Tabel ini bukan tempat pembuangan. Parameter yang memiliki struktur harus memili
 | created_at    | timestamptz  | waktu perubahan                                |
 
 Audit bersifat append-only dari antarmuka Admin. Baris dibuat dalam transaksi yang sama dengan perubahan konfigurasi atau master data sehingga rollback tidak meninggalkan audit palsu.
+
+`audit_module` memisahkan ringkasan perubahan terakhir per halaman/module Admin. Ini penting untuk halaman yang berbagi tabel, misalnya `configuration.fees` dan `configuration.defaults` sama-sama dapat menulis ke `simulation_settings`, tetapi ringkasan perubahan terakhirnya tidak boleh saling menimpa. Log lama boleh bernilai null; setelah kolom tersedia, pencarian perubahan terakhir wajib memfilter module yang sesuai.
 
 ---
 

@@ -1,0 +1,472 @@
+- generic [active] [ref=f3e1]:
+  - banner [ref=f3e2]:
+    - generic [ref=f3e3]:
+      - link "M Kebon Jeruk Multiguna" [ref=f3e4] [cursor=pointer]:
+        - /url: http://127.0.0.1:8123/dashboard
+        - generic [ref=f3e5]:
+          - generic [ref=f3e6]: M
+          - generic [ref=f3e7]: Kebon Jeruk Multiguna
+      - navigation [ref=f3e8]:
+        - link "Dashboard" [ref=f3e9] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123/dashboard
+        - link "Simulasi Kredit" [ref=f3e13] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123/simulation/officer
+        - link "Aplikasi" [ref=f3e17] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123/applications
+        - link "Profil" [ref=f3e22] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123/profile
+      - generic [ref=f3e27]:
+        - generic [ref=f3e28]: CV
+        - generic [ref=f3e29]:
+          - generic [ref=f3e30]: Cek Visual
+          - generic [ref=f3e31]: Account Officer
+        - button "Keluar" [ref=f3e33] [cursor=pointer]
+  - main [ref=f3e34]:
+    - generic [ref=f3e35]:
+      - generic [ref=f3e37]:
+        - heading "Simulasi Kredit" [level=1] [ref=f3e38]
+        - generic [ref=f3e39]: Menjalankan engine yang sama dengan simulasi Referral, dengan upping dan biaya yang dapat Anda sesuaikan per pengajuan.
+      - generic [ref=f3e40]:
+        - generic [ref=f3e41]:
+          - generic [ref=f3e42]:
+            - paragraph [ref=f3e44]: 1 · Produk Pembiayaan
+            - generic [ref=f3e45]:
+              - button "Dana Tunai" [ref=f3e46] [cursor=pointer]
+              - button "Pembiayaan Mobil Bekas" [ref=f3e50] [cursor=pointer]
+          - generic [ref=f3e53]:
+            - paragraph [ref=f3e55]: 2 · Asal Pengajuan
+            - generic [ref=f3e56]:
+              - generic [ref=f3e57]:
+                - generic [ref=f3e58]: Kategori Referral *
+                - combobox [ref=f3e59]:
+                  - option "Pilih kategori"
+                  - option "Captive External"
+                  - option "Captive Internal"
+                  - option "Karyawan Internal & Captive"
+                  - option "Others"
+                  - option "Showroom Mobil Bekas"
+                  - option "Wira Agency Retail" [selected]
+                  - option "Wira Bisnis"
+                - generic [ref=f3e60]: Menentukan Product, jadi mengubahnya mengubah rate dan biaya.
+              - generic [ref=f3e61]:
+                - generic [ref=f3e62]: Sub Kategori Referral
+                - combobox [ref=f3e63]:
+                  - option "Pilih sub kategori" [selected]
+                  - option "Karyawan asuransi Rekanan"
+                  - option "Karyawan Koperasi"
+                  - option "Karyawan Multifinance"
+                  - option "Karyawan Perbankan"
+                  - option "Sales Authorized Dealer"
+                - generic [ref=f3e64]: Konteks asal pengajuan. Tidak mengubah perhitungan.
+          - generic [ref=f3e65]:
+            - paragraph [ref=f3e67]: 3 · Profil Debitur
+            - generic [ref=f3e68]:
+              - generic [ref=f3e69]:
+                - generic [ref=f3e70]: Type Debitur *
+                - combobox [ref=f3e71]:
+                  - option "Perorangan Non Wiraswasta" [selected]
+                  - option "Perorangan Wiraswasta"
+                  - option "Badan Hukum Usaha"
+              - generic [ref=f3e72]:
+                - generic [ref=f3e73]: Usia Debitur *
+                - combobox [ref=f3e74]:
+                  - option "Pilih kelompok usia"
+                  - option "18-35 tahun"
+                  - option "36-45 tahun" [selected]
+                  - option "46-50 tahun"
+                  - option "51-60 tahun"
+            - paragraph [ref=f3e75]: Identitas debitur tidak diminta. Layar ini tidak menghasilkan dokumen.
+          - generic [ref=f3e77]:
+            - button "4 · Data Kendaraan" [ref=f3e78]
+            - generic [ref=f3e81]:
+              - generic [ref=f3e82]:
+                - generic [ref=f3e83]: Penggunaan Unit *
+                - combobox [ref=f3e84]:
+                  - option "Pilih penggunaan"
+                  - option "Commercial"
+                  - option "Passenger" [selected]
+              - generic [ref=f3e85]:
+                - generic [ref=f3e86]: Merk *
+                - combobox [ref=f3e87]:
+                  - option "Pilih merk"
+                  - option "BMW"
+                  - option "BYD"
+                  - option "CHERY"
+                  - option "CHEVROLET"
+                  - option "DAIHATSU"
+                  - option "DENZA"
+                  - option "GWM"
+                  - option "HONDA" [selected]
+                  - option "HYUNDAI"
+                  - option "ISUZU"
+                  - option "JEEP"
+                  - option "KIA"
+                  - option "LEXUS"
+                  - option "MAZDA"
+                  - option "MERCEDES BENZ"
+                  - option "MITSUBISHI"
+                  - option "MORRIS GARAGE"
+                  - option "NISSAN"
+                  - option "SUZUKI"
+                  - option "TOYOTA"
+                  - option "WULING"
+              - generic [ref=f3e88]:
+                - generic [ref=f3e89]: Type Kendaraan *
+                - combobox [ref=f3e90]:
+                  - option "Pilih type"
+                  - option "ACCORD"
+                  - option "BRIO" [selected]
+                  - option "BRV"
+                  - option "CITY"
+                  - option "CIVIC"
+                  - option "CRV"
+                  - option "CRZ"
+                  - option "FREED"
+                  - option "HRV"
+                  - option "JAZZ"
+                  - option "MOBILIO"
+                  - option "ODYSSEY"
+                  - option "WRV"
+              - generic [ref=f3e91]:
+                - generic [ref=f3e92]: Model Kendaraan *
+                - combobox [ref=f3e93]:
+                  - option "Pilih model"
+                  - option "ALL NEW BRIO E CVT"
+                  - option "ALL NEW BRIO RS CVT" [selected]
+                  - option "ALL NEW BRIO RS MT"
+                  - option "ALL NEW BRIO RS MT TWO TONE"
+                  - option "ALL NEW BRIO RS TWO TONE CVT"
+                  - option "ALL NEW BRIO SATYA E CVT"
+                  - option "ALL NEW BRIO SATYA E MT"
+                  - option "ALL NEW BRIO SATYA S MT"
+                  - option "CKD LIMITED E AT"
+                  - option "E 1.2 AT LIMITED EDITION"
+                  - option "E A/T 1.3"
+                  - option "E AT 1.2"
+                  - option "E AT 1.2 LE"
+                  - option "E M/T 1.3"
+                  - option "E SPORT 1.3 AT"
+                  - option "E SPORT 1.3 MT"
+                  - option "RS 1.2 CVT CKD"
+                  - option "RS 1.2 MT CKD"
+                  - option "RS A/T 1.3"
+                  - option "RS CVT 1.2"
+                  - option "RS CVT URBANITE"
+                  - option "RS MT 1.2"
+                  - option "RS MT URBANITE"
+                  - option "RS SE AT"
+                  - option "RS SPECIAL EDITION"
+                  - option "S A/T 1.3"
+                  - option "S AT 1.2"
+                  - option "S M/T 1.3"
+                  - option "S MT 1.2"
+                  - option "SATYA 1.2 E CVT CKD"
+                  - option "SATYA 1.2 E MT CKD"
+                  - option "SATYA 1.2 S MT CKD"
+                  - option "SATYA A MT 1.2"
+                  - option "SATYA CKD S 1.2 AT"
+                  - option "SATYA E 1.2 AT"
+                  - option "SATYA E MT 1.2"
+                  - option "SATYA S 1.2 AT"
+                  - option "SATYA S MT 1.2"
+                  - option "SPORT IVTEC E 1.3 AT"
+                  - option "SPORT IVTEC E 1.3 MT"
+              - generic [ref=f3e94]:
+                - generic [ref=f3e95]: Tahun Kendaraan *
+                - combobox [ref=f3e96]:
+                  - option "Pilih tahun"
+                  - option "2025"
+                  - option "2024"
+                  - option "2023"
+                  - option "2022"
+                  - option "2021"
+                  - option "2020" [selected]
+                  - option "2019"
+                  - option "2018"
+                  - option "2017"
+                  - option "2016"
+                - generic [ref=f3e97]: Hanya tahun yang memiliki harga yang ditampilkan.
+              - generic [ref=f3e98]:
+                - generic [ref=f3e99]: Harga Taksasi *
+                - textbox "Rp 150.000.000" [ref=f3e100]: "150000000"
+                - generic [ref=f3e101]: Nilai taksasi Anda. Selisih di atas Harga PHPM menaikkan Net DP.
+              - generic [ref=f3e102]:
+                - generic [ref=f3e103]: Type Angsuran *
+                - combobox [ref=f3e104]:
+                  - option "ADDB — angsuran di belakang" [selected]
+                  - option "ADDM — angsuran di muka"
+              - generic [ref=f3e105]:
+                - generic [ref=f3e106]: STNK atas nama *
+                - combobox [ref=f3e107]:
+                  - option "Pribadi (milik sendiri)" [selected]
+                  - option "Orang lain"
+          - button "5 · Asuransi Buka" [ref=f3e110] [cursor=pointer]:
+            - generic [ref=f3e111]: 5 · Asuransi
+            - generic [ref=f3e112]: Buka
+          - button "6 · Upping dan Pengurang Pencairan Buka" [ref=f3e115] [cursor=pointer]:
+            - generic [ref=f3e116]: 6 · Upping dan Pengurang Pencairan
+            - generic [ref=f3e117]: Buka
+          - generic [ref=f3e118]:
+            - paragraph [ref=f3e120]: 7 · Dasar Simulasi
+            - generic [ref=f3e121]:
+              - button [ref=f3e122] [cursor=pointer]:
+                - paragraph [ref=f3e123]: Berdasarkan Nilai Kendaraan
+                - paragraph [ref=f3e124]: Sistem menghitung pencairan maksimal dan angsuran.
+              - button [ref=f3e125] [cursor=pointer]:
+                - paragraph [ref=f3e126]: Berdasarkan Kebutuhan Dana
+                - paragraph [ref=f3e127]: Angsuran dihitung dari dana yang dibutuhkan.
+            - button "Hitung Simulasi" [ref=f3e129] [cursor=pointer]
+        - generic [ref=f3e130]:
+          - generic [ref=f3e131]:
+            - generic [ref=f3e132]:
+              - paragraph [ref=f3e133]: Hasil Lima Tenor
+              - generic [ref=f3e135]: Reguler Passenger Sales Dealer
+            - generic [ref=f3e136]:
+              - generic [ref=f3e137]: HONDA BRIO ALL NEW BRIO RS CVT 2020
+              - generic [ref=f3e138]: Harga PHPM Rp 140.000.016
+            - table [ref=f3e141]:
+              - rowgroup [ref=f3e142]:
+                - row [ref=f3e143]:
+                  - columnheader "Tenor" [ref=f3e144]
+                  - columnheader "Pencairan Maksimal" [ref=f3e145]
+                  - columnheader "Angsuran" [ref=f3e146]
+                  - columnheader "Jejak" [ref=f3e147]
+              - rowgroup [ref=f3e148]:
+                - row [ref=f3e149]:
+                  - cell "12 Bulan" [ref=f3e150]
+                  - cell "Rp 119.634.800" [ref=f3e151]
+                  - cell "Rp 12.112.000" [ref=f3e152]
+                  - cell [ref=f3e153]:
+                    - button "Lihat" [ref=f3e154] [cursor=pointer]
+                - row [ref=f3e155]:
+                  - cell "24 Bulan" [ref=f3e156]
+                  - cell "Rp 118.130.800" [ref=f3e157]
+                  - cell "Rp 6.537.000" [ref=f3e158]
+                  - cell [ref=f3e159]:
+                    - button "Lihat" [ref=f3e160] [cursor=pointer]
+                - row [ref=f3e161]:
+                  - cell "36 Bulan" [ref=f3e162]
+                  - cell "Rp 116.386.200" [ref=f3e163]
+                  - cell "Rp 4.742.000" [ref=f3e164]
+                  - cell [ref=f3e165]:
+                    - button "Lihat" [ref=f3e166] [cursor=pointer]
+                - row [ref=f3e167]:
+                  - cell "48 Bulan" [ref=f3e168]
+                  - cell "Rp 114.411.500" [ref=f3e169]
+                  - cell "Rp 3.875.000" [ref=f3e170]
+                  - cell [ref=f3e171]:
+                    - button "Lihat" [ref=f3e172] [cursor=pointer]
+                - row [ref=f3e173]:
+                  - cell "60 Bulan" [ref=f3e174]
+                  - cell "Rp 112.564.200" [ref=f3e175]
+                  - cell "Rp 3.438.000" [ref=f3e176]
+                  - cell [ref=f3e177]:
+                    - button "Lihat" [ref=f3e178] [cursor=pointer]
+            - paragraph [ref=f3e179]: Nominal pembiayaan bersifat estimasi. Besarnya pembiayaan berdasarkan hasil verifikasi profil debitur dan kondisi kendaraan.
+          - generic [ref=f3e180]:
+            - generic [ref=f3e181]:
+              - heading "Rincian Perhitungan" [level=2] [ref=f3e182]
+              - generic [ref=f3e183]: tenor 12 bulan
+              - generic [ref=f3e184]:
+                - button "12" [ref=f3e185] [cursor=pointer]
+                - button "24" [ref=f3e186] [cursor=pointer]
+                - button "36" [ref=f3e187] [cursor=pointer]
+                - button "48" [ref=f3e188] [cursor=pointer]
+                - button "60" [ref=f3e189] [cursor=pointer]
+            - generic [ref=f3e190]:
+              - generic [ref=f3e191]:
+                - paragraph [ref=f3e193]: 1 · Harga dan Deviasi
+                - generic [ref=f3e194]:
+                  - generic [ref=f3e195]:
+                    - generic [ref=f3e196]: Harga PHPM
+                    - generic [ref=f3e197]: master harga kendaraan, tidak dibulatkan
+                    - generic [ref=f3e198]: Rp 140.000.016
+                  - generic [ref=f3e199]:
+                    - generic [ref=f3e200]: Harga OTR
+                    - generic [ref=f3e201]: ROUNDDOWN(PHPM, ratusan)
+                    - generic [ref=f3e202]: Rp 150.000.000
+                  - generic [ref=f3e203]:
+                    - generic [ref=f3e204]: Deviasi
+                    - generic [ref=f3e205]: MAX(OTR − PHPM, 0)
+                    - generic [ref=f3e206]: Rp 9.999.984
+                  - generic [ref=f3e207]:
+                    - generic [ref=f3e208]: Deviasi (%)
+                    - generic [ref=f3e209]: Deviasi ÷ OTR
+                    - generic [ref=f3e210]: 7,1%
+                - paragraph [ref=f3e211]: Harga PHPM dan Harga OTR adalah dua nilai berbeda. PHPM mentah dipakai untuk deviasi dan ACP; OTR yang dibulatkan dipakai untuk Net DP, LTV, dan Sum Insured.
+              - generic [ref=f3e212]:
+                - paragraph [ref=f3e214]: 2 · Net DP dan LTV
+                - generic [ref=f3e215]:
+                  - generic [ref=f3e216]:
+                    - generic [ref=f3e217]: Net DP minimal
+                    - generic [ref=f3e218]: ketentuan produk + deviasi (%)
+                    - generic [ref=f3e219]: 12,1%
+                  - generic [ref=f3e220]:
+                    - generic [ref=f3e221]: Net DP
+                    - generic [ref=f3e222]: OTR × Net DP (%)
+                    - generic [ref=f3e223]: Rp 18.215.000
+                  - generic [ref=f3e224]:
+                    - generic [ref=f3e225]: LTV (%)
+                    - generic [ref=f3e226]: 1 − Net DP (%)
+                    - generic [ref=f3e227]: 87,9%
+                  - generic [ref=f3e228]:
+                    - generic [ref=f3e229]: LTV
+                    - generic [ref=f3e230]: OTR − Net DP
+                    - generic [ref=f3e231]: Rp 131.785.000
+                - paragraph [ref=f3e232]: Deviasi menambah persentase Net DP minimal.
+              - generic [ref=f3e233]:
+                - paragraph [ref=f3e235]: 3 · Rate
+                - generic [ref=f3e236]:
+                  - generic [ref=f3e237]:
+                    - generic [ref=f3e238]: Effective rate p.a.
+                    - generic [ref=f3e239]: rate Product pada tenor ini
+                    - generic [ref=f3e240]: 18,470000%
+                  - generic [ref=f3e241]:
+                    - generic [ref=f3e242]: Flat rate
+                    - generic [ref=f3e243]: konversi PMT dari effective rate
+                    - generic [ref=f3e244]: 10,284585%
+                  - generic [ref=f3e245]:
+                    - generic [ref=f3e246]: Upping rate
+                    - generic [ref=f3e247]: up_rate pada Product
+                    - generic [ref=f3e248]: 0,000000%
+                  - generic [ref=f3e249]:
+                    - generic [ref=f3e250]: Flat rate final
+                    - generic [ref=f3e251]: flat rate + upping
+                    - generic [ref=f3e252]: 10,284585%
+                  - generic [ref=f3e253]:
+                    - generic [ref=f3e254]: Bunga jual
+                    - generic [ref=f3e255]: flat rate final × (tenor ÷ 12)
+                    - generic [ref=f3e256]: 10,284585%
+                - paragraph [ref=f3e257]: Effective rate dikonversi ke flat rate memakai PMT ADDB (bayar di belakang), lalu ditambah upping rate Product.
+              - generic [ref=f3e258]:
+                - paragraph [ref=f3e260]: 4 · Asuransi
+                - generic [ref=f3e261]:
+                  - generic [ref=f3e262]:
+                    - generic [ref=f3e263]: Casco / TLO
+                    - generic [ref=f3e264]: rate band harga × Sum Insured
+                    - generic [ref=f3e265]: Rp 3.705.000
+                  - generic [ref=f3e266]:
+                    - generic [ref=f3e267]: Loading usia
+                    - generic [ref=f3e268]: rate loading × premi dasar
+                    - generic [ref=f3e269]: Rp 185.250
+                  - generic [ref=f3e270]:
+                    - generic [ref=f3e271]: Perluasan
+                    - generic [ref=f3e272]: banjir, gempa, huru-hara, terorisme
+                    - generic [ref=f3e273]: Rp 0
+                  - generic [ref=f3e274]:
+                    - generic [ref=f3e275]: TJH
+                    - generic [ref=f3e276]: lapisan tanggung jawab hukum
+                    - generic [ref=f3e277]: Rp 0
+                  - generic [ref=f3e278]:
+                    - generic [ref=f3e279]: Pengemudi
+                    - generic [ref=f3e280]: santunan pengemudi
+                    - generic [ref=f3e281]: Rp 0
+                  - generic [ref=f3e282]:
+                    - generic [ref=f3e283]: Penumpang
+                    - generic [ref=f3e284]: santunan penumpang × jumlah
+                    - generic [ref=f3e285]: Rp 0
+                  - generic [ref=f3e286]:
+                    - generic [ref=f3e287]: ACP
+                    - generic [ref=f3e288]: asuransi jiwa debitur
+                    - generic [ref=f3e289]: Rp 910.000
+                  - generic [ref=f3e290]:
+                    - generic [ref=f3e291]: Garansi mesin
+                    - generic [ref=f3e292]: biaya tetap bila diaktifkan
+                    - generic [ref=f3e293]: Rp 1.500.000
+                  - generic [ref=f3e294]:
+                    - generic [ref=f3e295]: Total asuransi
+                    - generic [ref=f3e296]: jumlah seluruh komponen, dibulatkan
+                    - generic [ref=f3e297]: Rp 6.300.200
+                - paragraph [ref=f3e298]: Komponen bernilai nol berarti tidak diaktifkan pada konfigurasi default simulasi.
+              - generic [ref=f3e299]:
+                - paragraph [ref=f3e301]: 5 · Biaya
+                - generic [ref=f3e302]:
+                  - generic [ref=f3e303]:
+                    - generic [ref=f3e304]: Provisi
+                    - generic [ref=f3e305]: (provisi + upping provisi) × LTV
+                    - generic [ref=f3e306]: Rp 0
+                  - generic [ref=f3e307]:
+                    - generic [ref=f3e308]: Administrasi
+                    - generic [ref=f3e309]: Admin Maksimal + upping admin
+                    - generic [ref=f3e310]: Rp 5.350.000
+                  - generic [ref=f3e311]:
+                    - generic [ref=f3e312]: Fiducia
+                    - generic [ref=f3e313]: berjenjang menurut nilai
+                    - generic [ref=f3e314]: Rp 500.000
+                  - generic [ref=f3e315]:
+                    - generic [ref=f3e316]: Total biaya
+                    - generic [ref=f3e317]: provisi + administrasi + fiducia
+                    - generic [ref=f3e318]: Rp 5.850.000
+                - paragraph [ref=f3e319]: Administrasi memakai Admin Maksimal ditambah upping admin. Admin Minimal tidak dipakai perhitungan.
+              - generic [ref=f3e320]:
+                - paragraph [ref=f3e322]: 6 · Angsuran
+                - generic [ref=f3e323]:
+                  - generic [ref=f3e324]:
+                    - generic [ref=f3e325]: Bunga
+                    - generic [ref=f3e326]: LTV × bunga jual
+                    - generic [ref=f3e327]: Rp 13.553.540
+                  - generic [ref=f3e328]:
+                    - generic [ref=f3e329]: Total A/R
+                    - generic [ref=f3e330]: LTV + bunga
+                    - generic [ref=f3e331]: Rp 145.338.540
+                  - generic [ref=f3e332]:
+                    - generic [ref=f3e333]: Angsuran
+                    - generic [ref=f3e334]: ROUNDUP(Total A/R ÷ tenor, ribuan)
+                    - generic [ref=f3e335]: Rp 12.112.000
+                - paragraph [ref=f3e336]: Angsuran dibulatkan ke atas ke ribuan.
+              - generic [ref=f3e337]:
+                - paragraph [ref=f3e339]: 7 · Pembayaran Pertama dan Pencairan
+                - generic [ref=f3e340]:
+                  - generic [ref=f3e341]:
+                    - generic [ref=f3e342]: Total bayar pertama
+                    - generic [ref=f3e343]: Net DP + asuransi + biaya + angsuran pertama
+                    - generic [ref=f3e344]: Rp 30.365.200
+                  - generic [ref=f3e345]:
+                    - generic [ref=f3e346]: Pencairan gross
+                    - generic [ref=f3e347]: OTR − total bayar pertama
+                    - generic [ref=f3e348]: Rp 119.634.800
+                  - generic [ref=f3e349]:
+                    - generic [ref=f3e350]: Potongan pencairan
+                    - generic [ref=f3e351]: BBNKB, PKB, faktur, deposit angsuran
+                    - generic [ref=f3e352]: Rp 0
+                  - generic [ref=f3e353]:
+                    - generic [ref=f3e354]: Pencairan neto
+                    - generic [ref=f3e355]: pencairan gross − potongan
+                    - generic [ref=f3e356]: Rp 119.634.800
+              - generic [ref=f3e357]:
+                - paragraph [ref=f3e359]: 8 · Refund
+                - generic [ref=f3e360]:
+                  - generic [ref=f3e361]:
+                    - generic [ref=f3e362]: Refund asuransi
+                    - generic [ref=f3e363]: premi yang dapat dikembalikan × persentase
+                    - generic [ref=f3e364]: Rp 0
+                  - generic [ref=f3e365]:
+                    - generic [ref=f3e366]: Refund bunga
+                    - generic [ref=f3e367]: (LTV × upping × tahun) ÷ (1 + bunga jual) × persentase
+                    - generic [ref=f3e368]: Rp 0
+                  - generic [ref=f3e369]:
+                    - generic [ref=f3e370]: Refund provisi
+                    - generic [ref=f3e371]: upping provisi × persentase
+                    - generic [ref=f3e372]: Rp 0
+                  - generic [ref=f3e373]:
+                    - generic [ref=f3e374]: Refund administrasi
+                    - generic [ref=f3e375]: upping admin × persentase
+                    - generic [ref=f3e376]: Rp 0
+                  - generic [ref=f3e377]:
+                    - generic [ref=f3e378]: Total refund
+                    - generic [ref=f3e379]: jumlah komponen refund
+                    - generic [ref=f3e380]: Rp 0
+                - paragraph [ref=f3e381]: Refund menambah pencairan all in.
+              - generic [ref=f3e382]:
+                - paragraph [ref=f3e384]: 9 · Hasil
+                - generic [ref=f3e385]:
+                  - generic [ref=f3e386]:
+                    - generic [ref=f3e387]: Pencairan Maksimal
+                    - generic [ref=f3e388]: pencairan neto + total refund
+                    - generic [ref=f3e389]: Rp 119.634.800
+                  - generic [ref=f3e390]:
+                    - generic [ref=f3e391]: Angsuran
+                    - generic [ref=f3e392]: hasil bagian 6
+                    - generic [ref=f3e393]: Rp 12.112.000
+                - paragraph [ref=f3e394]: Nilai inilah yang tampil pada tabel lima tenor.
+            - generic [ref=f3e395]: Angka pada rincian ini dibaca langsung dari hasil engine, bukan dihitung ulang untuk ditampilkan. Kalau ada yang tidak cocok dengan docs/credit-simulation.md, yang keliru adalah engine atau konfigurasinya — bukan tampilan ini.

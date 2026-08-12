@@ -62,10 +62,17 @@ class UserSeeder extends Seeder
             ],
         );
 
-        Admin::firstOrCreate(
+        $admin = Admin::firstOrCreate(
             ['user_id' => $user->id],
-            ['full_name' => 'Administrator Kebon Jeruk Multiguna'],
+            [
+                'full_name' => 'Administrator Kebon Jeruk Multiguna',
+                'email' => 'admin@example.test',
+            ],
         );
+
+        if (! $admin->email) {
+            $admin->update(['email' => 'admin@example.test']);
+        }
     }
 
     private function seedAccountOfficers(): void

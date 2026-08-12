@@ -40,7 +40,18 @@ final class ConfigurationSimulator
             $request->vehicleYear,
         );
 
-        $config = $this->configurationRepository->forProduct($request->product);
+        $base = $this->configurationRepository->forProduct($request->product);
+        $config = $base->with(
+            product: $base->product->withUpping(
+                $request->upRate,
+                $request->upAdmin,
+                $request->upProvision,
+            ),
+            insurance: $request->acpUpping === null
+                ? null
+                : $base->insurance->withAcpUpping($request->ageGroup, $request->acpUpping),
+            profile: $request->profile,
+        );
 
         $input = new SimulationInput(
             financingType: $request->financingType,

@@ -36,7 +36,6 @@ class SimulationConfigurationSeeder extends Seeder
                 'admin_min' => $product['admin_min'],
                 'admin_max' => $product['admin_max'],
                 'provisi_rate' => $product['provisi_rate'],
-                'up_acp' => 0,
                 'up_rate' => 0,
                 'up_admin' => 0,
                 'up_provisi' => 0,
@@ -45,7 +44,7 @@ class SimulationConfigurationSeeder extends Seeder
             ['name'],
             [
                 'dp_rate', 'admin_min', 'admin_max', 'provisi_rate',
-                'up_acp', 'up_rate', 'up_admin', 'up_provisi', 'is_active',
+                'up_rate', 'up_admin', 'up_provisi', 'is_active',
             ],
         );
 
@@ -247,9 +246,11 @@ class SimulationConfigurationSeeder extends Seeder
             'dtn_standard_net_dp_rate' => '0.0500',
             'dtn_high_risk_net_dp_rate' => '0.1500',
             'ucf_standard_net_dp_rate' => '0.1000',
+            'ucf_non_japan_net_dp_rate' => '0.1500',
             'ucf_entrepreneur_net_dp_rate' => '0.3000',
             'dtn_acp_enabled' => 'true',
-            'ucf_acp_enabled' => 'false',
+            'ucf_acp_enabled' => 'true',
+            'acp_max_loan_amount' => '1000000000',
             'ucf_insurance_refund_base_rate' => '0.1000',
             'ucf_insurance_refund_rate' => '1.0000',
             'ucf_interest_refund_rate' => '0.8000',

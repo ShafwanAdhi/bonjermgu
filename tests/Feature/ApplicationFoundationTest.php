@@ -1,6 +1,7 @@
 <?php
 
 use App\Domain\Application\ApplicationCreator;
+use App\Domain\Application\ApplicationStatus;
 use App\Domain\Application\DebtorType;
 use App\Domain\Application\DocumentReconciler;
 use App\Domain\Application\DocumentRequirementResolver;
@@ -77,6 +78,7 @@ it('creates exactly eleven tracking rows, all Belum', function () {
     $application = newApplication();
 
     expect($application->trackings)->toHaveCount(11)
+        ->and($application->application_status)->toBe(ApplicationStatus::Pipeline)
         ->and($application->trackings->pluck('stage_no')->sort()->values()->all())->toBe(range(1, 11))
         ->and($application->trackings->every(fn ($t) => $t->status === TrackingStatus::Belum))->toBeTrue();
 });
@@ -184,7 +186,7 @@ it('leaves the document set matching the resolver after repeated changes', funct
 /* ------------------------------------------------------------- Go Live */
 
 it('records the go live date when stage eleven is marked done', function () {
-    $application = newApplication();
+    $application = newApplication(['application_status' => ApplicationStatus::Canceled]);
 
     expect($application->go_live_date)->toBeNull();
 
@@ -193,7 +195,10 @@ it('records the go live date when stage eleven is marked done', function () {
         ->first()
         ->update(['status' => TrackingStatus::Selesai]);
 
-    expect($application->fresh()->go_live_date?->toDateString())->toBe(now()->toDateString());
+    $fresh = $application->fresh();
+
+    expect($fresh->go_live_date?->toDateString())->toBe(now()->toDateString())
+        ->and($fresh->application_status)->toBe(ApplicationStatus::Pipeline);
 });
 
 it('clears the go live date when stage eleven is cancelled', function () {

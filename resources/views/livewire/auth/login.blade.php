@@ -8,6 +8,10 @@
                 Gunakan nama user dan kata sandi Anda.
             </p>
 
+            @if (session('reset_success'))
+                <x-ui.callout class="mb-md">{{ session('reset_success') }}</x-ui.callout>
+            @endif
+
         <form wire:submit="login" x-data="{ showPassword: false }" class="flex flex-col gap-md">
             <x-ui.field label="Nama User" :error="$errors->first('username')">
                 <x-ui.input wire:model="username" type="text"
@@ -46,10 +50,16 @@
                 </div>
             </x-ui.field>
 
-            <label class="flex items-center gap-sm text-body-md text-body">
-                <input type="checkbox" wire:model="remember" class="rounded-xs border-hairline">
-                Ingat saya
-            </label>
+            <div class="flex items-center justify-between gap-md">
+                <label class="flex items-center gap-sm text-body-md text-body">
+                    <input type="checkbox" wire:model="remember" class="rounded-xs border-hairline">
+                    Ingat saya
+                </label>
+
+                <a href="{{ route('password.request') }}" class="text-body-md text-link active:text-link-active">
+                    Lupa kata sandi?
+                </a>
+            </div>
 
             <x-ui.button type="submit" class="w-full" wire:loading.attr="disabled">
                 <span wire:loading.remove wire:target="login">Masuk</span>

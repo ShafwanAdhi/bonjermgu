@@ -6,8 +6,11 @@ use App\Models\Institution;
 use App\Models\Referral;
 use App\Models\ReferralCategory;
 use App\Models\ReferralSubCategory;
+use App\Support\AccountPasswordResetBroker;
+use App\Support\PasswordResetResult;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
@@ -34,6 +37,12 @@ class ReferralProfile extends Component
     public ?string $institution_id = null;
 
     public string $branch_name = '';
+
+    public string $current_password = '';
+
+    public string $password = '';
+
+    public string $password_confirmation = '';
 
     public function mount(): void
     {
@@ -162,6 +171,45 @@ class ReferralProfile extends Component
         $this->editing = false;
 
         session()->flash('profile_success', 'Profil berhasil diperbarui.');
+    }
+
+    public function sendPasswordResetLink(AccountPasswordResetBroker $broker): void
+    {
+        $result = $broker->sendForUser(Auth::user());
+
+        if ($result === PasswordResetResult::MissingEmail) {
+            session()->flash('password_reset_warning', 'Tambahkan alamat email terlebih dahulu agar sistem bisa mengirim link reset kata sandi.');
+
+            return;
+        }
+
+        session()->flash('password_reset_success', 'Link reset kata sandi sudah dikirim ke alamat email Anda.');
+    }
+
+    public function changePassword(): void
+    {
+        $validated = $this->validate([
+            'current_password' => ['required', 'string'],
+            'password' => ['required', 'string', 'min:8', 'max:72', 'confirmed'],
+        ], [
+            'password.confirmed' => 'Konfirmasi Kata Sandi tidak sama.',
+        ], [
+            'current_password' => 'Kata Sandi Saat Ini',
+            'password' => 'Kata Sandi Baru',
+            'password_confirmation' => 'Konfirmasi Kata Sandi Baru',
+        ]);
+
+        if (! Hash::check($validated['current_password'], Auth::user()->password)) {
+            $this->addError('current_password', 'Kata Sandi Saat Ini tidak cocok.');
+
+            return;
+        }
+
+        Auth::user()->update(['password' => $validated['password']]);
+
+        $this->reset('current_password', 'password', 'password_confirmation');
+
+        session()->flash('password_success', 'Kata sandi berhasil diperbarui.');
     }
 
     private function fillFromProfile(): void

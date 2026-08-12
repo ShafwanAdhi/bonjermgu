@@ -6,6 +6,7 @@ use App\Domain\Simulation\FinancingType;
 use App\Domain\Simulation\InstalmentType;
 use App\Domain\Simulation\Output\TenorResult;
 use App\Domain\Simulation\SimulationMode;
+use App\Domain\Simulation\SimulationProfile;
 use App\Support\Format;
 
 /**
@@ -34,14 +35,15 @@ final class CalculationTrace
         $config = $outcome->config;
         $isUcf = $input->financingType === FinancingType::UCF;
         $isModeA = $input->mode === SimulationMode::A;
+        $isOfficer = $config->profile === SimulationProfile::OFFICER;
 
         if (! $tenor->eligible || ! $tenor->rateAvailable) {
             return [self::blockedSection($tenor, $outcome)];
         }
 
         return array_values(array_filter([
-            self::priceSection($tenor, $isUcf),
-            self::downPaymentSection($tenor),
+            self::priceSection($tenor, $isUcf, $isOfficer),
+            self::downPaymentSection($tenor, $isOfficer),
             self::rateSection($tenor, $input->instalmentType, $config),
             self::insuranceSection($tenor),
             self::feeSection($tenor, $config),
@@ -78,11 +80,13 @@ final class CalculationTrace
         ];
     }
 
-    private static function priceSection(TenorResult $tenor, bool $isUcf): array
+    private static function priceSection(TenorResult $tenor, bool $isUcf, bool $isOfficer): array
     {
         return [
             'title' => '1 · Harga dan Deviasi',
-            'note' => 'Harga PHPM dan Harga OTR adalah dua nilai berbeda. PHPM mentah dipakai untuk deviasi dan ACP; OTR yang dibulatkan dipakai untuk Net DP, LTV, dan Sum Insured.',
+            'note' => $isUcf
+                ? 'Harga PHPM dan Harga OTR adalah dua nilai berbeda. PHPM mentah adalah pembanding sekaligus pembagi Deviasi; Harga OTR dipakai untuk Net DP, LTV, Sum Insured, dan ACP.'
+                : 'Harga PHPM dan Harga OTR adalah dua nilai berbeda. PHPM mentah dipakai untuk Deviasi dan ACP; Harga OTR dipakai untuk Net DP, LTV, dan Sum Insured.',
             'steps' => array_values(array_filter([
                 [
                     'label' => 'Harga PHPM',
@@ -91,7 +95,11 @@ final class CalculationTrace
                 ],
                 [
                     'label' => 'Harga OTR',
-                    'formula' => $isUcf ? 'Harga Pasar yang diinput' : 'ROUNDDOWN(PHPM, ratusan)',
+                    'formula' => match (true) {
+                        $isUcf => 'Harga Pasar yang diinput',
+                        $isOfficer => 'Harga Taksasi yang diinput',
+                        default => 'ROUNDDOWN(PHPM, ratusan)',
+                    },
                     'value' => Format::rupiah((int) round($tenor->otrPrice)),
                 ],
                 [
@@ -101,14 +109,14 @@ final class CalculationTrace
                 ],
                 [
                     'label' => 'Deviasi (%)',
-                    'formula' => 'Deviasi ÷ OTR',
+                    'formula' => 'Deviasi ÷ PHPM',
                     'value' => Format::percent($tenor->deviationRate),
                 ],
             ])),
         ];
     }
 
-    private static function downPaymentSection(TenorResult $tenor): array
+    private static function downPaymentSection(TenorResult $tenor, bool $isOfficer): array
     {
         return [
             'title' => '2 · Net DP dan LTV',
@@ -121,7 +129,7 @@ final class CalculationTrace
                 ],
                 [
                     'label' => 'Net DP',
-                    'formula' => 'OTR × Net DP (%)',
+                    'formula' => $isOfficer ? 'ROUNDUP(OTR × Net DP (%), ribuan)' : 'OTR × Net DP (%)',
                     'value' => Format::rupiah((int) round($tenor->netDpAmount)),
                 ],
                 [
@@ -214,7 +222,7 @@ final class CalculationTrace
 
         return [
             'title' => '4 · Asuransi',
-            'note' => 'Komponen bernilai nol berarti tidak diaktifkan pada konfigurasi default simulasi.',
+            'note' => 'Komponen bernilai nol berarti tidak diaktifkan untuk simulasi ini. Loading, Perluasan, TJH, Pengemudi, dan Penumpang hanya ditagih pada tahun dengan coverage Comprehensive.',
             'steps' => $steps,
         ];
     }

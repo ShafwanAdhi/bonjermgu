@@ -20,6 +20,17 @@ final class ProductResolver
             throw new RuntimeException('Kategori Referral aktif tidak ditemukan.');
         }
 
+        return $this->resolveForCategory($category, $usage);
+    }
+
+    /**
+     * Same resolution, but from the category itself. The Account Officer screen
+     * picks the Referral category by hand because an AO has no category of its
+     * own, and the Product must still come out of the same mapping a Referral
+     * would hit — otherwise the two screens could quietly disagree.
+     */
+    public function resolveForCategory(ReferralCategory $category, VehicleUsage $usage): Product
+    {
         if (! $category->allowsVehicleUsage($usage)) {
             throw new RuntimeException(
                 "Penggunaan kendaraan {$usage->value} tidak tersedia untuk kategori Referral '{$category->name}'."

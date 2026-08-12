@@ -12,19 +12,27 @@
             <x-ui.card title="Data Referral">
                 <div class="grid grid-cols-1 gap-md sm:grid-cols-2">
                     <x-ui.field label="Nama Lengkap" required class="sm:col-span-2" :error="$errors->first('full_name')">
-                        <x-ui.input wire:model="full_name" :invalid="$errors->has('full_name')" />
+                        <x-ui.input wire:model="full_name"
+                                    placeholder="Masukkan nama lengkap referral"
+                                    :invalid="$errors->has('full_name')" />
                     </x-ui.field>
 
                     <x-ui.field label="Tanggal Lahir" required :error="$errors->first('birth_date')">
-                        <x-ui.input wire:model="birth_date" type="date" :invalid="$errors->has('birth_date')" />
+                        <x-ui.input wire:model="birth_date" type="date"
+                                    placeholder="Pilih tanggal lahir"
+                                    :invalid="$errors->has('birth_date')" />
                     </x-ui.field>
 
                     <x-ui.field label="Alamat Email" :error="$errors->first('email')">
-                        <x-ui.input wire:model="email" type="email" :invalid="$errors->has('email')" />
+                        <x-ui.input wire:model="email" type="email"
+                                    placeholder="Contoh: nama@email.com"
+                                    :invalid="$errors->has('email')" />
                     </x-ui.field>
 
                     <x-ui.field label="No. Handphone" :error="$errors->first('phone')">
-                        <x-ui.input wire:model="phone" type="tel" :invalid="$errors->has('phone')" />
+                        <x-ui.input wire:model="phone" type="tel"
+                                    placeholder="Contoh: 081234567890"
+                                    :invalid="$errors->has('phone')" />
                     </x-ui.field>
 
                     <x-ui.field label="Kategori" required :error="$errors->first('category_id')">
@@ -59,7 +67,9 @@
                     </x-ui.field>
 
                     <x-ui.field label="Nama Cabang" :error="$errors->first('branch_name')">
-                        <x-ui.input wire:model="branch_name" :invalid="$errors->has('branch_name')" />
+                        <x-ui.input wire:model="branch_name"
+                                    placeholder="Contoh: Cabang BSD"
+                                    :invalid="$errors->has('branch_name')" />
                     </x-ui.field>
                 </div>
 

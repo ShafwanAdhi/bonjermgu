@@ -285,4 +285,9 @@ final class ReferralMaster extends AuditedAdminComponent
     {
         return ['referral_categories', 'referral_sub_categories', 'institutions'];
     }
+
+    protected function auditModule(): string
+    {
+        return 'master.referral';
+    }
 }

@@ -13,6 +13,7 @@ class Admin extends Model
     protected $fillable = [
         'user_id',
         'full_name',
+        'email',
     ];
 
     public function user(): BelongsTo

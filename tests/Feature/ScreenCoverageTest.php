@@ -38,6 +38,7 @@ function screenMap(): array
 
         // Account Officer
         '/applications/create' => ['ao', 'Buat Credit Application'],
+        '/simulation/officer' => ['ao', 'Asal Pengajuan'],
 
         // Admin
         '/configuration' => ['admin', 'Pilih modul konfigurasi'],
@@ -216,8 +217,8 @@ it('renders both lending reports', function (string $path, string $expected) {
 
     $this->get($path)->assertOk()->assertSee($expected);
 })->with([
-    ['/lending/ao', 'Referral'],
-    ['/lending/referrals', 'Account Officer'],
+    ['/lending/ao', 'Account Officer'],
+    ['/lending/referrals', 'Referral'],
 ]);
 
 /*

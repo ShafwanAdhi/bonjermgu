@@ -110,7 +110,7 @@ Ketentuan:
 
 ## 7. Reporting Period
 
-Pemotongan periode menggunakan **Tanggal Go Live**.
+Pemotongan periode menggunakan **Tanggal Go Live**. Di UI Admin, periode dipilih sebagai **bulan Go Live** (`YYYY-MM`) dan sistem mengubahnya menjadi rentang awal sampai akhir bulan untuk query.
 
 | Klasifikasi    | Dasar Periode                          |
 | -------------- | -------------------------------------- |
@@ -119,7 +119,7 @@ Pemotongan periode menggunakan **Tanggal Go Live**.
 
 Pipe Line menggambarkan kondisi saat laporan dibuka, bukan kejadian dalam suatu rentang waktu. Karena itu Pipe Line tidak memiliki dasar periode.
 
-Apabila periode tidak dipilih, Actual Lending menampilkan seluruh application yang telah Go Live.
+Apabila bulan tidak dipilih, Actual Lending menampilkan seluruh application yang telah Go Live.
 
 ---
 
@@ -141,11 +141,13 @@ Keempat atribut di atas dapat digunakan sebagai penyaring tambahan, namun pengel
 
 | Penyaring         | Nilai                                          |
 | ----------------- | ---------------------------------------------- |
-| Periode           | Berlaku pada Actual Lending saja               |
+| Bulan Go Live     | Berlaku pada Actual Lending saja               |
 | Produk Pembiayaan | Dana Tunai, Pembiayaan Mobil Bekas, atau semua |
-| Atribut Referral  | Kategori, sub-kategori, instansi               |
+| Kategori Referral | Semua kategori atau satu kategori tertentu     |
 
 Penyaring bersifat opsional dan dapat digabungkan. Baris TOTAL selalu mengikuti penyaring yang sedang aktif.
+
+Pada UI Admin, perubahan filter berjalan asynchronous melalui Livewire. Tidak ada tombol Terapkan; tabel, baris TOTAL, loading state, dan query string diperbarui saat filter berubah. Tombol Bersihkan hanya muncul ketika ada filter aktif.
 
 ---
 

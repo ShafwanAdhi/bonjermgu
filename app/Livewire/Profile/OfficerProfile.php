@@ -3,6 +3,8 @@
 namespace App\Livewire\Profile;
 
 use App\Models\AccountOfficer;
+use App\Support\AccountPasswordResetBroker;
+use App\Support\PasswordResetResult;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Attributes\Computed;
@@ -119,6 +121,19 @@ class OfficerProfile extends Component
         $this->reset('current_password', 'password', 'password_confirmation');
 
         session()->flash('password_success', 'Kata sandi berhasil diperbarui.');
+    }
+
+    public function sendPasswordResetLink(AccountPasswordResetBroker $broker): void
+    {
+        $result = $broker->sendForUser(Auth::user());
+
+        if ($result === PasswordResetResult::MissingEmail) {
+            session()->flash('password_reset_warning', 'Tambahkan alamat email terlebih dahulu agar sistem bisa mengirim link reset kata sandi.');
+
+            return;
+        }
+
+        session()->flash('password_reset_success', 'Link reset kata sandi sudah dikirim ke alamat email Anda.');
     }
 
     private function fillFromProfile(): void

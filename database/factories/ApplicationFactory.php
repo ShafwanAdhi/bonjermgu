@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Domain\Application\DebtorType;
 use App\Domain\Application\FinancingProduct;
 use App\Domain\Application\SpouseIncomeType;
+use App\Domain\Application\ApplicationStatus;
 use App\Models\AccountOfficer;
 use App\Models\Application;
 use App\Models\Referral;
@@ -32,6 +33,7 @@ class ApplicationFactory extends Factory
             'amount_finance' => fake()->numberBetween(50, 250) * 1_000_000,
             'unit_count' => 1,
             'go_live_date' => null,
+            'application_status' => ApplicationStatus::Pipeline,
         ];
     }
 

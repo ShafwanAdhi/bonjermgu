@@ -31,11 +31,12 @@
             </x-ui.select>
         </x-ui.field>
 
-        <x-ui.field label="Status Go Live">
+        <x-ui.field label="Status">
             <x-ui.select wire:model.live="goLive">
                 <option value="">Semua</option>
                 <option value="live">Go Live</option>
                 <option value="pipeline">Pipe Line</option>
+                <option value="canceled">Canceled</option>
             </x-ui.select>
         </x-ui.field>
     </div>
@@ -50,8 +51,8 @@
                             <p class="font-mono text-[13px] leading-[1.4] text-ink">{{ $application->code }}</p>
                             <p class="mt-1 text-body-md font-medium text-ink">{{ $application->debtor_name }}</p>
                         </div>
-                        <x-ui.chip :tone="$application->go_live_date ? 'success' : 'neutral'">
-                            {{ $application->go_live_date ? 'Go Live' : 'Pipe Line' }}
+                        <x-ui.chip :tone="$application->statusTone()">
+                            {{ $application->statusLabel() }}
                         </x-ui.chip>
                     </div>
 
@@ -137,8 +138,8 @@
                     </x-ui.td>
                     <x-ui.td numeric>{{ Format::ratio($application->trackings_done_count, 11) }}</x-ui.td>
                     <x-ui.td>
-                        <x-ui.chip :tone="$application->go_live_date ? 'success' : 'neutral'">
-                            {{ $application->go_live_date ? 'Go Live' : 'Pipe Line' }}
+                        <x-ui.chip :tone="$application->statusTone()">
+                            {{ $application->statusLabel() }}
                         </x-ui.chip>
                     </x-ui.td>
                     <x-ui.td align="right">

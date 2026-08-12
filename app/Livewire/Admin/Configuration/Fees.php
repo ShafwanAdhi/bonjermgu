@@ -205,6 +205,11 @@ final class Fees extends AuditedAdminComponent
         return ['fiducia_tiers', 'sum_insured_schedules', 'simulation_settings'];
     }
 
+    protected function auditModule(): string
+    {
+        return 'configuration.fees';
+    }
+
     private function fraction(string|int|float $percent): float
     {
         return (float) $percent / 100;

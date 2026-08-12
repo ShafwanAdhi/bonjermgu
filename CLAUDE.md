@@ -145,11 +145,16 @@ Dilarang menggunakan `float` atau `double` untuk kolom database.
 
 Ringkasnya:
 
-| Role     | Simulasi | Application | Dokumen & Tracking   | Lending | Konfigurasi |
-| -------- | -------- | ----------- | -------------------- | ------- | ----------- |
-| Admin    | Tidak    | Tidak       | Tidak                | Ya      | Ya          |
-| Referral | Ya       | Tidak       | Lihat saja, miliknya | Tidak   | Tidak       |
-| AO       | Tidak    | Miliknya    | Ubah, miliknya       | Tidak   | Tidak       |
+| Role     | Simulasi              | Application | Dokumen & Tracking   | Lending | Konfigurasi |
+| -------- | --------------------- | ----------- | -------------------- | ------- | ----------- |
+| Admin    | Uji Konfigurasi saja  | Tidak       | Tidak                | Ya      | Ya          |
+| Referral | Ya, dapat diunduh     | Tidak       | Lihat saja, miliknya | Tidak   | Tidak       |
+| AO       | Ya, tanpa unduhan     | Miliknya    | Ubah, miliknya       | Tidak   | Tidak       |
+
+Tiga peran menjalankan engine yang sama lewat tiga layar berbeda: `/simulation`
+untuk Referral, `/simulation/officer` untuk AO, `/configuration/simulation`
+untuk Admin. Hanya layar Referral yang menghasilkan PDF, sehingga hanya di sana
+identitas debitur diminta.
 
 Yang mengejutkan dan sering salah: **Admin tidak punya akses ke data application.** Global scope Admin mengembalikan himpunan kosong, bukan seluruh data. Satu-satunya pengecualian adalah query agregasi Lending.
 

@@ -6,6 +6,7 @@ use App\Domain\Application\DebtorType;
 use App\Domain\Application\DocumentReconciler;
 use App\Domain\Application\DocumentStatus;
 use App\Domain\Application\FinancingProduct;
+use App\Domain\Application\ApplicationStatus;
 use App\Domain\Application\SpouseIncomeType;
 use App\Domain\Application\TrackingStatus;
 use App\Models\Application;
@@ -36,6 +37,8 @@ class ApplicationDetail extends Component
     public bool $editing = false;
 
     public bool $confirmingGoLive = false;
+
+    public bool $confirmingCancel = false;
 
     /* Edit form */
     public string $financing_product = '';
@@ -175,6 +178,10 @@ class ApplicationDetail extends Component
     {
         $this->authorize('update', $this->application);
 
+        if ($this->application->isCanceled()) {
+            return;
+        }
+
         $this->fillFromModel();
         $this->editing = true;
     }
@@ -239,6 +246,10 @@ class ApplicationDetail extends Component
     {
         $this->authorize('updateDocuments', $this->application);
 
+        if ($this->application->isCanceled()) {
+            return;
+        }
+
         $document = ApplicationDocument::where('application_id', $this->application->id)
             ->whereKey($documentId)
             ->firstOrFail();
@@ -259,6 +270,10 @@ class ApplicationDetail extends Component
     public function toggleStage(int $stageNo): void
     {
         $this->authorize('updateTracking', $this->application);
+
+        if ($this->application->isCanceled()) {
+            return;
+        }
 
         $tracking = ApplicationTracking::where('application_id', $this->application->id)
             ->where('stage_no', $stageNo)
@@ -281,6 +296,10 @@ class ApplicationDetail extends Component
     {
         $this->authorize('updateTracking', $this->application);
 
+        if ($this->application->isCanceled()) {
+            return;
+        }
+
         $tracking = ApplicationTracking::where('application_id', $this->application->id)
             ->where('stage_no', TrackingStage::GO_LIVE_STAGE)
             ->firstOrFail();
@@ -295,6 +314,60 @@ class ApplicationDetail extends Component
     public function cancelGoLive(): void
     {
         $this->confirmingGoLive = false;
+    }
+
+    public function askCancelApplication(): void
+    {
+        $this->authorize('update', $this->application);
+
+        if ($this->application->isGoLive() || $this->application->isCanceled()) {
+            return;
+        }
+
+        $this->confirmingCancel = true;
+    }
+
+    public function confirmCancelApplication(): void
+    {
+        $this->authorize('update', $this->application);
+
+        if ($this->application->isGoLive()) {
+            return;
+        }
+
+        $this->application->update([
+            'application_status' => ApplicationStatus::Canceled,
+        ]);
+
+        $this->application->refresh();
+        $this->confirmingCancel = false;
+        $this->editing = false;
+        $this->clearDerived();
+
+        session()->flash('application_success', 'Aplikasi berhasil dibatalkan.');
+    }
+
+    public function cancelCancelApplication(): void
+    {
+        $this->confirmingCancel = false;
+    }
+
+    public function restoreApplication(): void
+    {
+        $this->authorize('update', $this->application);
+
+        if ($this->application->isGoLive()) {
+            return;
+        }
+
+        $this->application->update([
+            'application_status' => ApplicationStatus::Pipeline,
+        ]);
+
+        $this->application->refresh();
+        $this->clearDerived();
+
+        session()->flash('application_success', 'Aplikasi dikembalikan ke Pipe Line.');
     }
 
     /** The observer fills or clears go_live_date; this never writes it. */

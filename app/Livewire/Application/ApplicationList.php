@@ -4,6 +4,7 @@ namespace App\Livewire\Application;
 
 use App\Domain\Application\DocumentStatus;
 use App\Domain\Application\FinancingProduct;
+use App\Domain\Application\ApplicationStatus;
 use App\Domain\Application\TrackingStatus;
 use App\Enums\Role;
 use App\Models\Application;
@@ -86,7 +87,12 @@ class ApplicationList extends Component
             })
             ->when($this->product !== '', fn ($q) => $q->where('financing_product', $this->product))
             ->when($this->goLive === 'live', fn ($q) => $q->whereNotNull('go_live_date'))
-            ->when($this->goLive === 'pipeline', fn ($q) => $q->whereNull('go_live_date'))
+            ->when($this->goLive === 'pipeline', fn ($q) => $q
+                ->whereNull('go_live_date')
+                ->where('application_status', ApplicationStatus::Pipeline->value))
+            ->when($this->goLive === 'canceled', fn ($q) => $q
+                ->whereNull('go_live_date')
+                ->where('application_status', ApplicationStatus::Canceled->value))
             ->latest('created_at')
             ->paginate(15);
     }

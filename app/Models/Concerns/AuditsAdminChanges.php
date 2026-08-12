@@ -9,6 +9,7 @@ use App\Repositories\VehicleCascadeRepository;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Schema;
 
 trait AuditsAdminChanges
 {
@@ -51,7 +52,7 @@ trait AuditsAdminChanges
             return;
         }
 
-        AdminChangeLog::query()->create([
+        $values = [
             'actor_id' => $actor->id,
             'actor_name' => $actor->displayName(),
             'subject_type' => $model::class,
@@ -61,7 +62,13 @@ trait AuditsAdminChanges
             'before_values' => $before,
             'after_values' => $after,
             'created_at' => now(),
-        ]);
+        ];
+
+        if (Schema::hasColumn('admin_change_logs', 'audit_module')) {
+            $values['audit_module'] = app()->bound('admin.audit_module') ? app('admin.audit_module') : null;
+        }
+
+        AdminChangeLog::query()->create($values);
 
         $version = (string) hrtime(true);
 

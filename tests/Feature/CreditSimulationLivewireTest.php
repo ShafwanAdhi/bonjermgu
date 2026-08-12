@@ -429,3 +429,46 @@ test('Captive Internal only exposes Passenger and rejects Commercial server-side
 
     Carbon::setTestNow();
 });
+
+test('Mobil Bekas does not offer Commercial units and rejects them server-side', function () {
+    $this->seed(ReferralMasterSeeder::class);
+    $this->seed(SimulationConfigurationSeeder::class);
+    TestVehicleMaster::seed();
+
+    $category = ReferralCategory::query()
+        ->where('segment', 'Reguler')
+        ->where('tier', 'Sales Dealer')
+        ->with('subCategories')
+        ->firstOrFail();
+    $referral = Referral::factory()->create([
+        'category_id' => $category->id,
+        'sub_category_id' => $category->subCategories->firstOrFail()->id,
+        'institution_id' => null,
+    ])->load(['user', 'category']);
+
+    expect($category->allowedVehicleUsages())->toContain(DomainVehicleUsage::COMMERCIAL);
+
+    $commercial = VehicleModel::query()
+        ->whereHas('type.brand.usage', fn ($query) => $query->where('name', 'Commercial'))
+        ->whereHas('prices', fn ($query) => $query->where('price', '>', 0))
+        ->with(['type.brand.usage', 'prices' => fn ($query) => $query->where('price', '>', 0)->orderByDesc('year')])
+        ->firstOrFail();
+    $price = $commercial->prices->first();
+    Carbon::setTestNow(Carbon::create($price->year + 1, 8, 4));
+
+    $component = Livewire::actingAs($referral->user)
+        ->test(CreditSimulation::class)
+        ->set('financing_type', 'UCF')
+        ->set('mode', 'A');
+
+    $offered = collect($component->instance()->usages())->pluck('name');
+    expect($offered)->not->toContain('Commercial');
+
+    $component
+        ->set(validSimulationState($commercial, $price->year))
+        ->set('market_price', '150000000')
+        ->call('calculate')
+        ->assertHasErrors('usage_id');
+
+    Carbon::setTestNow();
+});

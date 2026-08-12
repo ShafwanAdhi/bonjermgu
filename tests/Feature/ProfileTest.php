@@ -1,7 +1,7 @@
 <?php
 
-use App\Livewire\Profile\OfficerProfile;
 use App\Livewire\Profile\AdminProfile;
+use App\Livewire\Profile\OfficerProfile;
 use App\Livewire\Profile\ReferralProfile;
 use App\Models\AccountOfficer;
 use App\Models\Admin;
@@ -61,6 +61,38 @@ it('does not expose account NIK on the referral profile form', function () {
     expect($referral->fresh())
         ->full_name->toBe('Nama Baru')
         ->nik->toBeNull();
+});
+
+it('lets a referral change their own password from profile', function () {
+    $referral = Referral::factory()->create();
+
+    Livewire::actingAs($referral->user)
+        ->test(ReferralProfile::class)
+        ->set('current_password', 'password')
+        ->set('password', 'password-referral-baru')
+        ->set('password_confirmation', 'password-referral-baru')
+        ->call('changePassword')
+        ->assertHasNoErrors()
+        ->assertSet('current_password', '')
+        ->assertSet('password', '')
+        ->assertSet('password_confirmation', '');
+
+    expect(Hash::check('password-referral-baru', $referral->user->fresh()->password))->toBeTrue();
+});
+
+it('rejects a referral password change when the current password is wrong', function () {
+    $referral = Referral::factory()->create();
+    $hashBefore = $referral->user->password;
+
+    Livewire::actingAs($referral->user)
+        ->test(ReferralProfile::class)
+        ->set('current_password', 'salah')
+        ->set('password', 'password-referral-baru')
+        ->set('password_confirmation', 'password-referral-baru')
+        ->call('changePassword')
+        ->assertHasErrors('current_password');
+
+    expect($referral->user->fresh()->password)->toBe($hashBefore);
 });
 
 it('rejects a sub-category from another category on the profile form', function () {

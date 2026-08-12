@@ -113,7 +113,7 @@
             <div class="grid gap-lg md:grid-cols-2">
                 @foreach ([
                     [
-                        'name' => 'Tri',
+                        'name' => 'Tri Yuliyatno',
                         'role' => 'SM-Honda Jakarta Center',
                         'quote' => 'Simulasinya sangat mudah digunakan, semoga prosesnya semudah simulasinya.',
                         'image' => asset('images/testimonials/tri.jpeg'),

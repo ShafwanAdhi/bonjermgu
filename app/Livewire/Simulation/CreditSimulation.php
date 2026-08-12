@@ -10,6 +10,7 @@ use App\Domain\Simulation\InstalmentType;
 use App\Domain\Simulation\Output\SimulationResult;
 use App\Domain\Simulation\SimulationMode;
 use App\Domain\Simulation\StnkOwnership;
+use App\Domain\Simulation\VehicleUsage as DomainVehicleUsage;
 use App\Models\AgeGroup;
 use App\Models\Domicile;
 use App\Models\Referral;
@@ -251,6 +252,13 @@ final class CreditSimulation extends Component
     {
         $allowedUsageNames = collect($this->referral()->category->allowedVehicleUsages())
             ->map(fn ($usage) => $usage->value);
+
+        // Pembiayaan Mobil Bekas hanya tersedia untuk unit Passenger, apa pun
+        // penggunaan unit yang diizinkan kategori Referral.
+        if ($this->financing_type === FinancingType::UCF->value) {
+            $allowedUsageNames = $allowedUsageNames
+                ->intersect([DomainVehicleUsage::PASSENGER->value]);
+        }
 
         return app(VehicleCascadeRepository::class)
             ->usages()

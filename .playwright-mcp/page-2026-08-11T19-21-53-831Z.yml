@@ -1,0 +1,197 @@
+- generic [ref=f15e1]:
+  - banner [ref=f15e2]:
+    - generic [ref=f15e3]:
+      - link "M Kebon Jeruk Multiguna" [ref=f15e4] [cursor=pointer]:
+        - /url: http://127.0.0.1:8123/dashboard
+        - generic [ref=f15e5]:
+          - generic [ref=f15e6]: M
+          - generic [ref=f15e7]: Kebon Jeruk Multiguna
+      - navigation [ref=f15e8]:
+        - link "Dashboard" [ref=f15e9] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123/dashboard
+        - link "Konfigurasi" [ref=f15e13] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123/configuration
+        - link "Master Data" [ref=f15e18] [cursor=pointer]:
+          - /url: http://127.0.0.1:8123/master
+        - button "Lainnya" [ref=f15e24] [cursor=pointer]
+      - generic [ref=f15e28]:
+        - generic [ref=f15e29]: CV
+        - generic [ref=f15e30]:
+          - generic [ref=f15e31]: Cek Visual Admin
+          - generic [ref=f15e32]: Admin
+        - button "Keluar" [ref=f15e34] [cursor=pointer]
+  - main [ref=f15e35]:
+    - generic [ref=f15e37]:
+      - link "Kembali" [ref=f15e38] [cursor=pointer]:
+        - /url: http://127.0.0.1:8123/configuration
+      - generic [ref=f15e43]:
+        - generic [ref=f15e44]:
+          - paragraph [ref=f15e45]: Konfigurasi
+          - heading "Uji Konfigurasi" [level=1] [ref=f15e46]
+        - generic [ref=f15e47]: Belum ada perubahan Admin yang tercatat
+      - paragraph [ref=f15e48]: Menjalankan engine yang sama dengan simulasi Referral, tetapi Product dipilih langsung agar konfigurasi yang baru Anda ubah bisa diperiksa hasilnya.
+      - generic [ref=f15e49]:
+        - generic [ref=f15e50]:
+          - generic [ref=f15e51]:
+            - paragraph [ref=f15e53]: Parameter Uji
+            - generic [ref=f15e54]:
+              - generic [ref=f15e55]:
+                - generic [ref=f15e56]: Product *
+                - combobox [ref=f15e57]:
+                  - option "Captive Commercial Cuan" [selected]
+                  - option "Captive Commercial Semangat"
+                  - option "Captive Commercial Tengah"
+                  - option "Captive Passenger Authorized Reguler"
+                  - option "Captive Passenger Authorized Showroom"
+                  - option "Captive Passenger Cuan"
+                  - option "Captive Passenger High Benefit"
+                  - option "Captive Passenger Khusus Karyawan Bank Mandiri"
+                  - option "Captive Passenger Khusus SME & Private/Prioritas"
+                  - option "Captive Passenger Low Rate"
+                  - option "Captive Passenger Semangat"
+                  - option "Captive Passenger Tengah"
+                  - option "Reguler Commercial Referral"
+                  - option "Reguler Commercial Sales Dealer"
+                  - option "Reguler Passenger Referral"
+                  - option "Reguler Passenger Sales Dealer"
+                  - option "Reguler Passenger TOMI Spesial Referral"
+                - generic [ref=f15e58]: Product yang ingin diperiksa konfigurasinya.
+              - generic [ref=f15e59]:
+                - generic [ref=f15e60]: Profil Simulasi *
+                - combobox [ref=f15e61]:
+                  - option "Referral" [selected]
+                  - option "Account Officer"
+                - generic [ref=f15e62]: Aturan layar mana yang diperiksa. Profil AO memakai Harga Taksasi, memberi Deviasi pada Dana Tunai, dan membulatkan Net DP ke atas.
+              - generic [ref=f15e63]:
+                - generic [ref=f15e64]:
+                  - generic [ref=f15e65]: Produk Pembiayaan *
+                  - combobox [ref=f15e66]:
+                    - option "Dana Tunai"
+                    - option "Pembiayaan Mobil Bekas" [selected]
+                - generic [ref=f15e67]:
+                  - generic [ref=f15e68]: Mode *
+                  - combobox [ref=f15e69]:
+                    - option "Mode A" [selected]
+                    - option "Mode B"
+                - generic [ref=f15e70]:
+                  - generic [ref=f15e71]: Type Debitur *
+                  - combobox [ref=f15e72]:
+                    - option "Perorangan Non Wiraswasta" [selected]
+                    - option "Perorangan Wiraswasta"
+                    - option "Badan Hukum Usaha"
+                - generic [ref=f15e73]:
+                  - generic [ref=f15e74]: Kelompok Usia
+                  - combobox [ref=f15e75]:
+                    - option "Tidak dipilih" [selected]
+                    - option "18-35 tahun"
+                    - option "36-45 tahun"
+                    - option "46-50 tahun"
+                    - option "51-60 tahun"
+              - paragraph [ref=f15e76]: Kendaraan
+              - generic [ref=f15e77]:
+                - generic [ref=f15e78]:
+                  - generic [ref=f15e79]: Penggunaan Unit *
+                  - combobox [ref=f15e80]:
+                    - option "Passenger" [selected]
+                - generic [ref=f15e81]:
+                  - generic [ref=f15e82]: Merk *
+                  - combobox [ref=f15e83]:
+                    - option "Pilih merk" [selected]
+                    - option "BMW"
+                    - option "BYD"
+                    - option "CHERY"
+                    - option "CHEVROLET"
+                    - option "DAIHATSU"
+                    - option "DENZA"
+                    - option "GWM"
+                    - option "HONDA"
+                    - option "HYUNDAI"
+                    - option "ISUZU"
+                    - option "JEEP"
+                    - option "KIA"
+                    - option "LEXUS"
+                    - option "MAZDA"
+                    - option "MERCEDES BENZ"
+                    - option "MITSUBISHI"
+                    - option "MORRIS GARAGE"
+                    - option "NISSAN"
+                    - option "SUZUKI"
+                    - option "TOYOTA"
+                    - option "WULING"
+                - generic [ref=f15e84]:
+                  - generic [ref=f15e85]: Type *
+                  - combobox [disabled] [ref=f15e86]:
+                    - option "Pilih type" [selected]
+                - generic [ref=f15e87]:
+                  - generic [ref=f15e88]: Model *
+                  - combobox [disabled] [ref=f15e89]:
+                    - option "Pilih model" [selected]
+                - generic [ref=f15e90]:
+                  - generic [ref=f15e91]: Tahun *
+                  - combobox [disabled] [ref=f15e92]:
+                    - option "Pilih tahun" [selected]
+                  - generic [ref=f15e93]: Hanya tahun yang punya harga.
+                - generic [ref=f15e94]:
+                  - generic [ref=f15e95]: Type Angsuran *
+                  - combobox [ref=f15e96]:
+                    - option "ADDB" [selected]
+                    - option "ADDM"
+                - generic [ref=f15e97]:
+                  - generic [ref=f15e98]: Asuransi *
+                  - combobox [ref=f15e99]:
+                    - option "Comprehensive All Tenor"
+                    - option "Comprehensive 1 Tahun" [selected]
+                    - option "TLO All Tenor"
+                - generic [ref=f15e100]:
+                  - generic [ref=f15e101]: STNK atas nama *
+                  - combobox [ref=f15e102]:
+                    - option "Pribadi (milik sendiri)" [selected]
+                    - option "Orang lain"
+                - generic [ref=f15e103]:
+                  - generic [ref=f15e104]: Harga Pasar *
+                  - textbox "Rp 50.000.000" [ref=f15e105]
+              - generic [ref=f15e106]:
+                - button "Upping untuk pengujian ini Tutup" [active] [ref=f15e140] [cursor=pointer]:
+                  - generic [ref=f15e108]: Upping untuk pengujian ini
+                  - generic [ref=f15e109]: Tutup
+                - generic [ref=f15e141]:
+                  - generic [ref=f15e142]:
+                    - generic [ref=f15e143]: Up Rate (%)
+                    - spinbutton [ref=f15e144]: "0"
+                  - generic [ref=f15e145]:
+                    - generic [ref=f15e146]: Up Provisi (%)
+                    - spinbutton [ref=f15e147]: "0"
+                  - generic [ref=f15e148]:
+                    - generic [ref=f15e149]: Up Admin (Rp)
+                    - textbox "Rp 0" [ref=f15e150]
+                  - generic [ref=f15e151]:
+                    - generic [ref=f15e152]: Up ACP (%)
+                    - spinbutton "Default" [ref=f15e153]
+                    - generic [ref=f15e154]: Kosong berarti memakai upping kelompok usia.
+                  - paragraph [ref=f15e155]: Berlaku untuk pengujian ini saja. Konfigurasi Product tidak berubah.
+              - button "Hitung" [ref=f15e110] [cursor=pointer]
+          - generic [ref=f15e112]:
+            - paragraph [ref=f15e114]: Rate Product Terpilih
+            - generic [ref=f15e115]:
+              - generic [ref=f15e116]:
+                - paragraph [ref=f15e117]: 12 bln
+                - paragraph [ref=f15e118]: 20,8800%
+              - generic [ref=f15e119]:
+                - paragraph [ref=f15e120]: 24 bln
+                - paragraph [ref=f15e121]: 20,5000%
+              - generic [ref=f15e122]:
+                - paragraph [ref=f15e123]: 36 bln
+                - paragraph [ref=f15e124]: 20,6500%
+              - generic [ref=f15e125]:
+                - paragraph [ref=f15e126]: 48 bln
+                - paragraph [ref=f15e127]: 20,3900%
+              - generic [ref=f15e128]:
+                - paragraph [ref=f15e129]: 60 bln
+                - paragraph [ref=f15e130]: kosong
+            - generic [ref=f15e131]:
+              - paragraph [ref=f15e132]: Dijangkau kategori
+              - paragraph [ref=f15e133]: Tidak ada kategori Referral yang memetakan ke Product ini. Angka di bawah tidak akan pernah muncul pada simulasi Referral mana pun.
+            - paragraph [ref=f15e134]: Sel kosong berarti tenor tidak tersedia — bukan rate 0%.
+        - generic [ref=f15e137]:
+          - paragraph [ref=f15e138]: Belum ada hasil.
+          - paragraph [ref=f15e139]: Pilih Product dan kendaraan, lalu tekan Hitung untuk melihat hasil beserta seluruh langkah perhitungannya.

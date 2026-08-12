@@ -244,6 +244,7 @@ TJH          = perhitungan berjenjang atas nilai TJH
 Pengemudi    = Rate Pengemudi × nilai pertanggungan
 Penumpang    = Rate Penumpang × jumlah penumpang × nilai pertanggungan
 ACP          = Rate ACP × Harga PHPM
+               Rate ACP = Rate Dasar tenor × (1 + Upping kelompok usia)
 Garansi Mesin = nilai tetap
 
 Total Asuransi = ROUNDDOWN(seluruh komponen di atas, ratusan)
@@ -257,7 +258,7 @@ Comprehensive 1 tahun, sisanya TLO → tahun 1 Comprehensive, tahun berikutnya T
 TLO All Tenor                      → TLO seluruh tahun
 ```
 
-Loading dan seluruh perluasan hanya berlaku pada tahun dengan coverage Comprehensive.
+Loading, seluruh perluasan, TJH, Pengemudi, dan Penumpang hanya berlaku pada tahun dengan coverage Comprehensive. Tahun dengan coverage TLO hanya menanggung Casco.
 
 ACP tidak berlaku apabila Type Debitur adalah Badan Hukum Usaha.
 
@@ -375,17 +376,26 @@ Harga PHPM = nilai dari master PHPM
 
 ```text
 Deviasi (Rp) = Harga OTR - Harga PHPM   (jika positif, selain itu 0)
-Deviasi (%)  = Deviasi (Rp) ÷ Harga OTR
+Deviasi (%)  = Deviasi (Rp) ÷ Harga PHPM
 ```
 
-Harga PHPM pada rumus di atas adalah nilai **tanpa pembulatan**. Menggunakan nilai yang telah dibulatkan menghasilkan selisih pada Net DP dan seluruh nilai turunannya.
+Harga PHPM pada rumus di atas adalah nilai **tanpa pembulatan**, baik sebagai pengurang maupun sebagai pembagi. Menggunakan nilai yang telah dibulatkan menghasilkan selisih pada Net DP dan seluruh nilai turunannya.
+
+Pembagi Deviasi adalah Harga PHPM, bukan Harga OTR. Deviasi mengukur seberapa jauh harga yang diminta melampaui harga master, sehingga harga master yang menjadi acuannya.
 
 **Net DP**
 
 ```text
-Net DP (%) = 30% + Deviasi (%)   jika Type Debitur Perorangan (Wiraswasta)
-           = 10% + Deviasi (%)   selain itu
+Net DP (%) = Dasar + Deviasi (%)
 ```
+
+| Type Debitur                | Japan | Non Japan |
+| --------------------------- | ----- | --------- |
+| Perorangan (Wiraswasta)     | 30%   | 30%       |
+| Perorangan (Non Wiraswasta) | 10%   | 15%       |
+| Badan Hukum Usaha           | 10%   | 15%       |
+
+Apabila Net DP (%) mencapai atau melampaui 100%, tidak ada nilai yang dapat dibiayai dan seluruh komponen tenor bernilai 0.
 
 **Asuransi**
 
@@ -393,7 +403,7 @@ Net DP (%) = 30% + Deviasi (%)   jika Type Debitur Perorangan (Wiraswasta)
 Total Asuransi = ROUNDUP(seluruh komponen, ratusan)
 ```
 
-ACP tidak berlaku pada Pembiayaan Mobil Bekas.
+ACP berlaku pada Pembiayaan Mobil Bekas dengan dasar **Harga OTR**, berbeda dari Dana Tunai yang memakai Harga PHPM.
 
 **Angsuran Pertama**
 
@@ -412,7 +422,7 @@ Total Bayar Pertama = Net DP (Rp) + Total Asuransi + Provisi
 **Refund**
 
 ```text
-Refund Asuransi = (Casco + Perluasan) × Persentase Dasar × Persentase Refund
+Refund Asuransi = (Casco + Loading + Perluasan) × Persentase Dasar × Persentase Refund
 Refund Bunga    = (LTV (Rp) × (Up Rate × Tenor Tahun)) ÷ (1 + Bunga Jual (%)) × Persentase Refund
 Refund Provisi  = Provisi (Rp) × Persentase Refund
 Refund Admin    = Up Admin × Persentase Refund
@@ -490,10 +500,10 @@ Apabila LTV bernilai 0, Angsuran bernilai 0.
 | ----------------------------------------- | --------------------------------- | ------------------------------ |
 | Sumber Harga OTR                          | PHPM                              | Input Harga Pasar              |
 | Deviasi                                   | Selalu 0                          | Dapat terjadi                  |
-| Net DP                                    | 5% atau 15%                       | 10% atau 30%, ditambah Deviasi |
-| Dasar Net DP                              | STNK, Penggunaan Unit, Asal Unit  | Type Debitur                   |
-| ACP                                       | Berlaku kecuali Badan Hukum Usaha | Tidak berlaku                  |
-| Dasar perhitungan ACP                     | Harga PHPM                        | —                              |
+| Net DP                                    | 5% atau 15%                       | 10%, 15%, atau 30%, ditambah Deviasi |
+| Dasar Net DP                              | STNK, Penggunaan Unit, Asal Unit  | Type Debitur dan Asal Unit     |
+| ACP                                       | Berlaku kecuali Badan Hukum Usaha | Berlaku kecuali Badan Hukum Usaha |
+| Dasar perhitungan ACP                     | Harga PHPM                        | Harga OTR                      |
 | Pembulatan Total Asuransi                 | ROUNDDOWN ratusan                 | ROUNDUP ratusan                |
 | Angsuran Pertama pada Total Bayar Pertama | Tidak termasuk                    | Termasuk jika ADDM             |
 | Dasar Deposit Angsuran                    | Angsuran Pertama                  | Angsuran                       |
@@ -553,6 +563,28 @@ PDF hasil simulasi dikirimkan Referral kepada AO melalui jalur komunikasi di lua
 
 ---
 
+## 14b. Profil Simulasi
+
+Referral dan Account Officer memakai satu rantai perhitungan. Yang berbeda hanya berikut ini.
+
+| Aspek                     | Profil Referral             | Profil Account Officer               |
+| ------------------------- | --------------------------- | ------------------------------------ |
+| Harga OTR Dana Tunai      | ROUNDDOWN Harga PHPM        | Harga Taksasi yang diinput AO        |
+| Deviasi Dana Tunai        | Selalu 0                    | Dapat terjadi, menambah Net DP (%)   |
+| Pembulatan Net DP (Rp)    | Tanpa pembulatan            | ROUNDUP ribuan                       |
+| Harga OTR Mobil Bekas     | Harga Pasar yang diinput    | Harga Pasar yang diinput             |
+
+Seluruh parameter lain, termasuk asuransi, biaya, refund, dan kelayakan unit, identik pada kedua profil.
+
+Ketentuan yang berlaku pada kedua profil:
+
+- Pembiayaan Mobil Bekas hanya tersedia untuk unit **Passenger**.
+- ACP tidak berlaku apabila Total A/R melebihi batas nilai pinjaman yang dikonfigurasi.
+- Tenor yang menghasilkan Net DP sebesar atau melebihi harga unit bernilai 0 pada seluruh komponen.
+- Mode B tidak menghasilkan Refund pada produk mana pun.
+
+---
+
 ## 15. Validation Rules
 
 | Kondisi                                        | Perilaku Sistem                                                                |
@@ -562,6 +594,8 @@ PDF hasil simulasi dikirimkan Referral kepada AO melalui jalur komunikasi di lua
 | Unit tidak memenuhi ketentuan kelayakan        | Hasil tenor terkait bernilai 0, **termasuk Total Refund dan Pencairan All In** |
 | Rate tenor tidak tersedia pada Product         | Hasil tenor terkait bernilai 0                                                 |
 | DP Net kurang dari Net DP minimum (Mode B)     | LTV dan Angsuran bernilai 0                                                    |
+| Net DP mencapai atau melampaui harga unit      | Seluruh komponen tenor bernilai 0                                              |
+| Penggunaan Unit Commercial pada Mobil Bekas    | Simulasi ditolak                                                               |
 | Kombinasi Product tidak terdaftar              | Simulasi tidak dapat dijalankan                                                |
 
 ### Ketentuan Penormalan
@@ -583,8 +617,8 @@ Sistem tidak boleh melanjutkan perhitungan dengan rate 0, karena menghasilkan an
 | No  | Item                          | Keterangan                                                                                                                                                                   |
 | --- | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1   | Product pada UCF              | Tier produk pada Pembiayaan Mobil Bekas bernilai tetap, tidak diturunkan dari kategori Referral seperti pada Dana Tunai. Perlu ditetapkan mana yang benar.                   |
-| 2   | Dasar perhitungan ACP         | Dana Tunai menghitung ACP atas Harga PHPM. Perlu konfirmasi apakah seharusnya atas LTV.                                                                                      |
-| 3   | Batas Harga Pasar             | Perlu ditetapkan batas maksimal Harga Pasar terhadap PHPM pada Pembiayaan Mobil Bekas.                                                                                       |
+| 2   | ~~Dasar perhitungan ACP~~     | Ditetapkan 11 Agustus 2026: Dana Tunai atas Harga PHPM, Mobil Bekas atas Harga OTR.                                                                                          |
+| 3   | Batas Harga Pasar             | **Masih terbuka.** Belum ada batas maksimal Harga Pasar maupun Harga Taksasi terhadap PHPM. Sistem menormalkan tenor ke 0 ketika Deviasi mendorong Net DP mencapai harga unit, tetapi itu penormalan, bukan batas kebijakan. |
 | 4   | Perbedaan pembulatan          | Total Asuransi dibulatkan ke bawah pada DTN dan ke atas pada UCF. Perlu konfirmasi apakah disengaja.                                                                         |
 | 5   | Deposit Angsuran              | Dasar perhitungan berbeda antara DTN dan UCF. Perlu ditetapkan ketentuan yang berlaku.                                                                                       |
 | 6   | Penyimpanan hasil simulasi    | Perlu ditetapkan apakah hasil simulasi disimpan sistem dan dapat dirujuk saat AO membuat Credit Application.                                                                 |

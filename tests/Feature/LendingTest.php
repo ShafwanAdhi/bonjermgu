@@ -74,33 +74,33 @@ it('sums unit_count rather than counting rows', function () {
 
 /* ------------------------------------------------------------ Pengelompokan */
 
-it('groups per officer by the referrals that contributed', function () {
+it('groups per officer by account officer names', function () {
     lendingApplication($this->officerA, $this->referralX, 100_000_000, '2026-06-15');
-    lendingApplication($this->officerA, $this->referralY, 60_000_000, '2026-06-20');
+    lendingApplication($this->officerB, $this->referralY, 60_000_000, '2026-06-20');
 
     $rows = LendingQuery::perOfficer(new LendingFilters);
 
     expect($rows)->toHaveCount(2)
-        ->and($rows->pluck('name')->all())->toContain('Budi Santoso', 'Eka Putri');
+        ->and($rows->pluck('name')->all())->toContain('Andi Prasetyo', 'Rina Marlina');
 });
 
-it('groups per referral by the officers who handled them', function () {
+it('groups per referral by referral names', function () {
     lendingApplication($this->officerA, $this->referralX, 100_000_000, '2026-06-15');
-    lendingApplication($this->officerB, $this->referralX, 60_000_000, '2026-06-20');
+    lendingApplication($this->officerB, $this->referralY, 60_000_000, '2026-06-20');
 
     $rows = LendingQuery::perReferral(new LendingFilters);
 
     expect($rows)->toHaveCount(2)
-        ->and($rows->pluck('name')->all())->toContain('Andi Prasetyo', 'Rina Marlina');
+        ->and($rows->pluck('name')->all())->toContain('Budi Santoso', 'Eka Putri');
 });
 
 it('omits a party with no applications', function () {
     lendingApplication($this->officerA, $this->referralX, 100_000_000, '2026-06-15');
 
     // officerB and referralY carry nothing.
-    expect(LendingQuery::perReferral(new LendingFilters)->pluck('name')->all())
+    expect(LendingQuery::perOfficer(new LendingFilters)->pluck('name')->all())
         ->toBe(['Andi Prasetyo'])
-        ->and(LendingQuery::perOfficer(new LendingFilters)->pluck('name')->all())
+        ->and(LendingQuery::perReferral(new LendingFilters)->pluck('name')->all())
         ->toBe(['Budi Santoso']);
 });
 
@@ -231,7 +231,7 @@ it('shows the lending page to admin with real figures', function () {
         ->get('/lending/ao')
         ->assertOk()
         ->assertSee('Rp 100.000.000')
-        ->assertSee('Budi Santoso')
+        ->assertSee('Andi Prasetyo')
         ->assertSee('TOTAL');
 });
 

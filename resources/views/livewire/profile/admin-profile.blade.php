@@ -17,6 +17,14 @@
         <x-ui.callout class="mb-md">{{ session('password_success') }}</x-ui.callout>
     @endif
 
+    @if (session('password_reset_success'))
+        <x-ui.callout class="mb-md">{{ session('password_reset_success') }}</x-ui.callout>
+    @endif
+
+    @if (session('password_reset_warning'))
+        <x-ui.callout tone="warning" class="mb-md">{{ session('password_reset_warning') }}</x-ui.callout>
+    @endif
+
     <x-ui.card>
         <div class="mb-7 flex items-center gap-md">
             <span class="flex aspect-square h-14 w-14 shrink-0 items-center justify-center rounded-full bg-primary text-[20px] font-medium leading-none text-on-primary">
@@ -32,11 +40,20 @@
             <form wire:submit="save" class="flex flex-col gap-lg">
                 <p id="profile-data-diri" class="border-t border-hairline pt-7 text-eyebrow uppercase text-muted">Data diri</p>
 
-                <x-ui.field label="Nama Lengkap" required data-profile-focus-target :error="$errors->first('full_name')">
-                    <x-ui.input wire:model="full_name"
-                                placeholder="Masukkan nama lengkap admin"
-                                :invalid="$errors->has('full_name')" />
-                </x-ui.field>
+                <div class="grid grid-cols-1 gap-md sm:grid-cols-2">
+                    <x-ui.field label="Nama Lengkap" required class="sm:col-span-2" data-profile-focus-target :error="$errors->first('full_name')">
+                        <x-ui.input wire:model="full_name"
+                                    placeholder="Masukkan nama lengkap admin"
+                                    :invalid="$errors->has('full_name')" />
+                    </x-ui.field>
+
+                    <x-ui.field label="Alamat Email" :error="$errors->first('email')">
+                        <x-ui.input wire:model="email"
+                                    type="email"
+                                    placeholder="contoh@email.com"
+                                    :invalid="$errors->has('email')" />
+                    </x-ui.field>
+                </div>
 
                 <div class="flex flex-wrap gap-sm border-t border-hairline pt-lg">
                     <x-ui.button type="submit" size="md" wire:loading.attr="disabled">Simpan Perubahan</x-ui.button>
@@ -48,6 +65,7 @@
             <p class="mb-md border-t border-hairline pt-7 text-eyebrow uppercase text-muted">Data diri</p>
             <div class="mb-7 grid grid-cols-1 gap-lg sm:grid-cols-2">
                 <x-ui.key-value label="Nama Lengkap">{{ $this->profile->full_name }}</x-ui.key-value>
+                <x-ui.key-value label="Alamat Email">{{ $this->profile->email ?? '-' }}</x-ui.key-value>
                 <x-ui.key-value label="Role">Admin</x-ui.key-value>
             </div>
 
@@ -62,6 +80,31 @@
     </x-ui.card>
 
     <x-ui.card title="Keamanan Akun" class="mt-lg">
+        <div class="mb-lg flex flex-col gap-md border-b border-hairline pb-lg sm:flex-row sm:items-center sm:justify-between">
+            <div class="min-w-0">
+                <p class="text-body-md text-ink">Reset kata sandi lewat email</p>
+                <p class="mt-1 text-[13px] leading-[1.6] text-muted">
+                    @if ($this->profile->email)
+                        Link reset akan dikirim ke {{ $this->profile->email }}.
+                    @else
+                        Pasang email terlebih dahulu untuk menerima link reset.
+                    @endif
+                </p>
+            </div>
+
+            <x-ui.button type="button"
+                         variant="secondary"
+                         size="md"
+                         class="w-full whitespace-nowrap disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:shrink-0"
+                         wire:click="sendPasswordResetLink"
+                         wire:loading.attr="disabled"
+                         :disabled="! $this->profile->email"
+                         wire:target="sendPasswordResetLink">
+                <span wire:loading.remove wire:target="sendPasswordResetLink">Kirim Link Reset</span>
+                <span wire:loading wire:target="sendPasswordResetLink">Mengirim...</span>
+            </x-ui.button>
+        </div>
+
         <form wire:submit="changePassword" class="flex flex-col gap-md">
             <div class="grid grid-cols-1 gap-md sm:grid-cols-2">
                 <x-ui.field label="Kata Sandi Saat Ini" required class="sm:col-span-2"

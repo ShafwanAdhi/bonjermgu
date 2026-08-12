@@ -173,6 +173,11 @@ class OfficerAccounts extends Component
         unset($this->accounts);
     }
 
+    public function dismissInitialPassword(): void
+    {
+        $this->reset('initialPassword', 'createdName');
+    }
+
     private function createNew(array $validated): void
     {
         $plaintext = InitialPassword::generate();

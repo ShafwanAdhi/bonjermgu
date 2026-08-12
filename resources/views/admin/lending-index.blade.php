@@ -4,8 +4,8 @@
                           meta="Pilih sudut pandang laporan lending." />
 
         <x-admin.module-navigation columns="two" :items="[
-            ['label' => 'Per AO', 'description' => 'Lihat kontribusi referral per officer.', 'route' => 'lending.ao', 'url' => route('lending.ao')],
-            ['label' => 'Per Referral', 'description' => 'Lihat officer yang menangani tiap referral.', 'route' => 'lending.referrals', 'url' => route('lending.referrals')],
+            ['label' => 'Per AO', 'description' => 'Lihat lending berdasarkan Account Officer.', 'route' => 'lending.ao', 'url' => route('lending.ao')],
+            ['label' => 'Per Referral', 'description' => 'Lihat lending berdasarkan Referral.', 'route' => 'lending.referrals', 'url' => route('lending.referrals')],
         ]" />
     </div>
 </x-layouts.app>

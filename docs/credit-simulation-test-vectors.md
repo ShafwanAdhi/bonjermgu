@@ -366,6 +366,42 @@ Kelompok 18-35, 36-45, dan 46-50 menghasilkan nilai identik. Perbedaan hanya mun
 
 ---
 
+## 10b. Register Penyimpangan terhadap Draft
+
+Verifikasi ulang 11 Agustus 2026 membandingkan `Draft-Web.xlsx` sel demi sel terhadap implementasi. Metodenya: replika formula Excel dibangun terpisah, divalidasi ke nilai cached workbook pada 30 titik uji, lalu dijalankan berdampingan dengan engine pada 2.160 skenario.
+
+Draft **bukan** spesifikasi. Sepuluh titik berikut adalah cacat draft yang sengaja tidak direproduksi.
+
+| No | Sel draft | Cacat | Nilai yang berlaku |
+| -- | --------- | ----- | ------------------ |
+| 1 | `DT Ext!G20` | Berisi angka `93`, bukan formula `=G17+G19`. Angsuran DTN tenor 12 Mode A menjadi Rp 1.000 | Total A/R = LTV + Bunga Jual |
+| 2 | `DT/UC Ext!G25` | Loading dikalikan Casco kumulatif sehingga Casco tahun sebelumnya dihitung ulang tiap tahun | Loading = Casco tahun berjalan × Rate Loading umur tahun tersebut |
+| 3 | `DT/UC Ext!F25` | Rate Loading dikunci pada tahun model unit, tidak naik selama masa asuransi | Rate mengikuti umur unit pada tahun asuransi berjalan |
+| 4 | `DT/UC Ext!I35,L35,O35,R35` | Pengali jumlah penumpang menunjuk sel kosong. Premi Penumpang hilang pada tahun 2 sampai 5 | Premi Penumpang berlaku pada setiap tahun Comprehensive |
+| 5 | `DT/UC Ext!G33` | TJH ditagih pada tahun TLO, tidak konsisten dengan Loading dan Perluasan yang bergerbang Comprehensive | TJH hanya pada tahun Comprehensive |
+| 6 | `UC Ext!F51` | Dasar Refund Asuransi tidak jelas: subtotal `F30` mencakup Loading, tetapi implementasi awal justru memasukkan Pengemudi dan Penumpang | Dasar = Casco + Loading + Perluasan |
+| 7 | `UC Ext!F55` | Total Refund tidak bergerbang kelayakan unit, sehingga Pencairan All In bernilai kecil yang tidak valid | Seluruh komponen tenor bernilai 0, termasuk Refund |
+| 8 | `UC Ext!G39` | ROUNDUP Provisi hanya pada kolom tenor 12; tenor 24 sampai 60 tidak dibulatkan | ROUNDUP ratusan pada seluruh tenor |
+| 9 | `Asr Ext!D70:H73` | Seluruh kelompok usia membaca kolom rate 36-45. Kolom 18-35, 46-50, dan 51-60 tidak terpakai | Dipertahankan. Tabel upping per kelompok usia adalah konfigurasi Admin |
+| 10 | `products.up_acp` | Up ACP ditambahkan dua kali: lewat tabel upping kelompok usia dan lewat kolom produk | Kolom dihapus. Upping hanya dari tabel kelompok usia |
+
+Cacat draft berikut tidak berpengaruh pada hasil karena silang-kabel antar produk tidak direproduksi di sistem:
+
+| Sel draft | Cacat |
+| --------- | ----- |
+| `UC Ext!F12` | Tenor 12 membaca master `PHPM 1 UC Ext`, tenor 24 sampai 60 membaca `PHPM 1 DT Ext` |
+| `UC Ext!F69,G70` | Mode B membaca Type Angsuran milik Dana Tunai (`Home Ext!K33`) |
+| `Asr Ext!B12,C20` | Rate Casco Pembiayaan Mobil Bekas mengikuti Penggunaan Unit dan varian rate milik Dana Tunai |
+| `Asr Int!G40:M44` | Dana Tunai dan Mobil Bekas sama-sama membaca tabel TJH Used Car; tabel TJH Dana Tunai tidak terpakai |
+| `Asr Ext!D31:E34` | Rate ACP Used Car bernilai `#REF!` |
+| `Asr Ext!L6:N20` | Rate Loading nol untuk unit umur 11 tahun ke atas, padahal unit tersebut masih lolos kelayakan |
+| `DT/UC Ext!F10`, `Asr Ext!L6` | Tahun berjalan 2026 dan batas usia 16 ditulis langsung di formula |
+| `Home Int!K173` | Referensi `'UC Int'!$O$7882` tidak valid |
+
+Hasil aljabar yang **bukan** cacat, dicatat supaya tidak diperiksa ulang: pada Mode B Mobil Bekas ADDM, sel `F69` dan `G74` menghasilkan angka identik. Substitusi `LTV = Dasar + Angsuran` ke dalam `LTV × (1 + Bunga) ÷ Tenor Bulan` mengembalikan `Angsuran` itu sendiri.
+
+---
+
 ## 11. Ketentuan Pengujian
 
 Implementasi wajib memenuhi seluruh ketentuan berikut.

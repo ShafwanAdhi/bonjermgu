@@ -17,6 +17,7 @@ final class InsuranceCalculator
         float $otrPrice,
         int $tenorMonths,
         int $currentYear,
+        float $totalAccountsReceivable = 0,
     ): InsuranceBreakdown {
         $tenorYears = intdiv($tenorMonths, 12);
         $casco = 0.0;
@@ -51,9 +52,9 @@ final class InsuranceCalculator
                 $passenger += $config->insurance->extensionRate('passenger')
                     * $input->passengerCount
                     * $input->passengerCoverageAmount;
-            }
 
-            $tjh += $this->tieredPremium($input->tjhAmount, $config->insurance->tjhTiers);
+                $tjh += $this->tieredPremium($input->tjhAmount, $config->insurance->tjhTiers);
+            }
         }
 
         $acpEnabled = match ($input->financingType) {
@@ -61,11 +62,19 @@ final class InsuranceCalculator
             FinancingType::UCF => $config->insurance->ucfAcpEnabled,
         };
 
+        // Dana Tunai is underwritten on the master price; Mobil Bekas on the
+        // price the unit actually changes hands at.
+        $acpBasis = $input->financingType === FinancingType::DTN
+            ? $input->phpmPrice
+            : $otrPrice;
+        $withinLoanCeiling = $config->insurance->acpMaxLoanAmount <= 0
+            || $totalAccountsReceivable <= $config->insurance->acpMaxLoanAmount;
+
         $acp = 0.0;
-        if ($acpEnabled && $input->debtorType !== DebtorType::LEGAL_ENTITY) {
+        if ($acpEnabled && $withinLoanCeiling && $input->debtorType !== DebtorType::LEGAL_ENTITY) {
             $acpRate = $config->insurance->acpBaseRate($tenorYears)
-                * (1 + $config->insurance->acpUpping($input->ageGroup) + $config->product->upAcp);
-            $acp = $acpRate * $input->phpmPrice;
+                * (1 + $config->insurance->acpUpping($input->ageGroup));
+            $acp = $acpRate * $acpBasis;
         }
 
         $engineWarranty = $input->engineWarrantyEnabled ? $config->insurance->engineWarrantyFee : 0.0;

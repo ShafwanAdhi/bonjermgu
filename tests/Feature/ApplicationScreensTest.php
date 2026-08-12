@@ -1,6 +1,7 @@
 <?php
 
 use App\Domain\Application\ApplicationCreator;
+use App\Domain\Application\ApplicationStatus;
 use App\Domain\Application\DebtorType;
 use App\Domain\Application\DocumentStatus;
 use App\Domain\Application\FinancingProduct;
@@ -65,6 +66,7 @@ it('creates an application, its documents, and eleven stages from the form', fun
 
     expect($application)->not->toBeNull()
         ->and($application->code)->toMatch('/^[0-9a-zA-Z]{6}$/')
+        ->and($application->application_status)->toBe(ApplicationStatus::Pipeline)
         ->and($application->amount_finance)->toBe(130_000_000)
         ->and($application->account_officer_id)->toBe($this->officer->id)
         // Wiraswasta 9 + spouse Bekerja 2 = 11
@@ -177,6 +179,25 @@ it('filters by product and go live status', function () {
         ->set('goLive', 'live')
         ->assertDontSee($dtn->code)
         ->assertDontSee($ucf->code);
+});
+
+it('filters canceled applications separately from active pipe line', function () {
+    $pipeline = makeApplication();
+    $canceled = makeApplication([
+        'debtor_nik' => '3173054505880004',
+        'debtor_name' => 'Aplikasi Dibatalkan',
+        'application_status' => ApplicationStatus::Canceled,
+    ]);
+
+    Livewire::actingAs($this->officer->user)
+        ->test(ApplicationList::class)
+        ->set('goLive', 'pipeline')
+        ->assertSee($pipeline->code)
+        ->assertDontSee($canceled->code)
+        ->set('goLive', 'canceled')
+        ->assertSee($canceled->code)
+        ->assertSee('Canceled')
+        ->assertDontSee($pipeline->code);
 });
 
 it('searches by code and debtor name', function () {
@@ -324,6 +345,43 @@ it('saves a tracking status change', function () {
 
     expect($tracking->status)->toBe(TrackingStatus::Selesai)
         ->and($tracking->updated_by)->toBe($this->officer->user->id);
+});
+
+it('lets an officer cancel a pipe line application and synchronizes the list status', function () {
+    $application = makeApplication();
+
+    Livewire::actingAs($this->officer->user)
+        ->test(ApplicationDetail::class, ['application' => $application])
+        ->call('askCancelApplication')
+        ->assertSet('confirmingCancel', true)
+        ->call('confirmCancelApplication')
+        ->assertSet('confirmingCancel', false)
+        ->assertSee('Canceled');
+
+    expect($application->fresh())
+        ->application_status->toBe(ApplicationStatus::Canceled)
+        ->go_live_date->toBeNull();
+
+    Livewire::actingAs($this->officer->user)
+        ->test(ApplicationList::class)
+        ->assertSee($application->code)
+        ->assertSee('Canceled');
+});
+
+it('does not offer cancellation once an application is go live', function () {
+    $application = makeApplication();
+
+    Livewire::actingAs($this->officer->user)
+        ->test(ApplicationDetail::class, ['application' => $application])
+        ->call('toggleStage', 11)
+        ->call('confirmGoLive')
+        ->call('askCancelApplication')
+        ->assertSet('confirmingCancel', false)
+        ->assertDontSee('Batalkan Aplikasi');
+
+    expect($application->fresh())
+        ->go_live_date->not->toBeNull()
+        ->application_status->toBe(ApplicationStatus::Pipeline);
 });
 
 /* Stages are markable out of order — application-tracking.md §6. */

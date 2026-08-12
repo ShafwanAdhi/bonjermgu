@@ -133,4 +133,9 @@ final class Defaults extends AuditedAdminComponent
     {
         return ['simulation_settings'];
     }
+
+    protected function auditModule(): string
+    {
+        return 'configuration.defaults';
+    }
 }

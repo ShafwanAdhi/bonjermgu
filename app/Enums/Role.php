@@ -47,6 +47,7 @@ enum Role: string
             ],
             self::AccountOfficer => [
                 ['label' => 'Dashboard', 'route' => 'dashboard', 'match' => 'dashboard'],
+                ['label' => 'Simulasi Kredit', 'route' => 'simulation.officer', 'match' => 'simulation.officer'],
                 ['label' => 'Aplikasi', 'route' => 'applications.index', 'match' => 'applications.*'],
                 ['label' => 'Profil', 'route' => 'profile', 'match' => 'profile'],
             ],

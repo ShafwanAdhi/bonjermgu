@@ -301,6 +301,26 @@ const scrollProfileFormIntoView = () => {
     });
 };
 
+const scrollProductEditorIntoView = () => {
+    if (!window.matchMedia("(max-width: 1279px)").matches) {
+        return;
+    }
+
+    window.setTimeout(() => {
+        const target = document.querySelector("[data-product-editor-target]");
+
+        if (!target) {
+            return;
+        }
+
+        const rect = target.getBoundingClientRect();
+        const offset = Math.min(window.innerHeight * 0.14, 96);
+        const targetTop = rect.top + window.scrollY - offset;
+
+        window.scrollTo({ top: Math.max(targetTop, 0), behavior: "smooth" });
+    }, 180);
+};
+
 const initMotion = () => {
     initRupiahInputs();
     applyStagger();
@@ -325,6 +345,7 @@ document.addEventListener("livewire:navigated", () => {
     });
 });
 window.addEventListener("profile-editing", scrollProfileFormIntoView);
+window.addEventListener("configuration-product-selected", scrollProductEditorIntoView);
 document.addEventListener("livewire:initialized", () => {
     window.Livewire?.hook("morphed", ({ el }) => {
         initRupiahInputs(el);

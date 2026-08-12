@@ -23,6 +23,6 @@ final readonly class InsuranceBreakdown
 
     public function refundablePremium(): float
     {
-        return $this->casco + $this->extensions + $this->driver + $this->passenger;
+        return $this->casco + $this->loading + $this->extensions;
     }
 }

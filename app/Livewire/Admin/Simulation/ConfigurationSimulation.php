@@ -11,6 +11,7 @@ use App\Domain\Simulation\DebtorType;
 use App\Domain\Simulation\FinancingType;
 use App\Domain\Simulation\InstalmentType;
 use App\Domain\Simulation\SimulationMode;
+use App\Domain\Simulation\SimulationProfile;
 use App\Domain\Simulation\StnkOwnership;
 use App\Domain\Simulation\VehicleUsage;
 use App\Models\AgeGroup;
@@ -56,6 +57,9 @@ class ConfigurationSimulation extends Component
 
     public string $financing_type = 'UCF';
 
+    /** Which screen's rules to verify — Referral or Account Officer. */
+    public string $simulation_profile = 'referral';
+
     public string $mode = 'A';
 
     public string $debtor_type = 'non_entrepreneur';
@@ -80,6 +84,14 @@ class ConfigurationSimulation extends Component
 
     public string $market_price = '';
 
+    public string $up_rate = '0';
+
+    public string $up_admin = '0';
+
+    public string $up_provisi = '0';
+
+    public string $up_acp = '';
+
     public string $desired_amount = '';
 
     /** Tenor whose derivation is expanded below the results. */
@@ -92,12 +104,17 @@ class ConfigurationSimulation extends Component
     /** @var array<int, array<string, mixed>> */
     public array $rows = [];
 
+    /** @var array<int, array<int, array<string, mixed>>> */
+    public array $traces = [];
+
     private ?ConfigurationSimulationOutcome $outcome = null;
 
     public function mount(): void
     {
         $this->product_id = (string) (Product::where('is_active', true)->orderBy('name')->value('id') ?? '');
-        $this->usage_id = (string) (VehicleUsageModel::orderBy('id')->value('id') ?? '');
+        // From the filtered list, so the default cannot land on a usage the
+        // selected product refuses.
+        $this->usage_id = (string) ($this->usages()->value('id') ?? '');
     }
 
     /* ------------------------------------------------------------ Pilihan */
@@ -117,7 +134,13 @@ class ConfigurationSimulation extends Component
     #[Computed]
     public function usages(): Collection
     {
-        return VehicleUsageModel::orderBy('id')->get(['id', 'name']);
+        $usages = VehicleUsageModel::orderBy('id')->get(['id', 'name']);
+
+        // Pembiayaan Mobil Bekas is Passenger-only, so Commercial is not an
+        // option to verify — the engine would refuse it.
+        return $this->isUcf
+            ? $usages->where('name', VehicleUsage::PASSENGER->value)->values()
+            : $usages;
     }
 
     #[Computed]
@@ -221,6 +244,24 @@ class ConfigurationSimulation extends Component
         return $this->mode === 'B';
     }
 
+    #[Computed]
+    public function isOfficer(): bool
+    {
+        return $this->simulation_profile === SimulationProfile::OFFICER->value;
+    }
+
+    /** The Officer profile prices Dana Tunai from an appraised value too. */
+    #[Computed]
+    public function needsUnitPrice(): bool
+    {
+        return $this->isUcf || $this->isOfficer;
+    }
+
+    public function unitPriceLabel(): string
+    {
+        return $this->isUcf ? 'Harga Pasar' : 'Harga Taksasi';
+    }
+
     /* ------------------------------------------------------------ Validasi */
 
     protected function rules(): array
@@ -228,6 +269,7 @@ class ConfigurationSimulation extends Component
         return [
             'product_id' => ['required', Rule::exists('products', 'id')],
             'financing_type' => ['required', Rule::in(['DTN', 'UCF'])],
+            'simulation_profile' => ['required', Rule::enum(SimulationProfile::class)],
             'mode' => ['required', Rule::in(['A', 'B'])],
             'debtor_type' => ['required', Rule::enum(DebtorType::class)],
             'age_group_id' => ['nullable', Rule::exists('age_groups', 'id')],
@@ -236,8 +278,12 @@ class ConfigurationSimulation extends Component
             'instalment_type' => ['required', Rule::enum(InstalmentType::class)],
             'coverage_type' => ['required', Rule::enum(CoverageType::class)],
             'stnk_ownership' => ['required', Rule::enum(StnkOwnership::class)],
-            'market_price' => [$this->isUcf ? 'required' : 'nullable', 'numeric', 'min:0'],
+            'market_price' => [$this->needsUnitPrice ? 'required' : 'nullable', 'numeric', 'min:0'],
             'desired_amount' => [$this->isModeB ? 'required' : 'nullable', 'numeric', 'min:0'],
+            'up_rate' => ['required', 'numeric', 'between:0,100'],
+            'up_admin' => ['required', 'numeric', 'min:0'],
+            'up_provisi' => ['required', 'numeric', 'between:0,100'],
+            'up_acp' => ['nullable', 'numeric', 'between:0,100'],
         ];
     }
 
@@ -246,6 +292,7 @@ class ConfigurationSimulation extends Component
         return [
             'product_id' => 'Product',
             'financing_type' => 'Produk Pembiayaan',
+            'simulation_profile' => 'Profil Simulasi',
             'mode' => 'Mode',
             'debtor_type' => 'Type Debitur',
             'age_group_id' => 'Kelompok Usia',
@@ -254,8 +301,12 @@ class ConfigurationSimulation extends Component
             'instalment_type' => 'Type Angsuran',
             'coverage_type' => 'Asuransi',
             'stnk_ownership' => 'STNK atas nama',
-            'market_price' => 'Harga Pasar',
+            'market_price' => $this->unitPriceLabel(),
             'desired_amount' => 'Nominal Dikehendaki',
+            'up_rate' => 'Up Rate',
+            'up_admin' => 'Up Admin',
+            'up_provisi' => 'Up Provisi',
+            'up_acp' => 'Up ACP',
         ];
     }
 
@@ -266,6 +317,9 @@ class ConfigurationSimulation extends Component
         // Reset the cascade below whatever changed, so a stale child cannot
         // survive a parent change.
         match ($property) {
+            // Switching product can narrow the usages on offer, so a Commercial
+            // selection must not survive the move to Pembiayaan Mobil Bekas.
+            'financing_type' => $this->reset('usage_id', 'brand_id', 'type_id', 'model_id', 'vehicle_year'),
             'usage_id' => $this->reset('brand_id', 'type_id', 'model_id', 'vehicle_year'),
             'brand_id' => $this->reset('type_id', 'model_id', 'vehicle_year'),
             'type_id' => $this->reset('model_id', 'vehicle_year'),
@@ -273,8 +327,12 @@ class ConfigurationSimulation extends Component
             default => null,
         };
 
-        if (in_array($property, ['usage_id', 'brand_id', 'type_id', 'model_id'], true)) {
-            unset($this->brands, $this->vehicleTypes, $this->vehicleModels, $this->vehicleYears);
+        if (in_array($property, ['financing_type', 'usage_id', 'brand_id', 'type_id', 'model_id'], true)) {
+            unset($this->usages, $this->brands, $this->vehicleTypes, $this->vehicleModels, $this->vehicleYears);
+        }
+
+        if ($property === 'simulation_profile') {
+            unset($this->isOfficer, $this->needsUnitPrice);
         }
 
         if ($property === 'product_id') {
@@ -293,10 +351,12 @@ class ConfigurationSimulation extends Component
     {
         $this->market_price = RupiahInput::normalize($this->market_price);
         $this->desired_amount = RupiahInput::normalize($this->desired_amount);
+        $this->up_admin = RupiahInput::normalize($this->up_admin);
 
         $this->calculationError = null;
         $this->hasCalculated = false;
         $this->rows = [];
+        $this->traces = [];
 
         $validated = $this->validate();
 
@@ -317,6 +377,13 @@ class ConfigurationSimulation extends Component
                     coverageType: CoverageType::from($validated['coverage_type']),
                     marketPrice: (float) ($validated['market_price'] ?: 0),
                     desiredAmount: (float) ($validated['desired_amount'] ?: 0),
+                    profile: SimulationProfile::from($validated['simulation_profile']),
+                    upRate: ((float) $validated['up_rate']) / 100,
+                    upAdmin: (float) $validated['up_admin'],
+                    upProvision: ((float) $validated['up_provisi']) / 100,
+                    acpUpping: ($validated['up_acp'] ?? '') === '' || $validated['up_acp'] === null
+                        ? null
+                        : ((float) $validated['up_acp']) / 100,
                 ),
                 (int) today()->format('Y'),
             );
@@ -339,33 +406,32 @@ class ConfigurationSimulation extends Component
                         },
                     ];
                 })->all();
+            $this->traces = collect([12, 24, 36, 48, 60])
+                ->mapWithKeys(fn (int $tenor) => [
+                    $tenor => CalculationTrace::build($outcome->result->forTenor($tenor), $outcome),
+                ])
+                ->all();
 
             $this->hasCalculated = true;
+            $this->dispatch('simulation-calculated');
         } catch (RuntimeException $exception) {
             $this->calculationError = $exception->getMessage();
+            $this->dispatch('simulation-calculated');
         } catch (Throwable $exception) {
             report($exception);
             $this->calculationError = 'Simulasi gagal dihitung. Periksa konfigurasi Product dan master kendaraan.';
+            $this->dispatch('simulation-calculated');
         }
     }
 
     /* ------------------------------------------------------------- Jejak */
 
-    /**
-     * Rebuilt on render rather than held in component state: the outcome
-     * carries value objects that do not belong in a Livewire payload.
-     */
     #[Computed]
     public function trace(): array
     {
-        if (! $this->hasCalculated || ! $this->outcome) {
-            return [];
-        }
-
-        return CalculationTrace::build(
-            $this->outcome->result->forTenor($this->traced_tenor),
-            $this->outcome,
-        );
+        return $this->hasCalculated
+            ? ($this->traces[$this->traced_tenor] ?? [])
+            : [];
     }
 
     public function disbursementHeading(): string
@@ -380,12 +446,6 @@ class ConfigurationSimulation extends Component
 
     public function render()
     {
-        // Recompute so the trace survives a Livewire round trip such as the
-        // tenor selector, which does not re-run calculate().
-        if ($this->hasCalculated && ! $this->outcome) {
-            $this->calculate();
-        }
-
         return view('livewire.admin.simulation.configuration-simulation');
     }
 }

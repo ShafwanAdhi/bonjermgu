@@ -18,10 +18,14 @@ use App\Livewire\Admin\Simulation\ConfigurationSimulation;
 use App\Livewire\Application\ApplicationDetail;
 use App\Livewire\Application\ApplicationList;
 use App\Livewire\Application\CreateApplication;
+use App\Livewire\Auth\ForgotPassword;
 use App\Livewire\Auth\Login;
 use App\Livewire\Auth\Register;
+use App\Livewire\Auth\ResetPassword;
 use App\Livewire\Profile\AdminProfile;
 use App\Livewire\Simulation\CreditSimulation;
+use App\Livewire\Simulation\OfficerSimulation;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -39,7 +43,10 @@ Route::view('/', 'landing')->name('landing');
 Route::middleware('guest')->group(function () {
     Route::get('/register', Register::class)->name('register');
     Route::get('/login', Login::class)->name('login');
+    Route::get('/forgot-password', ForgotPassword::class)->name('password.request');
 });
+
+Route::get('/reset-password/{token}', ResetPassword::class)->name('password.reset');
 
 Route::post('/logout', function () {
     Auth::logout();
@@ -84,6 +91,21 @@ Route::middleware(['auth', 'role:referral'])->group(function () {
         Route::get('/models/{model}/years', [VehicleCascadeController::class, 'years'])
             ->whereNumber('model')->name('years');
     });
+});
+
+/*
+|--------------------------------------------------------------------------
+| Simulasi Kredit — Account Officer
+|--------------------------------------------------------------------------
+|
+| Separate route from the Referral screen. Same engine, Officer profile, and no
+| download — so no debtor identity passes through here (credit-simulation.md
+| section 14b).
+|
+*/
+
+Route::middleware(['auth', 'role:ao'])->group(function () {
+    Route::get('/simulation/officer', OfficerSimulation::class)->name('simulation.officer');
 });
 
 /*
@@ -153,7 +175,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/accounts/officers/create', OfficerAccounts::class)->name('accounts.officers.create');
     Route::get('/accounts/officers/{officer}/edit', OfficerAccounts::class)->name('accounts.officers.edit');
 
-    Route::get('/lending', function (\Illuminate\Http\Request $request) {
+    Route::get('/lending', function (Request $request) {
         if ($request->query('tab') === 'ao') {
             return redirect()->route('lending.ao', $request->except('tab'));
         }

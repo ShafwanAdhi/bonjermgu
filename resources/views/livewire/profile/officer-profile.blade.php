@@ -16,6 +16,14 @@
         <x-ui.callout class="mb-md">{{ session('password_success') }}</x-ui.callout>
     @endif
 
+    @if (session('password_reset_success'))
+        <x-ui.callout class="mb-md">{{ session('password_reset_success') }}</x-ui.callout>
+    @endif
+
+    @if (session('password_reset_warning'))
+        <x-ui.callout tone="warning" class="mb-md">{{ session('password_reset_warning') }}</x-ui.callout>
+    @endif
+
     <x-ui.card>
         <div class="mb-7 flex items-center gap-md">
             <span class="flex h-14 w-14 items-center justify-center rounded-pill bg-signature-peach text-[20px] font-medium text-ink">
@@ -34,7 +42,9 @@
                 <div class="grid grid-cols-1 gap-md sm:grid-cols-2">
                     <x-ui.field label="Nama Lengkap" required class="sm:col-span-2"
                                 :error="$errors->first('full_name')">
-                        <x-ui.input wire:model="full_name" :invalid="$errors->has('full_name')" />
+                        <x-ui.input wire:model="full_name"
+                                    placeholder="Masukkan nama lengkap"
+                                    :invalid="$errors->has('full_name')" />
                     </x-ui.field>
 
                     <x-ui.field label="Tanggal Lahir" required :error="$errors->first('birth_date')">
@@ -42,11 +52,17 @@
                     </x-ui.field>
 
                     <x-ui.field label="Alamat Email" :error="$errors->first('email')">
-                        <x-ui.input wire:model="email" type="email" :invalid="$errors->has('email')" />
+                        <x-ui.input wire:model="email"
+                                    type="email"
+                                    placeholder="contoh@email.com"
+                                    :invalid="$errors->has('email')" />
                     </x-ui.field>
 
                     <x-ui.field label="No. Handphone" :error="$errors->first('phone')">
-                        <x-ui.input wire:model="phone" type="tel" :invalid="$errors->has('phone')" />
+                        <x-ui.input wire:model="phone"
+                                    type="tel"
+                                    placeholder="Contoh: 081234567890"
+                                    :invalid="$errors->has('phone')" />
                     </x-ui.field>
                 </div>
 
@@ -77,6 +93,31 @@
     </x-ui.card>
 
     <x-ui.card title="Keamanan Akun" class="mt-lg">
+        <div class="mb-lg flex flex-col gap-md border-b border-hairline pb-lg sm:flex-row sm:items-center sm:justify-between">
+            <div class="min-w-0">
+                <p class="text-body-md text-ink">Reset kata sandi lewat email</p>
+                <p class="mt-1 text-[13px] leading-[1.6] text-muted">
+                    @if ($this->profile->email)
+                        Link reset akan dikirim ke {{ $this->profile->email }}.
+                    @else
+                        Pasang email terlebih dahulu untuk menerima link reset.
+                    @endif
+                </p>
+            </div>
+
+            <x-ui.button type="button"
+                         variant="secondary"
+                         size="md"
+                         class="w-full whitespace-nowrap disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:shrink-0"
+                         wire:click="sendPasswordResetLink"
+                         wire:loading.attr="disabled"
+                         :disabled="! $this->profile->email"
+                         wire:target="sendPasswordResetLink">
+                <span wire:loading.remove wire:target="sendPasswordResetLink">Kirim Link Reset</span>
+                <span wire:loading wire:target="sendPasswordResetLink">Mengirim...</span>
+            </x-ui.button>
+        </div>
+
         <form wire:submit="changePassword" class="flex flex-col gap-md">
             <div class="grid grid-cols-1 gap-md sm:grid-cols-2">
                 <x-ui.field label="Kata Sandi Saat Ini" required class="sm:col-span-2"

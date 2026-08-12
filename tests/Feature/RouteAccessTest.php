@@ -85,7 +85,11 @@ it('refuses admin screens to referral and officer', function (string $path, stri
     '/lending/referrals',
 ])->with(['referral', 'accountOfficer']);
 
-/* Simulation belongs to Referral. AO and Admin do not get a calculator. */
+/*
+ * The Referral calculator belongs to Referral alone. AO has its own screen at
+ * /simulation/officer and Admin has Uji Konfigurasi; neither may reach this one,
+ * because this is the route that can print a debtor's identity.
+ */
 it('refuses simulation to everyone except referral', function (string $path, string $state) {
     $this->actingAs(User::factory()->{$state}()->create());
 

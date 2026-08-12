@@ -419,6 +419,11 @@ final class Insurance extends AuditedAdminComponent
         ];
     }
 
+    protected function auditModule(): string
+    {
+        return 'configuration.insurance';
+    }
+
     private function fraction(string|int|float $percent): float
     {
         return (float) $percent / 100;

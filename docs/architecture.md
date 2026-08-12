@@ -66,6 +66,7 @@ Livewire membuat interaksi tetap terasa langsung sementara perhitungan tetap ber
 - Tidak boleh ada perhitungan finansial dalam JavaScript. Tidak satu baris pun.
 - JavaScript hanya untuk interaksi tampilan: dropdown bertingkat, toggle, format tampilan angka.
 - Setiap perubahan input simulasi memicu request ke server.
+- Laporan Lending Admin dapat memakai Livewire untuk filter asynchronous selama kalkulasi agregasi tetap berada di server dan query string tetap disinkronkan.
 
 ---
 
@@ -275,6 +276,7 @@ DocumentRequirementResolver::resolve(
 
 - Query Lending menggunakan `withoutGlobalScope`, karena Admin memang harus melihat seluruh data.
 - Invariant wajib diuji: total pada pengelompokan per AO harus sama dengan total pada pengelompokan per Referral.
+- UI Lending Admin memakai component Livewire untuk filter bulan Go Live, produk pembiayaan, dan kategori Referral tanpa full page reload atau tombol Terapkan.
 - Bila kelak volume menjadi masalah, solusinya materialized view, bukan kolom ringkasan yang diperbarui manual.
 
 ---
@@ -394,7 +396,9 @@ Sebaliknya, istilah domain seperti PHPM, ADDB, ADDM, ACP, dan TJH tidak memiliki
 **Konsekuensi.**
 
 - Log menyimpan actor, waktu, tabel dan ID subject, action, serta nilai sebelum/sesudah.
+- Log menyimpan `audit_module` agar ringkasan perubahan terakhir terpisah per module, terutama ketika beberapa module berbagi tabel yang sama.
 - Audit ditulis dalam transaksi yang sama dengan perubahan. Perubahan yang gagal validasi dan di-rollback tidak meninggalkan audit palsu.
+- Kode pembaca audit harus aman ketika kolom `audit_module` belum tersedia, tetapi setelah migration berjalan pencarian perubahan terakhir wajib dibatasi ke module terkait.
 - Seeder tidak menghasilkan audit karena tidak dijalankan sebagai Admin terautentikasi.
 - Penghapusan log audit tidak tersedia melalui antarmuka CRUD.
 

@@ -5,7 +5,15 @@
       "Bash(php -v)",
       "Bash(composer -V)",
       "Bash(npm -v)",
-      "Bash(python -c ' *)"
+      "Bash(python -c ' *)",
+      "Bash(python -)",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_snapshot",
+      "mcp__playwright__browser_click",
+      "mcp__playwright__browser_select_option",
+      "mcp__playwright__browser_take_screenshot",
+      "Bash(php artisan tinker '--execute= *)",
+      "Bash(pkill -f \"artisan serve\")"
     ]
   }
 }

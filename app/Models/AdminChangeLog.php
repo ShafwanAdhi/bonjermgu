@@ -12,6 +12,7 @@ class AdminChangeLog extends Model
     protected $fillable = [
         'actor_id',
         'actor_name',
+        'audit_module',
         'subject_type',
         'subject_table',
         'subject_id',

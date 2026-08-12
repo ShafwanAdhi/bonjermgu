@@ -3,6 +3,8 @@
 namespace App\Livewire\Profile;
 
 use App\Models\Admin;
+use App\Support\AccountPasswordResetBroker;
+use App\Support\PasswordResetResult;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Attributes\Computed;
@@ -15,6 +17,8 @@ class AdminProfile extends Component
     public bool $editing = false;
 
     public string $full_name = '';
+
+    public string $email = '';
 
     public string $current_password = '';
 
@@ -39,6 +43,7 @@ class AdminProfile extends Component
     {
         return [
             'full_name' => ['required', 'string', 'max:150'],
+            'email' => ['nullable', 'email:rfc,strict', 'max:150'],
         ];
     }
 
@@ -46,6 +51,7 @@ class AdminProfile extends Component
     {
         return [
             'full_name' => 'Nama Lengkap',
+            'email' => 'Alamat Email',
         ];
     }
 
@@ -69,6 +75,7 @@ class AdminProfile extends Component
 
         $this->profile->update([
             'full_name' => $validated['full_name'],
+            'email' => $validated['email'] ?: null,
         ]);
 
         unset($this->profile);
@@ -103,9 +110,23 @@ class AdminProfile extends Component
         session()->flash('password_success', 'Kata sandi berhasil diperbarui.');
     }
 
+    public function sendPasswordResetLink(AccountPasswordResetBroker $broker): void
+    {
+        $result = $broker->sendForUser(Auth::user());
+
+        if ($result === PasswordResetResult::MissingEmail) {
+            session()->flash('password_reset_warning', 'Tambahkan alamat email terlebih dahulu agar sistem bisa mengirim link reset kata sandi.');
+
+            return;
+        }
+
+        session()->flash('password_reset_success', 'Link reset kata sandi sudah dikirim ke alamat email Anda.');
+    }
+
     private function fillFromProfile(): void
     {
         $this->full_name = $this->profile->full_name;
+        $this->email = $this->profile->email ?? '';
     }
 
     public function render()
