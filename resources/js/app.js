@@ -301,6 +301,15 @@ const scrollProfileFormIntoView = () => {
     });
 };
 
+const scrollProfileTopIntoView = () => {
+    requestAnimationFrame(() => {
+        window.scrollTo({
+            top: 0,
+            behavior: prefersReducedMotion() ? "auto" : "smooth",
+        });
+    });
+};
+
 const scrollProductEditorIntoView = () => {
     if (!window.matchMedia("(max-width: 1279px)").matches) {
         return;
@@ -345,6 +354,7 @@ document.addEventListener("livewire:navigated", () => {
     });
 });
 window.addEventListener("profile-editing", scrollProfileFormIntoView);
+window.addEventListener("profile-password-updated", scrollProfileTopIntoView);
 window.addEventListener("configuration-product-selected", scrollProductEditorIntoView);
 document.addEventListener("livewire:initialized", () => {
     window.Livewire?.hook("morphed", ({ el }) => {

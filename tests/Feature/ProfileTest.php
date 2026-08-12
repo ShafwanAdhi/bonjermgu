@@ -73,6 +73,7 @@ it('lets a referral change their own password from profile', function () {
         ->set('password_confirmation', 'password-referral-baru')
         ->call('changePassword')
         ->assertHasNoErrors()
+        ->assertDispatched('profile-password-updated')
         ->assertSet('current_password', '')
         ->assertSet('password', '')
         ->assertSet('password_confirmation', '');
@@ -165,6 +166,7 @@ it('lets an officer change their own password from profile', function () {
         ->set('password_confirmation', 'password-baru-aman')
         ->call('changePassword')
         ->assertHasNoErrors()
+        ->assertDispatched('profile-password-updated')
         ->assertSet('current_password', '')
         ->assertSet('password', '')
         ->assertSet('password_confirmation', '');
@@ -222,6 +224,7 @@ it('lets an admin change their own password from the accounts module', function 
         ->set('password_confirmation', 'password-admin-baru')
         ->call('changePassword')
         ->assertHasNoErrors()
+        ->assertDispatched('profile-password-updated')
         ->assertSet('current_password', '')
         ->assertSet('password', '')
         ->assertSet('password_confirmation', '');

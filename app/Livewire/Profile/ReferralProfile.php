@@ -210,6 +210,8 @@ class ReferralProfile extends Component
         $this->reset('current_password', 'password', 'password_confirmation');
 
         session()->flash('password_success', 'Kata sandi berhasil diperbarui.');
+
+        $this->dispatch('profile-password-updated');
     }
 
     private function fillFromProfile(): void

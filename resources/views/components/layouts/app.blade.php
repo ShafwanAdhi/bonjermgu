@@ -12,6 +12,7 @@
     $moreActive = collect($moreNavigation)->contains(fn ($item) => request()->routeIs($item['match']));
     $initials = collect(explode(' ', $user->displayName()))
         ->take(2)->map(fn ($w) => mb_substr($w, 0, 1))->implode('');
+    $profileRoute = $user->role->value === 'admin' ? 'accounts.profile' : 'profile';
 @endphp
 
 <!DOCTYPE html>
@@ -110,9 +111,13 @@
             </nav>
 
             <div class="ml-auto flex shrink-0 items-center gap-sm">
-                <span class="flex aspect-square h-8 w-8 shrink-0 items-center justify-center rounded-full text-[12px] font-medium leading-none {{ $user->role->avatarClasses() }}">
+                <a href="{{ route($profileRoute) }}"
+                   wire:navigate
+                   data-motion-action
+                   aria-label="Buka profil"
+                   class="flex aspect-square h-8 w-8 shrink-0 items-center justify-center rounded-full text-[12px] font-medium leading-none transition-transform active:scale-95 {{ $user->role->avatarClasses() }}">
                     {{ $initials }}
-                </span>
+                </a>
                 <span class="hidden flex-col gap-0.5 xl:flex">
                     <span class="text-[13px] font-medium leading-none text-ink">{{ $user->displayName() }}</span>
                     <span class="text-[11px] leading-none text-muted">{{ $user->role->label() }}</span>

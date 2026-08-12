@@ -108,6 +108,8 @@ class AdminProfile extends Component
         $this->reset('current_password', 'password', 'password_confirmation');
 
         session()->flash('password_success', 'Kata sandi berhasil diperbarui.');
+
+        $this->dispatch('profile-password-updated');
     }
 
     public function sendPasswordResetLink(AccountPasswordResetBroker $broker): void
