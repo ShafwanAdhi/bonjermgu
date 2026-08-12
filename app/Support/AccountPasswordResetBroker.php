@@ -6,6 +6,7 @@ use App\Mail\AccountPasswordResetMail;
 use App\Models\AccountPasswordReset;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
@@ -73,6 +74,10 @@ class AccountPasswordResetBroker
 
         if (! $record->user->is_active) {
             return PasswordResetResult::Inactive;
+        }
+
+        if (Hash::check($password, $record->user->password)) {
+            return PasswordResetResult::SamePassword;
         }
 
         DB::transaction(function () use ($record, $password) {

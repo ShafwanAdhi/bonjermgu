@@ -77,6 +77,28 @@ it('resets the password with a valid token', function () {
         ->and(AccountPasswordReset::where('user_id', $referral->user_id)->exists())->toBeFalse();
 });
 
+it('rejects a password reset that reuses the current password', function () {
+    $referral = Referral::factory()->create();
+    $plainToken = 'token-reset-password-sama';
+
+    AccountPasswordReset::create([
+        'user_id' => $referral->user_id,
+        'email' => $referral->email,
+        'token_hash' => hash('sha256', $plainToken),
+        'expires_at' => now()->addMinutes(60),
+    ]);
+
+    Livewire::test(ResetPassword::class, ['token' => $plainToken])
+        ->set('password', 'password')
+        ->set('password_confirmation', 'password')
+        ->call('submit')
+        ->assertHasErrors('password')
+        ->assertSee('tidak boleh sama');
+
+    expect(Hash::check('password', $referral->user->fresh()->password))->toBeTrue()
+        ->and(AccountPasswordReset::where('user_id', $referral->user_id)->exists())->toBeTrue();
+});
+
 it('lets a logged in referral request a reset email from profile', function () {
     Mail::fake();
 

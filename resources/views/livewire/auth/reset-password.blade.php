@@ -8,10 +8,11 @@
                 Gunakan kata sandi baru yang mudah Anda ingat dan sulit ditebak orang lain.
             </p>
 
-            <form wire:submit="submit" class="flex flex-col gap-md">
+            <form wire:submit="submit" x-data="{ showPassword: false }" class="flex flex-col gap-md">
                 <x-ui.field label="Kata Sandi Baru" required :error="$errors->first('password')">
                     <x-ui.input wire:model="password"
                                 type="password"
+                                x-bind:type="showPassword ? 'text' : 'password'"
                                 autocomplete="new-password"
                                 placeholder="Minimal 8 karakter"
                                 :invalid="$errors->has('password')" />
@@ -21,10 +22,16 @@
                             :error="$errors->first('password_confirmation')">
                     <x-ui.input wire:model="password_confirmation"
                                 type="password"
+                                x-bind:type="showPassword ? 'text' : 'password'"
                                 autocomplete="new-password"
                                 placeholder="Ulangi kata sandi baru"
                                 :invalid="$errors->has('password_confirmation')" />
                 </x-ui.field>
+
+                <label class="flex items-center gap-sm text-body-md text-body">
+                    <input type="checkbox" x-model="showPassword" class="rounded-xs border-hairline">
+                    Tampilkan kata sandi
+                </label>
 
                 <x-ui.button type="submit" class="w-full" wire:loading.attr="disabled">
                     <span wire:loading.remove wire:target="submit">Simpan Kata Sandi</span>

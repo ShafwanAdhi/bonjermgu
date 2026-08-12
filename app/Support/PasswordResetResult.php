@@ -9,4 +9,5 @@ enum PasswordResetResult: string
     case Inactive = 'inactive';
     case MissingEmail = 'missing_email';
     case InvalidToken = 'invalid_token';
+    case SamePassword = 'same_password';
 }

@@ -41,6 +41,12 @@ class ResetPassword extends Component
             ]);
         }
 
+        if ($result === PasswordResetResult::SamePassword) {
+            throw ValidationException::withMessages([
+                'password' => 'Kata sandi baru tidak boleh sama dengan kata sandi sebelumnya.',
+            ]);
+        }
+
         if ($result !== PasswordResetResult::Sent) {
             throw ValidationException::withMessages([
                 'password' => 'Link reset tidak valid atau sudah kedaluwarsa. Minta link baru dari halaman lupa kata sandi.',
