@@ -276,9 +276,9 @@
             {{-- -------------------------------------------------- Upping & biaya --}}
             <div x-data="{ expanded: false }">
                 <x-ui.card>
-                    <button type="button" class="mb-5 flex min-h-11 w-full items-center gap-sm"
+                    <button type="button" class="mb-5 flex min-h-11 w-full items-center gap-sm text-left"
                             x-on:click="expanded = !expanded">
-                        <span class="text-title-sm text-ink">6 · Upping dan Pengurang Pencairan</span>
+                        <span class="flex-1 text-left text-title-sm text-ink">6 · Upping dan Pengurang Pencairan</span>
                         <span class="ml-auto text-helper text-muted" x-text="expanded ? 'Tutup' : 'Buka'"></span>
                     </button>
 
