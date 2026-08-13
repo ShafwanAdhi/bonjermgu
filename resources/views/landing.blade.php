@@ -123,7 +123,7 @@
                     'image' => asset('images/testimonials/riki.png'),
                 ],
                 [
-                    'name' => 'Ari Prayoga',
+                    'name' => 'Ary Prayoga',
                     'role' => null,
                     'quote' => 'Bener... ini yg di butuhin sama tim sales dealer ini, sangat simple & bisa trekking aplikasi.',
                     'image' => asset('images/testimonials/ari-prayoga.png'),

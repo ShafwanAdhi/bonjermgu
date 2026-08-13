@@ -518,12 +518,17 @@ Volume besar: 4.880 model dan 26.791 baris harga. Ketentuan:
 - Wajib menggunakan pencarian dan halaman bertingkat. Dilarang memuat seluruh daftar sekaligus.
 - Penyuntingan harga dilakukan per model, menampilkan seluruh tahun model tersebut dalam satu layar.
 - Klasifikasi asal unit disunting pada level merk.
+- Pada desktop, halaman memakai pola workspace dan inspector: alur Penggunaan Unit, Merk, Type, dan Model berada di area kerja utama, sedangkan editor aktif berada di panel kanan yang stabil. Pada mobile, editor berada setelah alur dan halaman otomatis scroll ke editor saat user memilih aksi edit/tambah/harga.
+- Animasi pada halaman master data hanya untuk feedback klik, collapse/expand card, dan scroll otomatis ke panel aktif. Tidak ada scroll reveal atau entrance animation.
+- Jika user membuka editor Harga per Tahun tanpa memilih model, panel Model Kendaraan diberi highlight kuning ringan dan halaman diarahkan ke panel tersebut.
 
 ### Master Referral
 
 Kategori, sub-kategori, dan instansi. Kategori memuat segment dan tier yang membentuk nama Product.
 
 Menghapus kategori yang sedang dipakai akun Referral harus ditolak.
+
+Pada desktop, Master Referral memakai pola workspace dan inspector: peta kategori berada di kiri dan editor aktif berada di kanan. Pada mobile, peta kategori tetap didahulukan lalu aksi pada kategori, sub-kategori, atau instansi otomatis membawa user ke form yang relevan. Kategori dapat dibuka/tutup untuk mengurangi kepadatan halaman, dan daftar instansi yang panjang dibatasi dalam area scroll internal.
 
 ### Domisili dan Kelompok Usia
 

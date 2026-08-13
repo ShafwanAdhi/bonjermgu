@@ -21,6 +21,8 @@ final class ReferralMaster extends AuditedAdminComponent
 
     public ?int $institutionId = null;
 
+    public string $activeEditor = 'category';
+
     /** @var array<string, mixed> */
     public array $categoryForm = [];
 
@@ -35,6 +37,7 @@ final class ReferralMaster extends AuditedAdminComponent
         $this->newCategory();
         $this->newSubCategory();
         $this->newInstitution();
+        $this->activeEditor = 'category';
     }
 
     public function newCategory(): void
@@ -50,6 +53,7 @@ final class ReferralMaster extends AuditedAdminComponent
             'is_active' => true,
         ];
         $this->resetValidation();
+        $this->openEditor('category');
     }
 
     public function editCategory(int $categoryId): void
@@ -66,6 +70,7 @@ final class ReferralMaster extends AuditedAdminComponent
             'is_active' => $category->is_active,
         ];
         $this->resetValidation();
+        $this->openEditor('category');
     }
 
     public function saveCategory(ConfigurationIntegrityValidator $integrity): void
@@ -114,6 +119,7 @@ final class ReferralMaster extends AuditedAdminComponent
         });
 
         $this->editCategory($categoryId);
+        $this->openEditor('category');
         $this->refreshAudit();
         session()->flash('admin_success', 'Kategori Referral berhasil disimpan.');
     }
@@ -139,6 +145,7 @@ final class ReferralMaster extends AuditedAdminComponent
         });
 
         $this->newCategory();
+        $this->openEditor('category');
         $this->refreshAudit();
         session()->flash('admin_success', 'Kategori beserta master turunannya berhasil dihapus.');
     }
@@ -148,6 +155,7 @@ final class ReferralMaster extends AuditedAdminComponent
         $this->subCategoryId = null;
         $this->subCategoryForm = ['category_id' => $categoryId ?: '', 'name' => ''];
         $this->resetValidation();
+        $this->openEditor('sub-category');
     }
 
     public function editSubCategory(int $subCategoryId): void
@@ -156,6 +164,7 @@ final class ReferralMaster extends AuditedAdminComponent
         $this->subCategoryId = $sub->id;
         $this->subCategoryForm = ['category_id' => $sub->category_id, 'name' => $sub->name];
         $this->resetValidation();
+        $this->openEditor('sub-category');
     }
 
     public function saveSubCategory(): void
@@ -180,6 +189,7 @@ final class ReferralMaster extends AuditedAdminComponent
         ])->save();
 
         $this->editSubCategory($sub->id);
+        $this->openEditor('sub-category');
         $this->refreshAudit();
         session()->flash('admin_success', 'Sub-kategori Referral berhasil disimpan.');
     }
@@ -203,6 +213,7 @@ final class ReferralMaster extends AuditedAdminComponent
         });
 
         $this->newSubCategory();
+        $this->openEditor('sub-category');
         $this->refreshAudit();
         session()->flash('admin_success', 'Sub-kategori beserta instansinya berhasil dihapus.');
     }
@@ -212,6 +223,7 @@ final class ReferralMaster extends AuditedAdminComponent
         $this->institutionId = null;
         $this->institutionForm = ['sub_category_id' => $subCategoryId ?: '', 'name' => ''];
         $this->resetValidation();
+        $this->openEditor('institution');
     }
 
     public function editInstitution(int $institutionId): void
@@ -223,6 +235,7 @@ final class ReferralMaster extends AuditedAdminComponent
             'name' => $institution->name,
         ];
         $this->resetValidation();
+        $this->openEditor('institution');
     }
 
     public function saveInstitution(): void
@@ -247,6 +260,7 @@ final class ReferralMaster extends AuditedAdminComponent
         ])->save();
 
         $this->editInstitution($institution->id);
+        $this->openEditor('institution');
         $this->refreshAudit();
         session()->flash('admin_success', 'Instansi Referral berhasil disimpan.');
     }
@@ -261,6 +275,7 @@ final class ReferralMaster extends AuditedAdminComponent
 
         $institution->delete();
         $this->newInstitution();
+        $this->openEditor('institution');
         $this->refreshAudit();
         session()->flash('admin_success', 'Instansi berhasil dihapus.');
     }
@@ -289,5 +304,11 @@ final class ReferralMaster extends AuditedAdminComponent
     protected function auditModule(): string
     {
         return 'master.referral';
+    }
+
+    private function openEditor(string $editor): void
+    {
+        $this->activeEditor = $editor;
+        $this->dispatch('master-panel-opened');
     }
 }

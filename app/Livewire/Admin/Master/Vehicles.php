@@ -30,6 +30,10 @@ final class Vehicles extends AuditedAdminComponent
 
     public ?int $modelId = null;
 
+    public string $activeEditor = 'brand';
+
+    public ?string $attentionTarget = null;
+
     /** @var array<string, mixed> */
     public array $brandForm = ['name' => '', 'origin' => 'Japan'];
 
@@ -106,6 +110,7 @@ final class Vehicles extends AuditedAdminComponent
         VehicleUsage::query()->findOrFail($usageId);
         $this->usageId = $usageId;
         $this->newBrand();
+        $this->openEditor('brand');
         unset($this->brands, $this->types, $this->models);
     }
 
@@ -115,6 +120,7 @@ final class Vehicles extends AuditedAdminComponent
         $this->brandId = $brand->id;
         $this->brandForm = ['name' => $brand->name, 'origin' => $brand->origin];
         $this->newType();
+        $this->openEditor('brand');
         unset($this->types, $this->models);
     }
 
@@ -124,6 +130,7 @@ final class Vehicles extends AuditedAdminComponent
         $this->typeId = $type->id;
         $this->typeForm = ['name' => $type->name];
         $this->newModel();
+        $this->openEditor('type');
         unset($this->models);
     }
 
@@ -133,6 +140,7 @@ final class Vehicles extends AuditedAdminComponent
         $this->modelId = $model->id;
         $this->modelForm = ['name' => $model->name];
         $this->loadPrices();
+        $this->openEditor('prices');
     }
 
     public function selectSearchResult(int $modelId): void
@@ -149,6 +157,7 @@ final class Vehicles extends AuditedAdminComponent
         $this->brandId = null;
         $this->brandForm = ['name' => '', 'origin' => 'Japan'];
         $this->newType();
+        $this->openEditor('brand');
         unset($this->types, $this->models);
     }
 
@@ -157,6 +166,7 @@ final class Vehicles extends AuditedAdminComponent
         $this->typeId = null;
         $this->typeForm = ['name' => ''];
         $this->newModel();
+        $this->openEditor('type');
         unset($this->models);
     }
 
@@ -165,6 +175,7 @@ final class Vehicles extends AuditedAdminComponent
         $this->modelId = null;
         $this->modelForm = ['name' => ''];
         $this->prices = [];
+        $this->openEditor('model');
     }
 
     public function saveBrand(): void
@@ -186,6 +197,7 @@ final class Vehicles extends AuditedAdminComponent
         ])->save();
 
         $this->selectBrand($brand->id);
+        $this->openEditor('brand');
         $this->refreshAudit();
         session()->flash('admin_success', 'Merk kendaraan berhasil disimpan.');
     }
@@ -200,6 +212,7 @@ final class Vehicles extends AuditedAdminComponent
 
         $brand->delete();
         $this->newBrand();
+        $this->openEditor('brand');
         unset($this->brands);
         $this->refreshAudit();
         session()->flash('admin_success', 'Merk kendaraan berhasil dihapus.');
@@ -218,6 +231,7 @@ final class Vehicles extends AuditedAdminComponent
         $type = $this->typeId ? VehicleType::query()->findOrFail($this->typeId) : new VehicleType;
         $type->fill(['brand_id' => $validated['brandId'], 'name' => trim($validated['typeForm']['name'])])->save();
         $this->selectType($type->id);
+        $this->openEditor('type');
         $this->refreshAudit();
         session()->flash('admin_success', 'Type kendaraan berhasil disimpan.');
     }
@@ -232,6 +246,7 @@ final class Vehicles extends AuditedAdminComponent
 
         $type->delete();
         $this->newType();
+        $this->openEditor('type');
         unset($this->types);
         $this->refreshAudit();
         session()->flash('admin_success', 'Type kendaraan berhasil dihapus.');
@@ -250,6 +265,7 @@ final class Vehicles extends AuditedAdminComponent
         $model = $this->modelId ? VehicleModel::query()->findOrFail($this->modelId) : new VehicleModel;
         $model->fill(['type_id' => $validated['typeId'], 'name' => trim($validated['modelForm']['name'])])->save();
         $this->selectModel($model->id);
+        $this->openEditor('model');
         $this->refreshAudit();
         session()->flash('admin_success', 'Model kendaraan berhasil disimpan.');
     }
@@ -264,6 +280,7 @@ final class Vehicles extends AuditedAdminComponent
 
         $model->delete();
         $this->newModel();
+        $this->openEditor('model');
         unset($this->models);
         $this->refreshAudit();
         session()->flash('admin_success', 'Model kendaraan berhasil dihapus.');
@@ -272,6 +289,7 @@ final class Vehicles extends AuditedAdminComponent
     public function addPrice(): void
     {
         $this->prices[] = ['id' => null, 'year' => '', 'price' => ''];
+        $this->openEditor('prices');
     }
 
     public function removePrice(int $index): void
@@ -312,8 +330,26 @@ final class Vehicles extends AuditedAdminComponent
         });
 
         $this->loadPrices();
+        $this->openEditor('prices');
         $this->refreshAudit();
         session()->flash('admin_success', 'Harga PHPM per tahun berhasil disimpan.');
+    }
+
+    public function showEditor(string $editor): void
+    {
+        if (! in_array($editor, ['brand', 'type', 'model', 'prices'], true)) {
+            return;
+        }
+
+        if ($editor === 'prices' && ! $this->modelId) {
+            $this->activeEditor = 'prices';
+            $this->attentionTarget = 'model';
+            $this->dispatch('master-step-attention', target: 'model');
+
+            return;
+        }
+
+        $this->openEditor($editor);
     }
 
     public function render(): View
@@ -356,5 +392,12 @@ final class Vehicles extends AuditedAdminComponent
     protected function auditModule(): string
     {
         return 'master.vehicles';
+    }
+
+    private function openEditor(string $editor): void
+    {
+        $this->activeEditor = $editor;
+        $this->attentionTarget = null;
+        $this->dispatch('master-panel-opened');
     }
 }

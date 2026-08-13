@@ -106,6 +106,9 @@ Dokumen ini mencatat perubahan penting yang dikerjakan dalam sesi pengembangan 2
 - Desktop maksimal tiga module per baris; mobile maksimal dua.
 - Semua tile module memiliki ukuran sama, icon berbeda, dan tidak menampilkan label bantuan seperti "buka modul" atau "buka".
 - Page module/leaf Admin tidak memakai entrance animation.
+- Page Master Kendaraan dan Master Referral memakai layout workspace + inspector untuk mengurangi kepadatan form: daftar/struktur utama berada di kiri pada desktop, editor aktif berada di kanan, sedangkan mobile menumpuk alur lalu form.
+- Pada page Master Kendaraan dan Master Referral, animasi hanya dipakai untuk feedback klik, collapse/expand card, panel aktif, dan scroll otomatis ke panel/form yang dibuka. Scroll reveal dan entrance animation tetap tidak dipakai.
+- Master Referral memakai kategori collapsible agar daftar sub-kategori dan instansi besar tidak langsung memenuhi layar. Daftar instansi panjang dibatasi dengan scroll internal agar card tetap nyaman dipindai.
 
 ---
 

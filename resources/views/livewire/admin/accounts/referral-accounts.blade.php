@@ -131,7 +131,7 @@
                         @if ($search !== '')
                             Tidak ada Referral yang cocok dengan "{{ $search }}".
                         @else
-                            Belum ada akun Referral. Akun dibuat sendiri melalui halaman registrasi.
+                            Belum ada akun Referral. Akun dibuat sendiri melalui registrasi mandiri.
                         @endif
                     </td>
                 </tr>

@@ -330,6 +330,47 @@ const scrollProductEditorIntoView = () => {
     }, 180);
 };
 
+const scrollMasterPanelIntoView = () => {
+    window.setTimeout(() => {
+        const target = document.querySelector("[data-master-active-panel]");
+
+        if (!target) {
+            return;
+        }
+
+        const rect = target.getBoundingClientRect();
+        const offset = Math.min(window.innerHeight * 0.16, 112);
+        const targetTop = rect.top + window.scrollY - offset;
+
+        window.scrollTo({
+            top: Math.max(targetTop, 0),
+            behavior: prefersReducedMotion() ? "auto" : "smooth",
+        });
+    }, 180);
+};
+
+const scrollMasterStepIntoView = (event) => {
+    window.setTimeout(() => {
+        const step = event.detail?.target;
+        const target = step
+            ? document.querySelector(`[data-master-step="${step}"]`)
+            : document.querySelector('[data-master-attention="true"]');
+
+        if (!target) {
+            return;
+        }
+
+        const rect = target.getBoundingClientRect();
+        const offset = Math.min(window.innerHeight * 0.18, 128);
+        const targetTop = rect.top + window.scrollY - offset;
+
+        window.scrollTo({
+            top: Math.max(targetTop, 0),
+            behavior: prefersReducedMotion() ? "auto" : "smooth",
+        });
+    }, 180);
+};
+
 const initMotion = () => {
     initRupiahInputs();
     applyStagger();
@@ -356,6 +397,8 @@ document.addEventListener("livewire:navigated", () => {
 window.addEventListener("profile-editing", scrollProfileFormIntoView);
 window.addEventListener("profile-password-updated", scrollProfileTopIntoView);
 window.addEventListener("configuration-product-selected", scrollProductEditorIntoView);
+window.addEventListener("master-panel-opened", scrollMasterPanelIntoView);
+window.addEventListener("master-step-attention", scrollMasterStepIntoView);
 document.addEventListener("livewire:initialized", () => {
     window.Livewire?.hook("morphed", ({ el }) => {
         initRupiahInputs(el);
