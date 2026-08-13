@@ -19,6 +19,7 @@ Dokumen ini mencatat perubahan penting yang dikerjakan dalam sesi pengembangan 2
 
 - Landing page dirapikan pada jarak antar-section, jarak navbar ke hero, alignment mobile, ukuran logo/navbar mobile, dan konsistensi card mitra.
 - Section Testimoni ditambahkan dengan dua testimoni awal. Foto subjek sementara boleh memakai placeholder sampai aset resmi tersedia.
+- Layout Testimoni desktop memakai grid kartu penuh lebar agar tidak menyisakan ruang kosong janggal di sisi kiri, sementara mobile tetap satu kolom tanpa overflow.
 - Login dan register memakai tombol kembali bergaya flagship, bukan breadcrumb.
 - Login memakai icon mata di dalam input kata sandi.
 - Fitur "ingat saya" harus menyimpan sesi sesuai perilaku autentikasi Laravel.

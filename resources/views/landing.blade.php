@@ -102,49 +102,70 @@
 
     {{-- Testimonials. --}}
     <section class="band pb-xl md:pb-xxl">
-        <div class="grid gap-xl lg:grid-cols-[0.72fr_1.28fr] lg:items-start">
+        @php
+            $testimonials = [
+                [
+                    'name' => 'Tri Yuliyatno',
+                    'role' => 'SM-Honda Jakarta Center',
+                    'quote' => 'Simulasinya sangat mudah digunakan, semoga prosesnya semudah simulasinya.',
+                    'image' => asset('images/testimonials/tri.jpeg'),
+                ],
+                [
+                    'name' => 'Gito Purnomo',
+                    'role' => 'BM DSO BSD',
+                    'quote' => 'Website sangat membantu, top & keren...',
+                    'image' => asset('images/testimonials/gito-purnomo.jpeg'),
+                ],
+                [
+                    'name' => 'Riki',
+                    'role' => 'Sales Toyota Tunas Pecenongan',
+                    'quote' => 'Website mudah digunakan, sangat membantu, mantab....',
+                    'image' => asset('images/testimonials/riki.png'),
+                ],
+                [
+                    'name' => 'Ari Prayoga',
+                    'role' => null,
+                    'quote' => 'Bener... ini yg di butuhin sama tim sales dealer ini, sangat simple & bisa trekking aplikasi.',
+                    'image' => asset('images/testimonials/ari-prayoga.png'),
+                ],
+            ];
+        @endphp
+
+        <div class="mb-xl grid gap-md lg:grid-cols-[minmax(0,0.8fr)_minmax(280px,0.42fr)] lg:items-end">
             <div data-reveal>
                 <p class="mb-2 text-eyebrow uppercase text-muted">Testimoni</p>
-                <h2 class="max-w-[420px] font-display text-display-md text-ink">
+                <h2 class="max-w-[620px] font-display text-display-md text-ink">
                     Cerita singkat dari mitra yang mencoba simulasi.
                 </h2>
             </div>
 
-            <div class="grid gap-lg md:grid-cols-2">
-                @foreach ([
-                    [
-                        'name' => 'Tri Yuliyatno',
-                        'role' => 'SM-Honda Jakarta Center',
-                        'quote' => 'Simulasinya sangat mudah digunakan, semoga prosesnya semudah simulasinya.',
-                        'image' => asset('images/testimonials/tri.jpeg'),
-                    ],
-                    [
-                        'name' => 'Gito Purnomo',
-                        'role' => 'BM DSO BSD',
-                        'quote' => 'Website sangat membantu, top & keren...',
-                        'image' => asset('images/testimonials/gito-purnomo.jpeg'),
-                    ],
-                ] as $index => $testimonial)
-                    <figure class="flex h-full flex-col rounded-md border border-hairline bg-canvas p-lg" data-reveal="card" style="--reveal-delay: {{ 100 + ($index * 90) }}ms">
-                        <div class="mb-lg flex items-center gap-md">
-                            <img src="{{ $testimonial['image'] }}"
-                                 alt="Foto sementara {{ $testimonial['name'] }}"
-                                 class="h-14 w-14 shrink-0 rounded-full object-cover"
-                                 width="56"
-                                 height="56"
-                                 loading="lazy">
-                            <figcaption>
-                                <p class="text-label-md text-ink">{{ $testimonial['name'] }}</p>
-                                <p class="mt-1 text-helper text-muted">{{ $testimonial['role'] }}</p>
-                            </figcaption>
-                        </div>
 
-                        <blockquote class="mt-auto text-[14px] leading-[1.6] text-body">
-                            "{{ $testimonial['quote'] }}"
-                        </blockquote>
-                    </figure>
-                @endforeach
-            </div>
+        </div>
+
+        <div class="grid gap-lg md:grid-cols-2 xl:grid-cols-4">
+            @foreach ($testimonials as $index => $testimonial)
+                <figure class="flex h-full min-h-[176px] flex-col rounded-md border border-hairline bg-canvas p-lg md:min-h-[200px] xl:min-h-[220px]" data-reveal="card" style="--reveal-delay: {{ 120 + ($index * 70) }}ms">
+                    <div class="mb-lg flex items-center gap-md">
+                        <img src="{{ $testimonial['image'] }}"
+                             alt="Foto {{ $testimonial['name'] }}"
+                             class="h-14 w-14 shrink-0 rounded-full object-cover"
+                             width="56"
+                             height="56"
+                             loading="lazy">
+
+                        <figcaption class="min-w-0">
+                            <p class="text-label-md text-ink">{{ $testimonial['name'] }}</p>
+                            @if ($testimonial['role'])
+                                <p class="mt-1 text-helper text-muted">{{ $testimonial['role'] }}</p>
+                            @endif
+                        </figcaption>
+                    </div>
+
+                    <blockquote class="mt-md text-[14px] leading-[1.6] text-body xl:mt-auto">
+                        "{{ $testimonial['quote'] }}"
+                    </blockquote>
+                </figure>
+            @endforeach
         </div>
     </section>
 
