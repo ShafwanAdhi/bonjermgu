@@ -16,7 +16,7 @@
         <x-ui.callout class="mb-md">{{ session('admin_success') }}</x-ui.callout>
     @endif
     @error('master')
-        <div class="mb-md rounded-md border border-signature-coral bg-danger-bg px-md py-3 text-[13px] text-signature-coral">{{ $message }}</div>
+        <div role="alert" class="mb-md rounded-md border border-signature-coral bg-danger-bg px-md py-3 text-[13px] text-signature-coral">{{ $message }}</div>
     @enderror
 
     <section class="mb-lg rounded-lg border border-hairline bg-surface-soft p-lg md:p-xl">

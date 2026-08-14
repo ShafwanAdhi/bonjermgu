@@ -7,7 +7,7 @@
         <x-ui.callout class="mb-md">{{ session('admin_success') }}</x-ui.callout>
     @endif
     @error('configuration')
-        <div class="mb-md rounded-md border border-signature-coral bg-danger-bg px-md py-3 text-[13px] text-signature-coral">{{ $message }}</div>
+        <div role="alert" class="mb-md rounded-md border border-signature-coral bg-danger-bg px-md py-3 text-[13px] text-signature-coral">{{ $message }}</div>
     @enderror
 
     <div class="grid grid-cols-1 items-start gap-lg xl:grid-cols-[320px_1fr]">

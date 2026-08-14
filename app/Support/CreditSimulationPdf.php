@@ -19,8 +19,9 @@ class CreditSimulationPdf
 
         $this->watermark($ops);
 
-        $this->text($ops, self::MARGIN, 798, 'Kebon Jeruk Multiguna', 18, 'F2');
-        $this->text($ops, self::MARGIN, 776, 'Hasil Simulasi Kredit', 16, 'F2');
+        $this->brandMark($ops, self::MARGIN, 775, 34);
+        $this->text($ops, self::MARGIN + 44, 798, 'Kebon Jeruk Multiguna', 17, 'F2');
+        $this->text($ops, self::MARGIN + 44, 776, 'Hasil Simulasi Kredit', 15, 'F2');
         $this->text($ops, 365, 798, (string) ($subject['printed_at'] ?? ''), 10, 'F1');
         $this->line($ops, self::MARGIN, 760, 553, 760);
 
@@ -157,6 +158,31 @@ class CreditSimulationPdf
         }
     }
 
+    private function brandMark(array &$ops, int $x, int $y, int $size): void
+    {
+        $scale = $size / 100;
+        $sx = fn (float $value): float => $x + ($value * $scale);
+        $sy = fn (float $value): float => $y + ($value * $scale);
+        $s = fn (float $value): float => $value * $scale;
+
+        $dark = [0.478, 0.118, 0.02];
+        $red = [0.725, 0.145, 0.0];
+        $orange = [0.875, 0.298, 0.098];
+        $peach = [0.886, 0.557, 0.286];
+        $yellow = [0.969, 0.847, 0.353];
+        $cream = [0.973, 0.906, 0.639];
+
+        $this->rectFloat($ops, $sx(7), $sy(7), $s(19), $s(86), $dark);
+        $this->circleClip($ops, $sx(26), $sy(71.5), $s(21.5), $yellow, $sx(26), $sy(71.5), $s(22), $s(21.5));
+        $this->circleClip($ops, $sx(26), $sy(71.5), $s(21.5), $red, $sx(26), $sy(50), $s(22), $s(21.5));
+        $this->circleClip($ops, $sx(26), $sy(28.5), $s(21.5), $orange, $sx(26), $sy(7), $s(22), $s(43));
+        $this->filledCircle($ops, $sx(33), $sy(28.5), $s(10), $cream);
+        $this->circleClip($ops, $sx(73), $sy(71.5), $s(21.5), $red, $sx(51.5), $sy(50), $s(21.5), $s(43));
+        $this->circleClip($ops, $sx(73), $sy(71.5), $s(21.5), $peach, $sx(73), $sy(50), $s(21.5), $s(43));
+        $this->rectFloat($ops, $sx(52), $sy(7), $s(41), $s(40), $yellow);
+        $this->circleClip($ops, $sx(52), $sy(47), $s(20), $dark, $sx(52), $sy(27), $s(20), $s(20));
+    }
+
     /** @param array{0: float, 1: float, 2: float} $color */
     private function text(array &$ops, int $x, int $y, string $text, int $size, string $font = 'F1', array $color = [0.1, 0.12, 0.16]): void
     {
@@ -190,6 +216,69 @@ class CreditSimulationPdf
     private function rect(array &$ops, int $x, int $y, int $width, int $height, array $color): void
     {
         $ops[] = sprintf('%.3F %.3F %.3F rg %d %d %d %d re f', $color[0], $color[1], $color[2], $x, $y, $width, $height);
+    }
+
+    /** @param array{0: float, 1: float, 2: float} $color */
+    private function rectFloat(array &$ops, float $x, float $y, float $width, float $height, array $color): void
+    {
+        $ops[] = sprintf('%.3F %.3F %.3F rg %.2F %.2F %.2F %.2F re f', $color[0], $color[1], $color[2], $x, $y, $width, $height);
+    }
+
+    /** @param array{0: float, 1: float, 2: float} $color */
+    private function filledCircle(array &$ops, float $cx, float $cy, float $radius, array $color): void
+    {
+        $ops[] = sprintf('q %.3F %.3F %.3F rg %s f Q', $color[0], $color[1], $color[2], $this->circlePath($cx, $cy, $radius));
+    }
+
+    /** @param array{0: float, 1: float, 2: float} $color */
+    private function circleClip(array &$ops, float $cx, float $cy, float $radius, array $color, float $clipX, float $clipY, float $clipWidth, float $clipHeight): void
+    {
+        $ops[] = sprintf(
+            'q %.2F %.2F %.2F %.2F re W n %.3F %.3F %.3F rg %s f Q',
+            $clipX,
+            $clipY,
+            $clipWidth,
+            $clipHeight,
+            $color[0],
+            $color[1],
+            $color[2],
+            $this->circlePath($cx, $cy, $radius),
+        );
+    }
+
+    private function circlePath(float $cx, float $cy, float $radius): string
+    {
+        $k = 0.552284749831 * $radius;
+
+        return sprintf(
+            '%.2F %.2F m %.2F %.2F %.2F %.2F %.2F %.2F c %.2F %.2F %.2F %.2F %.2F %.2F c %.2F %.2F %.2F %.2F %.2F %.2F c %.2F %.2F %.2F %.2F %.2F %.2F c h',
+            $cx + $radius,
+            $cy,
+            $cx + $radius,
+            $cy + $k,
+            $cx + $k,
+            $cy + $radius,
+            $cx,
+            $cy + $radius,
+            $cx - $k,
+            $cy + $radius,
+            $cx - $radius,
+            $cy + $k,
+            $cx - $radius,
+            $cy,
+            $cx - $radius,
+            $cy - $k,
+            $cx - $k,
+            $cy - $radius,
+            $cx,
+            $cy - $radius,
+            $cx + $k,
+            $cy - $radius,
+            $cx + $radius,
+            $cy - $k,
+            $cx + $radius,
+            $cy,
+        );
     }
 
     private function fit(string $value, int $length): string

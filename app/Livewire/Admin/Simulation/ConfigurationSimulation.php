@@ -53,6 +53,31 @@ use Throwable;
 #[Layout('components.layouts.app')]
 class ConfigurationSimulation extends Component
 {
+    private const FORM_SESSION_KEY = 'simulation.configuration.form';
+
+    private const FORM_STATE_PROPERTIES = [
+        'product_id',
+        'financing_type',
+        'simulation_profile',
+        'mode',
+        'debtor_type',
+        'age_group_id',
+        'usage_id',
+        'brand_id',
+        'type_id',
+        'model_id',
+        'vehicle_year',
+        'instalment_type',
+        'coverage_type',
+        'stnk_ownership',
+        'market_price',
+        'up_rate',
+        'up_admin',
+        'up_provisi',
+        'up_acp',
+        'desired_amount',
+    ];
+
     public ?string $product_id = null;
 
     public string $financing_type = 'UCF';
@@ -111,10 +136,9 @@ class ConfigurationSimulation extends Component
 
     public function mount(): void
     {
-        $this->product_id = (string) (Product::where('is_active', true)->orderBy('name')->value('id') ?? '');
-        // From the filtered list, so the default cannot land on a usage the
-        // selected product refuses.
-        $this->usage_id = (string) ($this->usages()->value('id') ?? '');
+        $this->product_id = $this->defaultProductId();
+        $this->usage_id = $this->defaultUsageId();
+        $this->restoreFormState();
     }
 
     /* ------------------------------------------------------------ Pilihan */
@@ -340,6 +364,10 @@ class ConfigurationSimulation extends Component
         }
 
         $this->hasCalculated = false;
+        $this->calculationError = null;
+        $this->rows = [];
+        $this->traces = [];
+        $this->persistFormState();
     }
 
     public function traceTenor(int $tenor): void
@@ -353,6 +381,7 @@ class ConfigurationSimulation extends Component
         $this->desired_amount = RupiahInput::normalize($this->desired_amount);
         $this->up_admin = RupiahInput::normalize($this->up_admin);
 
+        $this->persistFormState();
         $this->calculationError = null;
         $this->hasCalculated = false;
         $this->rows = [];
@@ -424,6 +453,19 @@ class ConfigurationSimulation extends Component
         }
     }
 
+    public function clearFormData(): void
+    {
+        session()->forget(self::FORM_SESSION_KEY);
+        $this->resetFormStateProperties();
+        $this->resetValidation();
+        $this->calculationError = null;
+        $this->hasCalculated = false;
+        $this->rows = [];
+        $this->traces = [];
+        $this->outcome = null;
+        $this->clearComputedOptions();
+    }
+
     /* ------------------------------------------------------------- Jejak */
 
     #[Computed]
@@ -442,6 +484,96 @@ class ConfigurationSimulation extends Component
             ! $this->isModeB => 'Pencairan All In',
             default => 'Total DP',
         };
+    }
+
+    private function defaultProductId(): string
+    {
+        return (string) (Product::where('is_active', true)->orderBy('name')->value('id') ?? '');
+    }
+
+    private function defaultUsageId(): string
+    {
+        // From the filtered list, so the default cannot land on a usage the
+        // selected financing type refuses.
+        return (string) ($this->usages()->value('id') ?? '');
+    }
+
+    private function restoreFormState(): void
+    {
+        $state = session()->get(self::FORM_SESSION_KEY, []);
+
+        if (! is_array($state)) {
+            return;
+        }
+
+        foreach (self::FORM_STATE_PROPERTIES as $property) {
+            if (array_key_exists($property, $state)) {
+                $this->{$property} = $state[$property];
+            }
+        }
+    }
+
+    private function persistFormState(): void
+    {
+        session()->put(self::FORM_SESSION_KEY, $this->formState());
+    }
+
+    /** @return array<string, mixed> */
+    private function formState(): array
+    {
+        $state = [];
+
+        foreach (self::FORM_STATE_PROPERTIES as $property) {
+            $state[$property] = $this->{$property};
+        }
+
+        return $state;
+    }
+
+    private function resetFormStateProperties(): void
+    {
+        $this->product_id = $this->defaultProductId();
+        $this->financing_type = 'UCF';
+        $this->simulation_profile = 'referral';
+        $this->mode = 'A';
+        $this->debtor_type = 'non_entrepreneur';
+        $this->age_group_id = null;
+        $this->usage_id = $this->defaultUsageId();
+        $this->brand_id = null;
+        $this->type_id = null;
+        $this->model_id = null;
+        $this->vehicle_year = null;
+        $this->instalment_type = 'ADDB';
+        $this->coverage_type = 'comprehensive_then_tlo';
+        $this->stnk_ownership = 'own';
+        $this->market_price = '';
+        $this->up_rate = '0';
+        $this->up_admin = '0';
+        $this->up_provisi = '0';
+        $this->up_acp = '';
+        $this->desired_amount = '';
+        $this->traced_tenor = 12;
+    }
+
+    private function clearComputedOptions(): void
+    {
+        unset(
+            $this->products,
+            $this->ageGroups,
+            $this->usages,
+            $this->brands,
+            $this->vehicleTypes,
+            $this->vehicleModels,
+            $this->vehicleYears,
+            $this->reachingCategories,
+            $this->selectedProduct,
+            $this->productRates,
+            $this->isUcf,
+            $this->isModeB,
+            $this->isOfficer,
+            $this->needsUnitPrice,
+            $this->trace,
+        );
     }
 
     public function render()

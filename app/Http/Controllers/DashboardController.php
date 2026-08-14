@@ -7,6 +7,7 @@ use App\Domain\Application\FinancingProduct;
 use App\Domain\Application\TrackingStatus;
 use App\Domain\Lending\LendingFilters;
 use App\Domain\Lending\LendingQuery;
+use App\Domain\Lending\LendingRow;
 use App\Enums\Role;
 use App\Models\AccountOfficer;
 use App\Models\Application;
@@ -14,6 +15,7 @@ use App\Models\Referral;
 use App\Models\Scopes\ApplicationVisibilityScope;
 use App\Models\User;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
@@ -63,13 +65,14 @@ class DashboardController extends Controller
         return view('officer.dashboard', [
             'isBirthday' => $user->hasBirthdayToday(),
             'handled' => (clone $applications)->count(),
-            'pipeline' => (clone $applications)->whereNull('go_live_date')->count(),
+            'pipeline' => (clone $applications)->pipeline()->count(),
             'referralCount' => (clone $applications)->distinct()->count('referral_id'),
-            // Pending work first: still in Pipe Line, oldest first.
+            // Pending work first: still in Pipe Line, oldest first. Cancelled
+            // applications are not pending work and must stay out of both.
             'pending' => $applications
                 ->with('referral:id,full_name')
                 ->withCount($this->statusCounts())
-                ->whereNull('go_live_date')
+                ->pipeline()
                 ->oldest('created_at')
                 ->limit(5)
                 ->get(),
@@ -96,6 +99,7 @@ class DashboardController extends Controller
             'officerAccounts' => AccountOfficer::count(),
             'inactiveAccounts' => User::where('is_active', false)->count(),
             'charts' => $this->adminCharts($filters, $period),
+            'activityLeaders' => $this->adminActivityLeaders($filters),
         ]);
     }
 
@@ -263,6 +267,83 @@ class DashboardController extends Controller
         $decimals = abs($value - round($value)) < 0.05 ? 0 : 1;
 
         return number_format($value, $decimals, ',', '.');
+    }
+
+    /**
+     * @return array{officers: array<int, array<string, int|float|string>>, referrals: array<int, array<string, int|float|string>>}
+     */
+    private function adminActivityLeaders(LendingFilters $filters): array
+    {
+        $referralRows = LendingQuery::perReferral($filters);
+        $referralCategories = $this->adminReferralCategoryLabels($referralRows);
+
+        return [
+            'officers' => $this->adminActivityRows(LendingQuery::perOfficer($filters)),
+            'referrals' => $this->adminActivityRows(
+                $referralRows,
+                fn (LendingRow $row) => $row->id && ($referralCategories[$row->id] ?? null)
+                    ? $row->name.' ('.$referralCategories[$row->id].')'
+                    : $row->name,
+            ),
+        ];
+    }
+
+    /**
+     * @param  Collection<int, LendingRow>  $rows
+     * @return array<int, array{name: string, actualUnits: int, pipelineUnits: int, totalUnits: int, actualAmount: int, pipelineAmount: int, totalAmount: int, activityPercent: float}>
+     */
+    private function adminActivityRows(Collection $rows, ?callable $formatName = null): array
+    {
+        $sortedRows = $rows
+            ->map(fn ($row) => [
+                'name' => $formatName ? $formatName($row) : $row->name,
+                'actualUnits' => $row->actualUnits,
+                'pipelineUnits' => $row->pipelineUnits,
+                'totalUnits' => $row->actualUnits + $row->pipelineUnits,
+                'actualAmount' => $row->actualAmount,
+                'pipelineAmount' => $row->pipelineAmount,
+                'totalAmount' => $row->actualAmount + $row->pipelineAmount,
+            ])
+            ->sort(function (array $left, array $right): int {
+                return $right['totalUnits'] <=> $left['totalUnits']
+                    ?: $right['totalAmount'] <=> $left['totalAmount']
+                    ?: $left['name'] <=> $right['name'];
+            })
+            ->values();
+
+        $maxUnits = max(1, (int) ($sortedRows->max('totalUnits') ?? 0));
+
+        return $sortedRows
+            ->take(3)
+            ->map(function (array $row) use ($maxUnits) {
+                $row['activityPercent'] = round(($row['totalUnits'] / $maxUnits) * 100, 1);
+
+                return $row;
+            })
+            ->all();
+    }
+
+    /**
+     * @param  Collection<int, LendingRow>  $rows
+     * @return array<int, string>
+     */
+    private function adminReferralCategoryLabels(Collection $rows): array
+    {
+        $referralIds = $rows->pluck('id')->filter()->unique()->values();
+
+        if ($referralIds->isEmpty()) {
+            return [];
+        }
+
+        return Referral::query()
+            ->with('category:id,name')
+            ->whereIn('id', $referralIds)
+            ->get(['id', 'category_id'])
+            ->mapWithKeys(fn (Referral $referral) => [
+                $referral->id => $referral->category?->name ?? '',
+            ])
+            ->filter()
+            ->all();
     }
 
     /** @return array<string, callable|string> */

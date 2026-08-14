@@ -434,7 +434,8 @@ Total Refund = ROUNDDOWN(seluruh komponen, ribuan)
 
 ```text
 Pencairan Gross  = Harga OTR - Total Bayar Pertama
-Pencairan Neto   = Pencairan Gross - (BBNKB + PKB + Faktur + Deposit Angsuran)
+Deposit Angsuran = Jumlah Angsuran Dititipkan x Angsuran tenor tersebut
+Pencairan Neto   = Pencairan Gross - (BBNKB + PKB + Faktur) - Deposit Angsuran
 Pencairan All In = Pencairan Neto + Total Refund
 ```
 
@@ -506,7 +507,7 @@ Apabila LTV bernilai 0, Angsuran bernilai 0.
 | Dasar perhitungan ACP                     | Harga PHPM                        | Harga OTR                      |
 | Pembulatan Total Asuransi                 | ROUNDDOWN ratusan                 | ROUNDUP ratusan                |
 | Angsuran Pertama pada Total Bayar Pertama | Tidak termasuk                    | Termasuk jika ADDM             |
-| Dasar Deposit Angsuran                    | Angsuran Pertama                  | Angsuran                       |
+| Dasar Deposit Angsuran                    | Angsuran                          | Angsuran                       |
 | Refund                                    | Tidak ada                         | Ada                            |
 | Output Mode A                             | Pencairan Maksimal                | Pencairan All In               |
 | Input Mode B                              | Dana yang dibutuhkan              | Total DP dikehendaki           |
@@ -620,7 +621,7 @@ Sistem tidak boleh melanjutkan perhitungan dengan rate 0, karena menghasilkan an
 | 2   | ~~Dasar perhitungan ACP~~     | Ditetapkan 11 Agustus 2026: Dana Tunai atas Harga PHPM, Mobil Bekas atas Harga OTR.                                                                                          |
 | 3   | Batas Harga Pasar             | **Masih terbuka.** Belum ada batas maksimal Harga Pasar maupun Harga Taksasi terhadap PHPM. Sistem menormalkan tenor ke 0 ketika Deviasi mendorong Net DP mencapai harga unit, tetapi itu penormalan, bukan batas kebijakan. |
 | 4   | Perbedaan pembulatan          | Total Asuransi dibulatkan ke bawah pada DTN dan ke atas pada UCF. Perlu konfirmasi apakah disengaja.                                                                         |
-| 5   | Deposit Angsuran              | Dasar perhitungan berbeda antara DTN dan UCF. Perlu ditetapkan ketentuan yang berlaku.                                                                                       |
+| 5   | ~~Deposit Angsuran~~          | Ditetapkan 13 Agustus 2026: input berupa jumlah angsuran yang dititipkan, 0 sampai 10. Nilainya Jumlah x Angsuran tenor tersebut, memakai Angsuran biasa pada kedua produk, dan memotong Pencairan pada keduanya. |
 | 6   | Penyimpanan hasil simulasi    | Perlu ditetapkan apakah hasil simulasi disimpan sistem dan dapat dirujuk saat AO membuat Credit Application.                                                                 |
 | 7   | Type Angsuran pada UCF Mode B | Pada draft, Mode B membaca Type Angsuran milik Dana Tunai, bukan milik Pembiayaan Mobil Bekas. Sistem harus menggunakan Type Angsuran produk yang bersangkutan.              |
 | 8   | Sumber PHPM pada UCF          | Pada draft, tenor 12 bulan membaca master PHPM Mobil Bekas sedangkan tenor 24 sampai 60 membaca master PHPM Dana Tunai. Sistem harus menggunakan satu sumber yang konsisten. |

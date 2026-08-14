@@ -14,5 +14,6 @@ class LendingRow
         public readonly int $actualAmount,
         public readonly int $pipelineUnits,
         public readonly int $pipelineAmount,
+        public readonly ?int $id = null,
     ) {}
 }

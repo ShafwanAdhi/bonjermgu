@@ -12,7 +12,7 @@ final class SimulationSettingDefaults
             'engine_warranty_fee' => '1500000',
             'active_insurance_zone' => 'Wilayah 2',
             'active_rate_variant' => 'Batas Bawah',
-            'default_deposit_instalment_amount' => '0',
+            'default_deposit_instalment_count' => '0',
             'default_bbnkb_amount' => '0',
             'default_pkb_amount' => '0',
             'default_invoice_amount' => '0',

@@ -4,7 +4,7 @@
             <x-ui.callout>{{ session('admin_success') }}</x-ui.callout>
         @endif
         @error('configuration')
-            <div class="rounded-md border border-signature-coral bg-danger-bg px-md py-3 text-[13px] text-signature-coral">{{ $message }}</div>
+            <div role="alert" class="rounded-md border border-signature-coral bg-danger-bg px-md py-3 text-[13px] text-signature-coral">{{ $message }}</div>
         @enderror
 
         <div class="grid grid-cols-1 items-start gap-lg lg:grid-cols-2">
@@ -13,9 +13,9 @@
                     <div class="grid grid-cols-[28px_1fr_auto] items-center gap-sm border-b border-divider py-2" wire:key="domicile-{{ $row['id'] ?? 'new-'.$index }}">
                         <span class="text-helper tabular-nums text-muted">{{ $index + 1 }}</span>
                         <x-ui.input wire:model="domiciles.{{ $index }}.name" :invalid="$errors->has('domiciles.'.$index.'.name')" />
-                        <div class="flex gap-2 text-[12px]">
-                            <button type="button" wire:click="moveDomicile({{ $index }}, -1)" class="text-link">↑</button>
-                            <button type="button" wire:click="moveDomicile({{ $index }}, 1)" class="text-link">↓</button>
+                        <div class="flex gap-1 text-[12px]">
+                            <button type="button" wire:click="moveDomicile({{ $index }}, -1)" class="inline-flex h-8 w-8 items-center justify-center rounded-sm text-link" aria-label="Naikkan domisili {{ $index + 1 }}">↑</button>
+                            <button type="button" wire:click="moveDomicile({{ $index }}, 1)" class="inline-flex h-8 w-8 items-center justify-center rounded-sm text-link" aria-label="Turunkan domisili {{ $index + 1 }}">↓</button>
                             <button type="button" wire:click="removeDomicile({{ $index }})" class="text-signature-coral">Hapus</button>
                         </div>
                     </div>
@@ -29,9 +29,9 @@
                         <span class="text-helper tabular-nums text-muted">{{ $index + 1 }}</span>
                         <x-ui.input wire:model="ageGroups.{{ $index }}.label" placeholder="Label usia" />
                         <x-ui.input wire:model="ageGroups.{{ $index }}.upping" type="number" step="0.000001" min="0" max="100" placeholder="Upping %" />
-                        <div class="flex gap-2 text-[12px]">
-                            <button type="button" wire:click="moveAgeGroup({{ $index }}, -1)" class="text-link">↑</button>
-                            <button type="button" wire:click="moveAgeGroup({{ $index }}, 1)" class="text-link">↓</button>
+                        <div class="flex gap-1 text-[12px]">
+                            <button type="button" wire:click="moveAgeGroup({{ $index }}, -1)" class="inline-flex h-8 w-8 items-center justify-center rounded-sm text-link" aria-label="Naikkan kelompok usia {{ $index + 1 }}">↑</button>
+                            <button type="button" wire:click="moveAgeGroup({{ $index }}, 1)" class="inline-flex h-8 w-8 items-center justify-center rounded-sm text-link" aria-label="Turunkan kelompok usia {{ $index + 1 }}">↓</button>
                             <button type="button" wire:click="removeAgeGroup({{ $index }})" class="text-signature-coral">Hapus</button>
                         </div>
                     </div>
@@ -41,7 +41,7 @@
         </div>
 
         @if ($errors->any())
-            <div class="rounded-md border border-signature-coral bg-danger-bg px-md py-3 text-[13px] text-signature-coral">
+            <div role="alert" class="rounded-md border border-signature-coral bg-danger-bg px-md py-3 text-[13px] text-signature-coral">
                 Data belum disimpan. Nama harus unik dan setiap kelompok usia wajib memiliki upping ACP.
             </div>
         @endif

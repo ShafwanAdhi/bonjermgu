@@ -4,6 +4,7 @@ it('shows the landing page to guests', function () {
     $this->get('/')
         ->assertOk()
         ->assertSee('Kebon Jeruk Multiguna')
+        ->assertSee('images/brand/bonjemgu-logo.svg', escape: false)
         ->assertSee('Bawa Debiturnya biarkan kami yg menghitung')
         ->assertSee('Program Mitra Referral')
         ->assertSee('Registrasi')

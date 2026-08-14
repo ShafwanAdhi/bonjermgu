@@ -65,7 +65,7 @@ final class OfficerSimulator
             bbnkbAmount: $request->bbnkbAmount,
             pkbAmount: $request->pkbAmount,
             invoiceAmount: $request->invoiceAmount,
-            depositInstalmentAmount: $request->depositInstalmentAmount,
+            depositInstalmentCount: $request->depositInstalmentCount,
         );
 
         $input = new SimulationInput(

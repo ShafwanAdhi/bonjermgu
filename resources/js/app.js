@@ -4,9 +4,13 @@ let revealObserver;
 let adminScrollObserver;
 let scrollProgressBound = false;
 let progressFrame;
+let fieldEnhanceIndex = 0;
 
 const prefersReducedMotion = () =>
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+const preferredScrollBehavior = () =>
+    prefersReducedMotion() ? "auto" : "smooth";
 
 const applyStagger = () => {
     document.querySelectorAll("[data-motion-stagger]").forEach((group) => {
@@ -99,6 +103,66 @@ const setupScrollProgress = () => {
     }
 
     queueScrollProgress();
+};
+
+const appendDescribedBy = (element, id) => {
+    const existing = element.getAttribute("aria-describedby");
+    const ids = new Set((existing ?? "").split(/\s+/).filter(Boolean));
+
+    ids.add(id);
+    element.setAttribute("aria-describedby", [...ids].join(" "));
+};
+
+const enhanceFields = (root = document) => {
+    const fields = [
+        ...(root.matches?.("[data-ui-field]") ? [root] : []),
+        ...root.querySelectorAll("[data-ui-field]"),
+    ];
+
+    fields.forEach((field) => {
+        const control = field.querySelector(
+            "input:not([type='hidden']), select, textarea",
+        );
+        const label = field.querySelector("[data-ui-field-label]");
+        const message = field.querySelector("[data-ui-field-message]");
+
+        if (!control) {
+            return;
+        }
+
+        if (!control.id) {
+            control.id =
+                field.dataset.uiFieldId ?? `ui-field-${++fieldEnhanceIndex}`;
+        }
+
+        if (label && !label.getAttribute("for")) {
+            label.setAttribute("for", control.id);
+        }
+
+        if (message) {
+            message.id ||= `${control.id}-description`;
+            appendDescribedBy(control, message.id);
+        }
+
+        if (field.dataset.uiFieldInvalid === "true") {
+            control.setAttribute("aria-invalid", "true");
+        }
+    });
+};
+
+const enhanceLiveRegions = (root = document) => {
+    const loadingRegions = [
+        ...(root.matches?.("[wire\\:loading]") ? [root] : []),
+        ...root.querySelectorAll("[wire\\:loading]"),
+    ];
+
+    loadingRegions.forEach((region) => {
+        region.setAttribute("role", region.getAttribute("role") ?? "status");
+        region.setAttribute(
+            "aria-live",
+            region.getAttribute("aria-live") ?? "polite",
+        );
+    });
 };
 
 const prepareMotionPage = () => {
@@ -297,7 +361,10 @@ const scrollProfileFormIntoView = () => {
         const targetTop =
             rect.top + window.scrollY - window.innerHeight / 2 + rect.height / 2;
 
-        window.scrollTo({ top: Math.max(targetTop, 0), behavior: "smooth" });
+        window.scrollTo({
+            top: Math.max(targetTop, 0),
+            behavior: preferredScrollBehavior(),
+        });
     });
 };
 
@@ -305,7 +372,7 @@ const scrollProfileTopIntoView = () => {
     requestAnimationFrame(() => {
         window.scrollTo({
             top: 0,
-            behavior: prefersReducedMotion() ? "auto" : "smooth",
+            behavior: preferredScrollBehavior(),
         });
     });
 };
@@ -326,7 +393,10 @@ const scrollProductEditorIntoView = () => {
         const offset = Math.min(window.innerHeight * 0.14, 96);
         const targetTop = rect.top + window.scrollY - offset;
 
-        window.scrollTo({ top: Math.max(targetTop, 0), behavior: "smooth" });
+        window.scrollTo({
+            top: Math.max(targetTop, 0),
+            behavior: preferredScrollBehavior(),
+        });
     }, 180);
 };
 
@@ -344,7 +414,7 @@ const scrollMasterPanelIntoView = () => {
 
         window.scrollTo({
             top: Math.max(targetTop, 0),
-            behavior: prefersReducedMotion() ? "auto" : "smooth",
+            behavior: preferredScrollBehavior(),
         });
     }, 180);
 };
@@ -366,12 +436,14 @@ const scrollMasterStepIntoView = (event) => {
 
         window.scrollTo({
             top: Math.max(targetTop, 0),
-            behavior: prefersReducedMotion() ? "auto" : "smooth",
+            behavior: preferredScrollBehavior(),
         });
     }, 180);
 };
 
 const initMotion = () => {
+    enhanceFields();
+    enhanceLiveRegions();
     initRupiahInputs();
     applyStagger();
     prepareMotionPage();

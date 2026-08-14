@@ -321,3 +321,48 @@ it('applies upping entered on the test screen without touching the Product', fun
     expect($instalmentFor('0'))->not->toEqual($instalmentFor('3'));
     expect($product->fresh()->up_rate)->toEqual($before);
 });
+
+it('keeps admin configuration simulation form data until admin clears it', function () {
+    $product = Product::where('is_active', true)->orderBy('name')->firstOrFail();
+
+    Livewire::actingAs($this->admin)
+        ->test(ConfigurationSimulation::class)
+        ->set('product_id', (string) $product->id)
+        ->set('financing_type', 'DTN')
+        ->set('simulation_profile', 'officer')
+        ->set('usage_id', (string) $this->model->type->brand->usage_id)
+        ->set('brand_id', (string) $this->model->type->brand_id)
+        ->set('type_id', (string) $this->model->type_id)
+        ->set('model_id', (string) $this->model->id)
+        ->set('vehicle_year', (string) $this->year)
+        ->set('mode', 'B')
+        ->set('market_price', 'Rp 110.000.000')
+        ->set('desired_amount', 'Rp 25.000.000')
+        ->set('up_admin', 'Rp 500.000');
+
+    expect(session('simulation.configuration.form.financing_type'))->toBe('DTN')
+        ->and(session('simulation.configuration.form.simulation_profile'))->toBe('officer')
+        ->and(session('simulation.configuration.form.mode'))->toBe('B')
+        ->and(session('simulation.configuration.form.market_price'))->toBe('Rp 110.000.000')
+        ->and(session('simulation.configuration.form.desired_amount'))->toBe('Rp 25.000.000')
+        ->and(session('simulation.configuration.form.up_admin'))->toBe('Rp 500.000');
+
+    Livewire::actingAs($this->admin)
+        ->test(ConfigurationSimulation::class)
+        ->assertSet('financing_type', 'DTN')
+        ->assertSet('simulation_profile', 'officer')
+        ->assertSet('mode', 'B')
+        ->assertSet('market_price', 'Rp 110.000.000')
+        ->assertSet('desired_amount', 'Rp 25.000.000')
+        ->assertSet('up_admin', 'Rp 500.000')
+        ->call('clearFormData')
+        ->assertSet('financing_type', 'UCF')
+        ->assertSet('simulation_profile', 'referral')
+        ->assertSet('mode', 'A')
+        ->assertSet('market_price', '')
+        ->assertSet('desired_amount', '')
+        ->assertSet('up_admin', '0')
+        ->assertSet('hasCalculated', false);
+
+    expect(session()->has('simulation.configuration.form'))->toBeFalse();
+});

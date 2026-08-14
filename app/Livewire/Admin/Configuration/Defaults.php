@@ -19,7 +19,7 @@ final class Defaults extends AuditedAdminComponent
         'engine_warranty_fee' => ['label' => 'Biaya Garansi Mesin', 'type' => 'money'],
         'active_insurance_zone' => ['label' => 'Wilayah Asuransi Aktif', 'type' => 'zone'],
         'active_rate_variant' => ['label' => 'Varian Rate Aktif', 'type' => 'variant'],
-        'default_deposit_instalment_amount' => ['label' => 'Deposit / Titipan Angsuran', 'type' => 'money'],
+        'default_deposit_instalment_count' => ['label' => 'Deposit Angsuran (jumlah angsuran)', 'type' => 'deposit_count'],
         'default_bbnkb_amount' => ['label' => 'BBNKB', 'type' => 'money'],
         'default_pkb_amount' => ['label' => 'PKB', 'type' => 'money'],
         'default_invoice_amount' => ['label' => 'Faktur', 'type' => 'money'],
@@ -109,6 +109,7 @@ final class Defaults extends AuditedAdminComponent
         foreach (self::DEFINITIONS as $key => $definition) {
             $rules["settings.{$key}"] = match ($definition['type']) {
                 'money', 'integer' => ['required', 'integer', 'min:0'],
+                'deposit_count' => ['required', 'integer', 'min:0', 'max:10'],
                 'positive_integer' => ['required', 'integer', 'min:1'],
                 'boolean' => ['required', Rule::in(['true', 'false'])],
                 'variant' => ['required', Rule::in(['Batas Atas', 'Batas Bawah'])],

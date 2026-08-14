@@ -52,7 +52,8 @@ final readonly class OfficerSimulationRequest
         public float $passengerCoverageAmount = 0,
         public int $passengerCount = 0,
         public bool $engineWarrantyEnabled = true,
-        public float $depositInstalmentAmount = 0,
+        /** How many instalments are withheld, 0 to 10 — not a rupiah figure. */
+        public int $depositInstalmentCount = 0,
         public float $bbnkbAmount = 0,
         public float $pkbAmount = 0,
         public float $invoiceAmount = 0,

@@ -183,7 +183,9 @@
                         </div>
 
                         @if ($this->canEdit && ! $application->isCanceled())
-                            <x-ui.status-toggle :is-active="$document->status->isComplete()" active-label="Lengkap">
+                            <x-ui.status-toggle :is-active="$document->status->isComplete()"
+                                                :label="'Status dokumen '.$document->requirement->name"
+                                                active-label="Lengkap">
                                 <x-slot:inactive wire:click="setDocumentStatus({{ $document->id }}, '{{ DocumentStatus::Belum->value }}')"></x-slot:inactive>
                                 <x-slot:active wire:click="setDocumentStatus({{ $document->id }}, '{{ DocumentStatus::Lengkap->value }}')"></x-slot:active>
                             </x-ui.status-toggle>
@@ -197,7 +199,7 @@
             @endforeach
         </div>
 
-        <x-ui.table min-width="560px" class="hidden md:block">
+        <x-ui.table min-width="560px" label="Daftar dokumen aplikasi" class="hidden md:block">
             <x-slot:head>
                 <x-ui.th>Dokumen</x-ui.th>
                 <x-ui.th>Subjek</x-ui.th>
@@ -212,7 +214,9 @@
                     <x-ui.td class="text-[13px] text-muted">{{ $document->requirement->subject }}</x-ui.td>
                     <x-ui.td align="right">
                         @if ($this->canEdit && ! $application->isCanceled())
-                            <x-ui.status-toggle :is-active="$document->status->isComplete()" active-label="Lengkap">
+                            <x-ui.status-toggle :is-active="$document->status->isComplete()"
+                                                :label="'Status dokumen '.$document->requirement->name"
+                                                active-label="Lengkap">
                                 <x-slot:inactive wire:click="setDocumentStatus({{ $document->id }}, '{{ DocumentStatus::Belum->value }}')"></x-slot:inactive>
                                 <x-slot:active wire:click="setDocumentStatus({{ $document->id }}, '{{ DocumentStatus::Lengkap->value }}')"></x-slot:active>
                             </x-ui.status-toggle>
@@ -240,7 +244,9 @@
 
                     @if ($this->canEdit && ! $application->isCanceled())
                         {{-- Never disabled because an earlier stage is unfinished. --}}
-                        <x-ui.status-toggle :is-active="$tracking->status->isDone()" active-label="Selesai">
+                        <x-ui.status-toggle :is-active="$tracking->status->isDone()"
+                                            :label="'Status tracking '.$tracking->stage->name"
+                                            active-label="Selesai">
                             <x-slot:inactive wire:click="toggleStage({{ $tracking->stage_no }})"></x-slot:inactive>
                                 {{ $tracking->status->isDone() ? '✓ Selesai' : '✕ Belum' }}
                             <x-slot:active wire:click="toggleStage({{ $tracking->stage_no }})"></x-slot:active>
@@ -258,14 +264,32 @@
     {{-- Go Live confirmation — it changes the Lending classification. --}}
     @if ($confirmingGoLive)
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-primary/45 p-lg"
+             role="dialog"
+             aria-modal="true"
+             aria-labelledby="confirm-go-live-title"
+             aria-describedby="confirm-go-live-copy"
+             tabindex="-1"
+             x-data
+             x-init="$nextTick(() => $el.focus())"
+             x-on:keydown.escape.window="$wire.cancelGoLive()"
              wire:click="cancelGoLive">
             <div class="max-w-[460px] rounded-lg bg-canvas p-xl shadow-[0_24px_64px_rgba(13,18,24,0.25)]"
                  wire:click.stop>
-                <p class="mb-sm text-title-sm text-ink">Tandai Golive &amp; Payment sebagai Selesai?</p>
-                <p class="mb-lg text-[14px] leading-[1.7] text-body">
+                <p id="confirm-go-live-title" class="mb-sm text-title-sm text-ink">Tandai Golive &amp; Payment sebagai Selesai?</p>
+                <p id="confirm-go-live-copy" class="mb-lg text-[14px] leading-[1.7] text-body">
                     Menandai Golive &amp; Payment akan mencatat Tanggal Go Live dan memindahkan
                     aplikasi ini ke Actual Lending.
                 </p>
+
+                {{-- Asked here so an Actual Lending row is never counted against Rp 0. --}}
+                <x-ui.field label="Amount Finance" required
+                            helper="Nilai yang masuk laporan Actual Lending."
+                            :error="$errors->first('goLiveAmountFinance')"
+                            class="mb-lg">
+                    <x-ui.money-input wire:model="goLiveAmountFinance" placeholder="Rp 50.000.000"
+                                      :invalid="$errors->has('goLiveAmountFinance')" />
+                </x-ui.field>
+
                 <div class="flex justify-end gap-sm">
                     <x-ui.button variant="secondary" size="md" wire:click="cancelGoLive">Batal</x-ui.button>
                     <x-ui.button size="md" wire:click="confirmGoLive">Tandai Selesai</x-ui.button>
@@ -276,11 +300,19 @@
 
     @if ($confirmingCancel)
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-primary/45 p-lg"
+             role="dialog"
+             aria-modal="true"
+             aria-labelledby="confirm-cancel-title"
+             aria-describedby="confirm-cancel-copy"
+             tabindex="-1"
+             x-data
+             x-init="$nextTick(() => $el.focus())"
+             x-on:keydown.escape.window="$wire.cancelCancelApplication()"
              wire:click="cancelCancelApplication">
             <div class="max-w-[460px] rounded-lg bg-canvas p-xl shadow-[0_24px_64px_rgba(13,18,24,0.25)]"
                  wire:click.stop>
-                <p class="mb-sm text-title-sm text-ink">Batalkan aplikasi ini?</p>
-                <p class="mb-lg text-[14px] leading-[1.7] text-body">
+                <p id="confirm-cancel-title" class="mb-sm text-title-sm text-ink">Batalkan aplikasi ini?</p>
+                <p id="confirm-cancel-copy" class="mb-lg text-[14px] leading-[1.7] text-body">
                     Aplikasi akan keluar dari status Pipe Line dan tampil sebagai Canceled pada daftar aplikasi.
                 </p>
                 <div class="flex justify-end gap-sm">

@@ -3,7 +3,9 @@
 use App\Domain\Application\ApplicationCreator;
 use App\Models\AccountOfficer;
 use App\Models\Admin;
+use App\Models\Application;
 use App\Models\Referral;
+use App\Models\ReferralCategory;
 use App\Models\User;
 use Database\Seeders\DocumentRequirementSeeder;
 use Database\Seeders\TrackingStageSeeder;
@@ -115,7 +117,8 @@ it('renders every screen in the mockups', function (string $path, string $role, 
 
     test()->get($path)
         ->assertOk()
-        ->assertSee($expected, escape: false);
+        ->assertSee($expected, escape: false)
+        ->assertSee('images/brand/bonjemgu-logo.svg', escape: false);
 })->with(collect(screenMap())->map(
     fn ($spec, $path) => [$path, $spec[0], $spec[1]],
 )->values()->all());
@@ -149,6 +152,9 @@ it('renders the admin dashboard variant', function () {
         ->assertSee('seluruh periode')
         ->assertSee('Komposisi Lending')
         ->assertSee('Performa Produk')
+        ->assertSee('AO Paling Aktif')
+        ->assertSee('Referral Paling Aktif')
+        ->assertSee('Top 3')
         ->assertDontSee('6 bulan')
         ->assertDontSee('Visualisasi Data')
         ->assertDontSee('Insight Lending')
@@ -156,6 +162,53 @@ it('renders the admin dashboard variant', function () {
         ->assertDontSee('Buka Konfigurasi')
         ->assertDontSee('Buka Lending')
         ->assertDontSee('satu-satunya pengecualian akses Admin terhadap data application');
+});
+
+it('shows the most active officers and referrals on the admin dashboard', function () {
+    $topCategory = ReferralCategory::query()->create([
+        'name' => 'Dealer Prioritas',
+        'code' => 'DPR',
+        'segment' => 'Reguler',
+        'tier' => 'Referral',
+        'allows_passenger' => true,
+        'allows_commercial' => true,
+        'is_active' => true,
+    ]);
+
+    $officerTop = AccountOfficer::factory()->create(['full_name' => 'Andi Aktif']);
+    $officerOther = AccountOfficer::factory()->create(['full_name' => 'Rina Tenang']);
+    $referralTop = Referral::factory()->create([
+        'full_name' => 'Budi Aktif',
+        'category_id' => $topCategory->id,
+    ]);
+    $referralOther = Referral::factory()->create(['full_name' => 'Eka Tenang']);
+
+    Application::factory()
+        ->forOfficer($officerTop)
+        ->forReferral($referralTop)
+        ->create([
+            'amount_finance' => 300_000_000,
+            'unit_count' => 3,
+        ]);
+
+    Application::factory()
+        ->forOfficer($officerOther)
+        ->forReferral($referralOther)
+        ->create([
+            'amount_finance' => 90_000_000,
+            'unit_count' => 1,
+        ]);
+
+    $this->actingAs(Admin::factory()->create()->user)
+        ->get('/dashboard')
+        ->assertOk()
+        ->assertSee('AO Paling Aktif')
+        ->assertSee('Referral Paling Aktif')
+        ->assertSee('Top 3')
+        ->assertSee('Andi Aktif')
+        ->assertSee('Budi Aktif (Dealer Prioritas)')
+        ->assertSee('3 unit')
+        ->assertSee('Rp 300.000.000');
 });
 
 it('renders testimonial content on the landing page', function () {

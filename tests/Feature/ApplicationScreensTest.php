@@ -74,6 +74,19 @@ it('creates an application, its documents, and eleven stages from the form', fun
         ->and($application->trackings)->toHaveCount(11);
 });
 
+it('renders helpful placeholders on the create application form', function () {
+    Livewire::actingAs($this->officer->user)
+        ->test(CreateApplication::class)
+        ->assertSee('placeholder="Masukkan nama debitur sesuai pengajuan"', escape: false)
+        ->assertSee('placeholder="16 digit NIK debitur"', escape: false)
+        ->assertSee('placeholder="Pilih tanggal lahir debitur"', escape: false)
+        ->assertSee('placeholder="Ketik nama Referral..."', escape: false)
+        ->assertSee('placeholder="Rp 50.000.000"', escape: false)
+        ->assertSee('placeholder="1 unit"', escape: false)
+        ->set('debtor_type', DebtorType::BadanHukumUsaha->value)
+        ->assertSee('placeholder="Tidak berlaku"', escape: false);
+});
+
 it('requires a referral before an application can be created', function () {
     Livewire::actingAs($this->officer->user)
         ->test(CreateApplication::class)
@@ -444,6 +457,42 @@ it('records the go live date only after confirmation', function () {
     expect($application->fresh()->go_live_date?->toDateString())->toBe(now()->toDateString());
 });
 
+/*
+ * Go Live writes an Actual Lending row. Without Amount Finance that row counts
+ * a unit against Rp 0, and the Lending report is wrong in a way that cannot be
+ * seen from the report itself.
+ */
+it('refuses go live while amount finance is empty', function () {
+    $application = makeApplication(['amount_finance' => null]);
+
+    Livewire::actingAs($this->officer->user)
+        ->test(ApplicationDetail::class, ['application' => $application])
+        ->call('toggleStage', 11)
+        ->call('confirmGoLive')
+        ->assertHasErrors(['goLiveAmountFinance' => 'required'])
+        ->assertSet('confirmingGoLive', true);
+
+    expect($application->fresh())
+        ->go_live_date->toBeNull()
+        ->amount_finance->toBeNull();
+});
+
+it('saves the amount finance entered in the go live dialog', function () {
+    $application = makeApplication(['amount_finance' => null]);
+
+    Livewire::actingAs($this->officer->user)
+        ->test(ApplicationDetail::class, ['application' => $application])
+        ->call('toggleStage', 11)
+        ->set('goLiveAmountFinance', 'Rp 137.500.000')
+        ->call('confirmGoLive')
+        ->assertHasNoErrors()
+        ->assertSet('confirmingGoLive', false);
+
+    expect($application->fresh())
+        ->amount_finance->toBe(137_500_000)
+        ->go_live_date->not->toBeNull();
+});
+
 it('writes nothing when the go live confirmation is cancelled', function () {
     $application = makeApplication();
 
@@ -546,4 +595,36 @@ it('renders legal entity application details when debtor identity fields are nul
         ->assertOk()
         ->assertSee('PT Maju Bersama')
         ->assertSee(DebtorType::BadanHukumUsaha->label());
+});
+
+/*
+ * The Account Officer simulation hands off financing product and debtor type
+ * via query string — the only two fields the two screens share. Amount Finance
+ * is deliberately excluded (docs/application-tracking.md section 2), and the
+ * Referral is a specific account the simulation never chose.
+ */
+it('prefills financing product and debtor type from query parameters', function () {
+    $this->actingAs($this->officer->user);
+
+    Livewire::withQueryParams(['financing_product' => 'UCF', 'debtor_type' => 'entrepreneur'])
+        ->test(CreateApplication::class)
+        ->assertSet('financing_product', FinancingProduct::MobilBekas->value)
+        ->assertSet('debtor_type', DebtorType::PeroranganWiraswasta->value);
+});
+
+it('ignores query parameters that do not match a known value', function () {
+    $this->actingAs($this->officer->user);
+
+    Livewire::withQueryParams(['financing_product' => 'LMF', 'debtor_type' => 'not-a-real-type'])
+        ->test(CreateApplication::class)
+        ->assertSet('financing_product', FinancingProduct::DanaTunai->value)
+        ->assertSet('debtor_type', DebtorType::PeroranganNonWiraswasta->value);
+});
+
+it('leaves the defaults untouched when no query parameters are given', function () {
+    $this->actingAs($this->officer->user);
+
+    Livewire::test(CreateApplication::class)
+        ->assertSet('financing_product', FinancingProduct::DanaTunai->value)
+        ->assertSet('debtor_type', DebtorType::PeroranganNonWiraswasta->value);
 });

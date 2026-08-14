@@ -85,7 +85,7 @@
             @endforelse
         </div>
 
-        <x-ui.table min-width="760px" class="hidden md:block" data-reveal="table">
+        <x-ui.table min-width="760px" label="Aplikasi terbaru" class="hidden md:block" data-reveal="table">
             <x-slot:head>
                 <x-ui.th>Kode Aplikasi</x-ui.th>
                 <x-ui.th>Nama Debitur</x-ui.th>

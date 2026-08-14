@@ -24,10 +24,11 @@
     $padKey = $variant === 'primary' ? 'primary' : 'secondary';
     $classes = 'inline-flex items-center justify-center rounded-lg text-button transition-colors '
         .$sizes[$size][$padKey].' '.$variants[$variant];
+    $type = $attributes->get('type', 'button');
 @endphp
 
 @if ($href)
     <a href="{{ $href }}" data-motion-action {{ $attributes->class($classes) }}>{{ $slot }}</a>
 @else
-    <button data-motion-action {{ $attributes->class($classes) }}>{{ $slot }}</button>
+    <button type="{{ $type }}" data-motion-action {{ $attributes->except('type')->class($classes) }}>{{ $slot }}</button>
 @endif

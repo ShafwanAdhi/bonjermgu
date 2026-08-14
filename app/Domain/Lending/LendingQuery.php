@@ -2,6 +2,7 @@
 
 namespace App\Domain\Lending;
 
+use App\Domain\Application\ApplicationStatus;
 use App\Models\Application;
 use App\Models\Scopes\ApplicationVisibilityScope;
 use Illuminate\Database\Query\Builder as QueryBuilder;
@@ -62,6 +63,7 @@ class LendingQuery
                 actualAmount: (int) $row->actual_amount,
                 pipelineUnits: (int) $row->pipeline_units,
                 pipelineAmount: (int) $row->pipeline_amount,
+                id: (int) $row->party_id,
             ));
     }
 
@@ -112,7 +114,12 @@ class LendingQuery
             ->getQuery()
             ->from('applications')
             ->join('referrals', 'referrals.id', '=', 'applications.referral_id')
-            ->join('account_officers', 'account_officers.id', '=', 'applications.account_officer_id');
+            ->join('account_officers', 'account_officers.id', '=', 'applications.account_officer_id')
+            // A cancelled application has no Go Live date, so without this it
+            // lands in Pipe Line and inflates the position. Cancelling is
+            // blocked once an application is live, so nothing Actual is lost
+            // here.
+            ->where('applications.application_status', '!=', ApplicationStatus::Canceled->value);
 
         if ($filters->product) {
             $query->where('applications.financing_product', $filters->product);

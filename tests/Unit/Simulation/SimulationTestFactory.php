@@ -21,7 +21,7 @@ use App\Domain\Simulation\VehicleUsage;
 
 final class SimulationTestFactory
 {
-    public static function dtnConfig(?ProductConfig $product = null, SimulationProfile $profile = SimulationProfile::REFERRAL): SimulationConfig
+    public static function dtnConfig(?ProductConfig $product = null, SimulationProfile $profile = SimulationProfile::REFERRAL, int $depositInstalmentCount = 0): SimulationConfig
     {
         return self::config($product ?? new ProductConfig(
             name: 'Reguler Passenger Sales Dealer',
@@ -33,10 +33,10 @@ final class SimulationTestFactory
                 60 => 0.1926,
             ],
             adminMax: 5_350_000,
-        ), $profile);
+        ), $profile, $depositInstalmentCount);
     }
 
-    public static function ucfConfig(?ProductConfig $product = null, SimulationProfile $profile = SimulationProfile::REFERRAL): SimulationConfig
+    public static function ucfConfig(?ProductConfig $product = null, SimulationProfile $profile = SimulationProfile::REFERRAL, int $depositInstalmentCount = 0): SimulationConfig
     {
         return self::config($product ?? new ProductConfig(
             name: 'Captive Passenger Low Rate',
@@ -49,7 +49,7 @@ final class SimulationTestFactory
             ],
             adminMax: 4_700_000,
             upRate: 0.005,
-        ), $profile);
+        ), $profile, $depositInstalmentCount);
     }
 
     public static function dtnInput(
@@ -104,7 +104,7 @@ final class SimulationTestFactory
         );
     }
 
-    private static function config(ProductConfig $product, SimulationProfile $profile = SimulationProfile::REFERRAL): SimulationConfig
+    private static function config(ProductConfig $product, SimulationProfile $profile = SimulationProfile::REFERRAL, int $depositInstalmentCount = 0): SimulationConfig
     {
         return new SimulationConfig(
             product: $product,
@@ -152,6 +152,7 @@ final class SimulationTestFactory
             downPayment: new DownPaymentConfig(0.05, 0.15, 0.10, 0.15, 0.30),
             refund: new RefundConfig(0.10, 1.00, 0.80, 0.80, 0.80),
             maxVehicleAge: 16,
+            depositInstalmentCount: $depositInstalmentCount,
         );
     }
 

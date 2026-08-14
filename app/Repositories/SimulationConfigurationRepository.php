@@ -154,7 +154,7 @@ final class SimulationConfigurationRepository
             bbnkbAmount: $this->floatSetting($settings, 'default_bbnkb_amount'),
             pkbAmount: $this->floatSetting($settings, 'default_pkb_amount'),
             invoiceAmount: $this->floatSetting($settings, 'default_invoice_amount'),
-            depositInstalmentAmount: $this->floatSetting($settings, 'default_deposit_instalment_amount'),
+            depositInstalmentCount: $this->intSetting($settings, 'default_deposit_instalment_count'),
             defaultExtensions: [
                 'flood' => $this->boolSetting($settings, 'default_flood_enabled'),
                 'earthquake' => $this->boolSetting($settings, 'default_earthquake_enabled'),

@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Application\ApplicationStatus;
 use App\Domain\Lending\LendingFilters;
 use App\Domain\Lending\LendingQuery;
 use App\Models\AccountOfficer;
@@ -64,6 +65,33 @@ it('counts an application without amount finance as a unit but zero money', func
 
     expect($totals->actualUnits)->toBe(1)
         ->and($totals->actualAmount)->toBe(0);
+});
+
+/*
+ * A cancelled application has no Go Live date either, so filtering on that
+ * column alone leaves it counted as Pipe Line and overstates the position
+ * Admin reads off the report.
+ */
+it('keeps a cancelled application out of pipe line', function () {
+    lendingApplication($this->officerA, $this->referralX, 50_000_000, null);
+    lendingApplication($this->officerA, $this->referralX, 90_000_000, null)
+        ->update(['application_status' => ApplicationStatus::Canceled]);
+
+    $totals = LendingQuery::totals(new LendingFilters);
+
+    expect($totals->pipelineUnits)->toBe(1)
+        ->and($totals->pipelineAmount)->toBe(50_000_000);
+});
+
+it('drops a party whose applications are all cancelled', function () {
+    lendingApplication($this->officerA, $this->referralX, 100_000_000, '2026-06-15');
+    lendingApplication($this->officerB, $this->referralY, 90_000_000, null)
+        ->update(['application_status' => ApplicationStatus::Canceled]);
+
+    expect(LendingQuery::perOfficer(new LendingFilters)->pluck('name')->all())
+        ->toBe(['Andi Prasetyo'])
+        ->and(LendingQuery::perReferral(new LendingFilters)->pluck('name')->all())
+        ->toBe(['Budi Santoso']);
 });
 
 it('sums unit_count rather than counting rows', function () {

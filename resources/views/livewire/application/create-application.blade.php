@@ -23,6 +23,7 @@
                             @foreach (FinancingProduct::cases() as $product)
                                 <button type="button" wire:click="$set('financing_product', '{{ $product->value }}')"
                                         data-motion-action
+                                        aria-pressed="{{ $financing_product === $product->value ? 'true' : 'false' }}"
                                         @class([
                                             'flex min-h-[54px] items-center gap-sm rounded-lg border px-[18px] py-3.5 text-left transition-colors',
                                             'border-primary shadow-[0_0_0_1px_#181d26_inset]' => $financing_product === $product->value,
@@ -55,7 +56,9 @@
                     <div class="grid grid-cols-1 gap-md sm:grid-cols-2 lg:grid-cols-3">
                         <x-ui.field label="Nama Debitur" required class="sm:col-span-2 lg:col-span-3"
                                     :error="$errors->first('debtor_name')">
-                            <x-ui.input wire:model="debtor_name" :invalid="$errors->has('debtor_name')" />
+                            <x-ui.input wire:model="debtor_name"
+                                        placeholder="Masukkan nama debitur sesuai pengajuan"
+                                        :invalid="$errors->has('debtor_name')" />
                         </x-ui.field>
 
                         <x-ui.field label="Type Debitur" required :error="$errors->first('debtor_type')">
@@ -69,11 +72,13 @@
                         @if ($this->isIndividual)
                             <x-ui.field label="NIK Debitur" required :error="$errors->first('debtor_nik')">
                                 <x-ui.input wire:model="debtor_nik" inputmode="numeric" maxlength="16"
+                                            placeholder="16 digit NIK debitur"
                                             :invalid="$errors->has('debtor_nik')" />
                             </x-ui.field>
 
                             <x-ui.field label="Tanggal Lahir Debitur" required :error="$errors->first('debtor_birth_date')">
                                 <x-ui.input wire:model="debtor_birth_date" type="date"
+                                            placeholder="Pilih tanggal lahir debitur"
                                             :invalid="$errors->has('debtor_birth_date')" />
                             </x-ui.field>
                         @endif
@@ -108,10 +113,15 @@
                             <div class="relative">
                                 <x-ui.input wire:model.live.debounce.400ms="referralSearch" type="search"
                                             placeholder="Ketik nama Referral..."
+                                            role="combobox"
+                                            aria-autocomplete="list"
+                                            aria-expanded="{{ mb_strlen(trim($referralSearch)) >= 2 ? 'true' : 'false' }}"
+                                            aria-controls="referral-search-results"
                                             :invalid="$errors->has('referral_id')" />
 
                                 @if (mb_strlen(trim($referralSearch)) >= 2)
-                                    <div class="absolute left-0 right-0 top-full z-30 mt-2 overflow-hidden rounded-lg border border-hairline bg-canvas shadow-[0_18px_42px_rgba(13,18,24,0.12)]"
+                                    <div id="referral-search-results"
+                                         class="absolute left-0 right-0 top-full z-30 mt-2 overflow-hidden rounded-lg border border-hairline bg-canvas shadow-[0_18px_42px_rgba(13,18,24,0.12)]"
                                          role="listbox">
                                         <p class="border-b border-divider px-md py-2 text-helper font-medium uppercase tracking-[0.08em] text-muted">
                                             Hasil pencarian
@@ -120,7 +130,8 @@
                                             <button type="button" wire:click="selectReferral({{ $result->id }})"
                                                     data-motion-action
                                                     class="group flex min-h-[56px] w-full cursor-pointer items-center gap-3 border-b border-divider px-md py-3 text-left transition-colors hover:bg-surface-soft focus:bg-surface-soft last:border-b-0"
-                                                    role="option">
+                                                    role="option"
+                                                    aria-selected="false">
                                                 <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-pill bg-signature-mint text-[12px] font-medium text-ink">
                                                     {{ Str::of($result->full_name)->explode(' ')->take(2)->map(fn ($word) => Str::substr($word, 0, 1))->implode('') }}
                                                 </span>
@@ -167,7 +178,7 @@
                             <x-ui.field label="Konfirmasi Sumber Penghasilan Lainnya"
                                         helper="Tidak berlaku untuk Badan Hukum Usaha."
                                         class="application-finance-field">
-                                <x-ui.input value="-" disabled class="bg-surface-soft text-muted" />
+                                <x-ui.input value="-" disabled placeholder="Tidak berlaku" class="bg-surface-soft text-muted" />
                             </x-ui.field>
                         @endif
 
@@ -181,7 +192,7 @@
                         {{-- Satu application selalu satu unit - client-decisions.md butir 15. --}}
                         <x-ui.field label="Jumlah Unit" helper="Satu application selalu mencakup satu unit."
                                     class="application-finance-field">
-                            <x-ui.input value="1" disabled class="bg-surface-soft text-muted" />
+                            <x-ui.input value="1" disabled placeholder="1 unit" class="bg-surface-soft text-muted" />
                         </x-ui.field>
                     </div>
                 </section>

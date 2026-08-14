@@ -39,7 +39,7 @@
     <div class="relative">
         <div wire:loading.delay.class="opacity-45" wire:target="month,product,category_id,clearFilters"
              class="transition-opacity duration-150">
-            <x-ui.table min-width="820px">
+            <x-ui.table min-width="820px" label="Laporan lending">
                 <x-slot:head>
                     <x-ui.th>{{ $nameHeading }}</x-ui.th>
                     <x-ui.th align="right">Actual Unit</x-ui.th>

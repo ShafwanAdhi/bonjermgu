@@ -4,6 +4,18 @@
     $actualPercent = $charts['composition']['actualPercent'];
     $pipelinePercent = $charts['composition']['pipelinePercent'];
     $singleMonthTrend = count($charts['monthlyTrend']) === 1;
+    $leaderPanels = [
+        [
+            'title' => 'AO Paling Aktif',
+            'label' => 'Account Officer',
+            'rows' => $activityLeaders['officers'] ?? [],
+        ],
+        [
+            'title' => 'Referral Paling Aktif',
+            'label' => 'Referral',
+            'rows' => $activityLeaders['referrals'] ?? [],
+        ],
+    ];
 @endphp
 
 <x-layouts.app title="Ringkasan - Kebon Jeruk Multiguna">
@@ -22,6 +34,7 @@
                         name="period"
                         value="{{ $value }}"
                         data-motion-action
+                        aria-pressed="{{ $charts['period'] === (string) $value ? 'true' : 'false' }}"
                         @class([
                             'min-h-10 flex-1 rounded-sm px-3 text-[13px] font-medium transition-colors md:flex-none',
                             'bg-primary text-on-primary shadow-sm' => $charts['period'] === (string) $value,
@@ -203,6 +216,55 @@
                         </div>
                     </div>
                 </article>
+            </div>
+        </section>
+
+        <section class="mt-8 md:mt-10" aria-label="AO dan Referral paling aktif">
+
+            <div class="grid grid-cols-1 gap-lg lg:grid-cols-2">
+                @foreach ($leaderPanels as $panel)
+                    <article class="rounded-lg border border-hairline bg-surface p-lg md:p-xl" data-admin-scroll>
+                        <div class="flex flex-col gap-1.5 sm:flex-row sm:items-start sm:justify-between">
+                            <div>
+                                <p class="text-caption text-muted">{{ $panel['label'] }}</p>
+                                <h3 class="mt-1 font-display text-[26px] leading-[1.15] text-ink">{{ $panel['title'] }}</h3>
+                            </div>
+                            <span class="w-fit rounded-sm bg-surface-soft px-2.5 py-1 text-[12px] font-medium text-muted">Top 3</span>
+                        </div>
+
+                        <div class="mt-6 space-y-3">
+                            @forelse ($panel['rows'] as $row)
+                                <div class="rounded-md border border-hairline bg-surface-soft p-md">
+                                    <div class="flex items-start gap-sm">
+                                        <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-[12px] font-medium text-on-primary">
+                                            {{ $loop->iteration }}
+                                        </span>
+
+                                        <div class="min-w-0 flex-1">
+                                            <div class="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
+                                                <p class="truncate text-body-md font-medium text-ink">{{ $row['name'] }}</p>
+                                                <p class="text-[13px] font-medium tabular-nums text-ink">{{ $row['totalUnits'] }} unit</p>
+                                            </div>
+
+                                            <div class="mt-3 h-2 overflow-hidden rounded-full bg-canvas" aria-hidden="true">
+                                                <span class="block h-full rounded-full bg-primary" style="width: {{ $row['activityPercent'] }}%"></span>
+                                            </div>
+
+                                            <div class="mt-2 flex flex-wrap items-center justify-between gap-2 text-helper text-muted">
+                                                <span>{{ $row['actualUnits'] }} Actual &middot; {{ $row['pipelineUnits'] }} Pipe Line</span>
+                                                <span class="tabular-nums">{{ Format::rupiah($row['totalAmount']) }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @empty
+                                <p class="rounded-md border border-dashed border-hairline bg-surface-soft px-md py-lg text-center text-body-md text-muted">
+                                    Belum ada aktivitas aplikasi.
+                                </p>
+                            @endforelse
+                        </div>
+                    </article>
+                @endforeach
             </div>
         </section>
     </div>

@@ -4,7 +4,7 @@
             <x-ui.callout>{{ session('admin_success') }}</x-ui.callout>
         @endif
         @error('configuration')
-            <div class="rounded-md border border-signature-coral bg-danger-bg px-md py-3 text-[13px] text-signature-coral">{{ $message }}</div>
+            <div role="alert" class="rounded-md border border-signature-coral bg-danger-bg px-md py-3 text-[13px] text-signature-coral">{{ $message }}</div>
         @enderror
 
         <x-ui.card title="Casco dan TLO">
@@ -277,7 +277,7 @@
         </div>
 
         @if ($errors->any())
-            <div class="rounded-md border border-signature-coral bg-danger-bg px-md py-3 text-[13px] text-signature-coral">
+            <div role="alert" class="rounded-md border border-signature-coral bg-danger-bg px-md py-3 text-[13px] text-signature-coral">
                 Periksa kembali seluruh field. Konfigurasi belum disimpan.
             </div>
         @endif

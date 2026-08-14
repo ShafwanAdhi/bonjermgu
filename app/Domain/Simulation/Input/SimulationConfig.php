@@ -20,7 +20,12 @@ final readonly class SimulationConfig
         public float $bbnkbAmount = 0,
         public float $pkbAmount = 0,
         public float $invoiceAmount = 0,
-        public float $depositInstalmentAmount = 0,
+        /**
+         * How many instalments are withheld, not a rupiah figure. The amount
+         * follows the instalment of each tenor, so it cannot be a shared
+         * deduction — see depositFor().
+         */
+        public int $depositInstalmentCount = 0,
         public array $defaultExtensions = [],
         public float $defaultTjhAmount = 0,
         public float $defaultDriverCoverageAmount = 0,
@@ -44,7 +49,7 @@ final readonly class SimulationConfig
         ?float $bbnkbAmount = null,
         ?float $pkbAmount = null,
         ?float $invoiceAmount = null,
-        ?float $depositInstalmentAmount = null,
+        ?int $depositInstalmentCount = null,
     ): self {
         return new self(
             product: $product ?? $this->product,
@@ -57,7 +62,7 @@ final readonly class SimulationConfig
             bbnkbAmount: $bbnkbAmount ?? $this->bbnkbAmount,
             pkbAmount: $pkbAmount ?? $this->pkbAmount,
             invoiceAmount: $invoiceAmount ?? $this->invoiceAmount,
-            depositInstalmentAmount: $depositInstalmentAmount ?? $this->depositInstalmentAmount,
+            depositInstalmentCount: $depositInstalmentCount ?? $this->depositInstalmentCount,
             defaultExtensions: $this->defaultExtensions,
             defaultTjhAmount: $this->defaultTjhAmount,
             defaultDriverCoverageAmount: $this->defaultDriverCoverageAmount,
@@ -67,11 +72,21 @@ final readonly class SimulationConfig
         );
     }
 
+    /**
+     * Taxes and paperwork withheld from the disbursement. Deposit Angsuran is
+     * deliberately absent: it varies per tenor, so the calculators add it on
+     * top through depositFor().
+     */
     public function disbursementDeductions(): float
     {
         return $this->bbnkbAmount
             + $this->pkbAmount
-            + $this->invoiceAmount
-            + $this->depositInstalmentAmount;
+            + $this->invoiceAmount;
+    }
+
+    /** Rupiah withheld for Deposit Angsuran at the given tenor's instalment. */
+    public function depositFor(int $instalment): int
+    {
+        return $this->depositInstalmentCount * $instalment;
     }
 }

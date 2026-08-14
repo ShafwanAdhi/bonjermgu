@@ -309,12 +309,21 @@ final class CalculationTrace
                 ],
                 [
                     'label' => 'Potongan pencairan',
-                    'formula' => 'BBNKB, PKB, faktur, deposit angsuran',
+                    'formula' => 'BBNKB, PKB, faktur',
                     'value' => Format::rupiah((int) round($config->disbursementDeductions())),
                 ],
                 [
+                    'label' => 'Deposit angsuran',
+                    'formula' => sprintf(
+                        '%d angsuran × %s',
+                        $config->depositInstalmentCount,
+                        Format::rupiah($tenor->instalment),
+                    ),
+                    'value' => Format::rupiah((int) round($tenor->depositInstalmentAmount)),
+                ],
+                [
                     'label' => 'Pencairan neto',
-                    'formula' => 'pencairan gross − potongan',
+                    'formula' => 'pencairan gross − potongan − deposit',
                     'value' => Format::rupiah((int) round($tenor->netDisbursement)),
                     'emphasis' => true,
                 ],

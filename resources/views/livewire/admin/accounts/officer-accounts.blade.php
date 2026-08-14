@@ -13,6 +13,8 @@
             role="dialog"
             aria-modal="true"
             aria-labelledby="initial-password-title"
+            aria-describedby="initial-password-copy"
+            tabindex="-1"
             x-data="{
                 copied: false,
                 password: @js($initialPassword),
@@ -30,6 +32,7 @@
                     window.setTimeout(() => this.copied = false, 1800);
                 },
             }"
+            x-init="$nextTick(() => $el.focus())"
             x-on:keydown.escape.window="$wire.dismissInitialPassword()"
         >
             <div class="w-full max-w-[440px] rounded-lg border border-hairline bg-canvas p-lg shadow-[0_24px_70px_rgba(13,18,24,0.22)] md:p-xl">
@@ -52,7 +55,7 @@
                     </button>
                 </div>
 
-                <p class="mt-md text-[13px] leading-[1.55] text-muted">
+                <p id="initial-password-copy" class="mt-md text-[13px] leading-[1.55] text-muted">
                     Kata sandi awal hanya ditampilkan sekali. Salin sekarang sebelum menutup popup ini.
                 </p>
 
@@ -81,6 +84,7 @@
                         </svg>
                     </button>
                 </div>
+                <span class="sr-only" role="status" aria-live="polite" x-text="copied ? 'Kata sandi tersalin' : ''"></span>
 
                 <div class="mt-lg flex justify-end">
                     <x-ui.button variant="secondary" size="md" type="button" wire:click="dismissInitialPassword">
@@ -99,7 +103,7 @@
             </div>
         </div>
 
-        <x-ui.table min-width="820px">
+        <x-ui.table min-width="820px" label="Daftar akun AO">
             <x-slot:head>
                 <x-ui.th>Nama</x-ui.th>
                 <x-ui.th>Nama User</x-ui.th>

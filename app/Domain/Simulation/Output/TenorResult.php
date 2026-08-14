@@ -36,6 +36,8 @@ final readonly class TenorResult
         public int|float $totalDownPayment,
         public int|float $desiredAmount,
         public int|float $grossDisbursement,
+        /** Rupiah withheld as Deposit Angsuran: count x this tenor's instalment. */
+        public int|float $depositInstalmentAmount,
         public int|float $netDisbursement,
         public RefundBreakdown $refund,
         public int|float $allInDisbursement,
@@ -76,6 +78,7 @@ final readonly class TenorResult
             totalDownPayment: 0,
             desiredAmount: 0,
             grossDisbursement: 0,
+            depositInstalmentAmount: 0,
             netDisbursement: 0,
             refund: RefundBreakdown::zero(),
             allInDisbursement: 0,

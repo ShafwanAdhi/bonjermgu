@@ -4,7 +4,7 @@
             <x-ui.callout>{{ session('admin_success') }}</x-ui.callout>
         @endif
         @error('configuration')
-            <div class="rounded-md border border-signature-coral bg-danger-bg px-md py-3 text-[13px] text-signature-coral">{{ $message }}</div>
+            <div role="alert" class="rounded-md border border-signature-coral bg-danger-bg px-md py-3 text-[13px] text-signature-coral">{{ $message }}</div>
         @enderror
 
         <div class="grid grid-cols-1 items-start gap-lg lg:grid-cols-2">
@@ -102,7 +102,7 @@
         </div>
 
         @if ($errors->any())
-            <div class="rounded-md border border-signature-coral bg-danger-bg px-md py-3 text-[13px] text-signature-coral">
+            <div role="alert" class="rounded-md border border-signature-coral bg-danger-bg px-md py-3 text-[13px] text-signature-coral">
                 Konfigurasi belum disimpan. Perbaiki field dan pastikan band tidak berlubang atau tumpang tindih.
             </div>
         @endif

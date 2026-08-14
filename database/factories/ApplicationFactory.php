@@ -2,10 +2,10 @@
 
 namespace Database\Factories;
 
+use App\Domain\Application\ApplicationStatus;
 use App\Domain\Application\DebtorType;
 use App\Domain\Application\FinancingProduct;
 use App\Domain\Application\SpouseIncomeType;
-use App\Domain\Application\ApplicationStatus;
 use App\Models\AccountOfficer;
 use App\Models\Application;
 use App\Models\Referral;

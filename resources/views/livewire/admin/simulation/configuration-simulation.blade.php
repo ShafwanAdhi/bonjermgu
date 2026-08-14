@@ -1,7 +1,7 @@
 @use('App\Support\Format')
 
 <div x-data
-     x-on:simulation-calculated.window="$nextTick(() => $el.querySelector('#configuration-results-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' }))">
+     x-on:simulation-calculated.window="$nextTick(() => $el.querySelector('#configuration-results-card')?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' }))">
     <x-admin.configuration-shell title="Uji Konfigurasi">
         <div class="grid grid-cols-1 gap-lg xl:grid-cols-[1fr_520px] xl:items-start">
 
@@ -29,7 +29,7 @@
                     @if ($this->selectedProduct)
                         <div class="mt-md border-t border-hairline pt-md">
                             <p class="mb-sm text-caption text-body">Rate Product Terpilih</p>
-                            <x-ui.table min-width="260px" class="[&_td]:px-3 [&_th]:px-3">
+                            <x-ui.table min-width="260px" label="Rate product terpilih" class="[&_td]:px-3 [&_th]:px-3">
                                 <x-slot:head>
                                     <x-ui.th>Tenor</x-ui.th>
                                     <x-ui.th align="right">Effective Rate</x-ui.th>
@@ -54,6 +54,7 @@
                         @foreach ([['DTN', 'Dana Tunai'], ['UCF', 'Pembiayaan Mobil Bekas']] as [$key, $label])
                             <button type="button" wire:click="$set('financing_type', '{{ $key }}')"
                                     data-motion-action
+                                    aria-pressed="{{ $financing_type === $key ? 'true' : 'false' }}"
                                     @class([
                                         'flex flex-1 items-center gap-sm rounded-lg border px-[18px] py-3.5 text-left',
                                         'border-primary shadow-[0_0_0_1px_#181d26_inset]' => $financing_type === $key,
@@ -90,7 +91,7 @@
 
                         @if ($debtor_type !== 'legal_entity')
                             <x-ui.field label="Kelompok Usia" :error="$errors->first('age_group_id')">
-                                <x-ui.select wire:model="age_group_id">
+                                <x-ui.select wire:model.live="age_group_id">
                                     <option value="">Tidak dipilih</option>
                                     @foreach ($this->ageGroups as $group)
                                         <option value="{{ $group->id }}">{{ $group->label }}</option>
@@ -178,12 +179,15 @@
                 <div x-data="{ expanded: false }">
                     <x-ui.card>
                         <button type="button" class="mb-5 flex min-h-11 w-full items-center gap-sm"
+                                aria-controls="configuration-insurance-panel"
+                                x-bind:aria-expanded="expanded.toString()"
                                 x-on:click="expanded = !expanded">
                             <span class="text-title-sm text-ink">5 · Asuransi</span>
                             <span class="ml-auto text-helper text-muted" x-text="expanded ? 'Tutup' : 'Buka'"></span>
                         </button>
 
-                        <div class="grid transition-[grid-template-rows,opacity] duration-300 ease-out"
+                        <div id="configuration-insurance-panel"
+                             class="grid transition-[grid-template-rows,opacity] duration-300 ease-out"
                              :class="expanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'">
                             <div class="overflow-hidden">
                                 <div class="grid grid-cols-1 gap-md sm:grid-cols-2">
@@ -203,32 +207,35 @@
                 <div x-data="{ expanded: false }">
                     <x-ui.card>
                         <button type="button" class="mb-5 flex min-h-11 w-full items-center gap-sm"
+                                aria-controls="configuration-upping-panel"
+                                x-bind:aria-expanded="expanded.toString()"
                                 x-on:click="expanded = !expanded">
                             <span class="text-title-sm text-ink">6 · Upping</span>
                             <span class="ml-auto text-helper text-muted" x-text="expanded ? 'Tutup' : 'Buka'"></span>
                         </button>
 
-                        <div class="grid transition-[grid-template-rows,opacity] duration-300 ease-out"
+                        <div id="configuration-upping-panel"
+                             class="grid transition-[grid-template-rows,opacity] duration-300 ease-out"
                              :class="expanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'">
                             <div class="overflow-hidden">
                                 <div class="grid grid-cols-1 gap-md sm:grid-cols-2">
                                     <x-ui.field label="Up Rate (%)" :error="$errors->first('up_rate')">
-                                        <x-ui.input wire:model="up_rate" type="number" step="0.0001" min="0" max="100"
+                                        <x-ui.input wire:model.live.debounce.500ms="up_rate" type="number" step="0.0001" min="0" max="100"
                                                     :invalid="$errors->has('up_rate')" />
                                     </x-ui.field>
 
                                     <x-ui.field label="Up Provisi (%)" :error="$errors->first('up_provisi')">
-                                        <x-ui.input wire:model="up_provisi" type="number" step="0.0001" min="0" max="100"
+                                        <x-ui.input wire:model.live.debounce.500ms="up_provisi" type="number" step="0.0001" min="0" max="100"
                                                     :invalid="$errors->has('up_provisi')" />
                                     </x-ui.field>
 
                                     <x-ui.field label="Up Admin (Rp)" :error="$errors->first('up_admin')">
-                                        <x-ui.money-input wire:model="up_admin" placeholder="Rp 0"
+                                        <x-ui.money-input wire:model.live.debounce.500ms="up_admin" placeholder="Rp 0"
                                                           :invalid="$errors->has('up_admin')" />
                                     </x-ui.field>
 
                                     <x-ui.field label="Up ACP (%)" :error="$errors->first('up_acp')">
-                                        <x-ui.input wire:model="up_acp" type="number" step="0.0001" min="0" max="100"
+                                        <x-ui.input wire:model.live.debounce.500ms="up_acp" type="number" step="0.0001" min="0" max="100"
                                                     placeholder="Default"
                                                     :invalid="$errors->has('up_acp')" />
                                     </x-ui.field>
@@ -249,6 +256,7 @@
                         ] as $key => [$label, $description])
                             <button type="button" wire:click="$set('mode', '{{ $key }}')"
                                     data-motion-action
+                                    aria-pressed="{{ $mode === $key ? 'true' : 'false' }}"
                                     @class([
                                         'rounded-lg border p-md text-left',
                                         'border-primary shadow-[0_0_0_1px_#181d26_inset]' => $mode === $key,
@@ -273,10 +281,17 @@
                         </div>
                     @endif
 
-                    <div class="mt-lg">
+                    <div class="mt-lg flex flex-col gap-sm sm:flex-row">
                         <x-ui.button type="submit" size="md" wire:loading.attr="disabled" wire:target="calculate">
                             <span wire:loading.remove wire:target="calculate">Hitung Simulasi</span>
                             <span wire:loading wire:target="calculate">Menghitung...</span>
+                        </x-ui.button>
+                        <x-ui.button type="button" variant="secondary" size="md"
+                                     wire:click="clearFormData"
+                                     wire:confirm="Hapus seluruh data sementara di form uji konfigurasi?"
+                                     wire:loading.attr="disabled"
+                                     wire:target="clearFormData">
+                            Hapus Data
                         </x-ui.button>
                     </div>
                 </x-ui.card>
@@ -285,13 +300,13 @@
             {{-- ------------------------------------------------------ Hasil --}}
             <div id="configuration-results" class="flex flex-col gap-lg scroll-mt-lg">
                 <x-ui.card id="configuration-results-card" title="Hasil Lima Tenor" :meta="$this->selectedProduct?->name">
-                    <div class="mb-md rounded-md border border-info-border bg-info-bg px-md py-3 text-[13px] text-body"
+                    <div role="status" aria-live="polite" class="mb-md rounded-md border border-info-border bg-info-bg px-md py-3 text-[13px] text-body"
                          wire:loading.delay wire:target="calculate">
                         Menghitung lima tenor di server...
                     </div>
 
                     @if ($calculationError)
-                        <div class="mb-md rounded-md border border-signature-coral bg-danger-bg px-md py-3 text-[13px] leading-[1.5] text-signature-coral">
+                        <div role="alert" class="mb-md rounded-md border border-signature-coral bg-danger-bg px-md py-3 text-[13px] leading-[1.5] text-signature-coral">
                             {{ $calculationError }}
                         </div>
                     @elseif (! $hasCalculated)
@@ -303,7 +318,7 @@
 
                     @if ($hasCalculated)
                         <div wire:loading.class="opacity-60" wire:target="calculate">
-                            <x-ui.table>
+                            <x-ui.table label="Hasil lima tenor uji konfigurasi">
                                 <x-slot:head>
                                     <x-ui.th>Tenor</x-ui.th>
                                     <x-ui.th align="right">{{ $this->disbursementHeading() }}</x-ui.th>
@@ -346,6 +361,8 @@
                                 @foreach ([12, 24, 36, 48, 60] as $tenor)
                                     <button type="button" wire:click="traceTenor({{ $tenor }})"
                                             data-motion-action
+                                            aria-label="Lihat rincian tenor {{ $tenor }} bulan"
+                                            aria-pressed="{{ $tenor === $traced_tenor ? 'true' : 'false' }}"
                                             @class([
                                                 'min-h-9 min-w-14 rounded-md px-3 text-[13px] font-medium transition-colors',
                                                 'bg-primary text-on-primary shadow-[0_8px_18px_rgba(24,29,38,0.12)]' => $tenor === $traced_tenor,

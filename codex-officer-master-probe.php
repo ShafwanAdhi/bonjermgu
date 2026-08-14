@@ -1,17 +1,22 @@
 <?php
 
+use App\Models\AgeGroup;
+use App\Models\ReferralCategory;
+use App\Models\VehicleModel;
+use Illuminate\Contracts\Console\Kernel;
+
 require __DIR__.'/vendor/autoload.php';
 
 $app = require __DIR__.'/bootstrap/app.php';
-$app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+$app->make(Kernel::class)->bootstrap();
 
-$category = App\Models\ReferralCategory::query()
+$category = ReferralCategory::query()
     ->where('is_active', true)
     ->where('allows_passenger', true)
     ->orderBy('id')
     ->first();
 
-$model = App\Models\VehicleModel::query()
+$model = VehicleModel::query()
     ->whereHas('type.brand.usage', fn ($query) => $query->where('name', 'Passenger'))
     ->whereHas('prices', fn ($query) => $query->where('price', '>', 0))
     ->with([
@@ -20,7 +25,7 @@ $model = App\Models\VehicleModel::query()
     ])
     ->first();
 
-$age = App\Models\AgeGroup::query()->orderBy('sort_order')->first();
+$age = AgeGroup::query()->orderBy('sort_order')->first();
 
 echo json_encode([
     'category_id' => $category?->id,

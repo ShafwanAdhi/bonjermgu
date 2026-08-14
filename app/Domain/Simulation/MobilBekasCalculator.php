@@ -97,7 +97,8 @@ final class MobilBekasCalculator
             $firstPayment = $netDpAmount + $insurance->total + $fees->total() + $firstInstalment;
             $totalDownPayment = $netDpAmount;
             $grossDisbursement = $otrPrice - $firstPayment;
-            $netDisbursement = $grossDisbursement - $config->disbursementDeductions();
+            $depositAmount = $config->depositFor($instalment);
+            $netDisbursement = $grossDisbursement - $config->disbursementDeductions() - $depositAmount;
             $refund = $this->refundCalculator->calculate(
                 $insurance,
                 $config->product,
@@ -136,6 +137,7 @@ final class MobilBekasCalculator
             $totalDownPayment = $input->desiredAmount;
             $desiredAmount = $input->desiredAmount;
             $grossDisbursement = 0;
+            $depositAmount = 0;
             $netDisbursement = 0;
             $allInDisbursement = 0;
             $outputAmount = $input->desiredAmount;
@@ -169,6 +171,7 @@ final class MobilBekasCalculator
             totalDownPayment: $totalDownPayment,
             desiredAmount: $desiredAmount,
             grossDisbursement: $grossDisbursement,
+            depositInstalmentAmount: $depositAmount,
             netDisbursement: $netDisbursement,
             refund: $refund,
             allInDisbursement: $allInDisbursement,

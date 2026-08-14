@@ -43,6 +43,45 @@ use Throwable;
  */
 final class OfficerSimulation extends Component
 {
+    private const FORM_SESSION_KEY = 'simulation.officer.form';
+
+    private const FORM_STATE_PROPERTIES = [
+        'referral_category_id',
+        'referral_sub_category_id',
+        'financing_type',
+        'mode',
+        'debtor_type',
+        'age_group_id',
+        'usage_id',
+        'brand_id',
+        'type_id',
+        'model_id',
+        'vehicle_year',
+        'instalment_type',
+        'coverage_type',
+        'stnk_ownership',
+        'unit_price',
+        'desired_amount',
+        'rate_variant',
+        'up_rate',
+        'up_admin',
+        'up_provisi',
+        'up_acp',
+        'ext_flood',
+        'ext_earthquake',
+        'ext_riot',
+        'ext_terrorism',
+        'tjh_amount',
+        'driver_amount',
+        'passenger_amount',
+        'passenger_count',
+        'engine_warranty',
+        'deposit_instalment',
+        'bbnkb_amount',
+        'pkb_amount',
+        'invoice_amount',
+    ];
+
     public ?string $referral_category_id = null;
 
     public ?string $referral_sub_category_id = null;
@@ -132,10 +171,8 @@ final class OfficerSimulation extends Component
 
     public function mount(): void
     {
-        $this->referral_category_id = (string) (ReferralCategory::query()
-            ->where('is_active', true)
-            ->orderBy('name')
-            ->value('id') ?? '');
+        $this->referral_category_id = $this->defaultReferralCategoryId();
+        $this->restoreFormState();
     }
 
     /* ------------------------------------------------------------ Pilihan */
@@ -243,6 +280,23 @@ final class OfficerSimulation extends Component
         return $this->mode === SimulationMode::B->value;
     }
 
+    /**
+     * Handoff into Buat Credit Application, carrying the only two fields the
+     * two screens share. Amount Finance and the Referral account are
+     * deliberately absent — see CreateApplication's docblock.
+     */
+    public function createApplicationUrl(): ?string
+    {
+        if (! $this->hasCalculated) {
+            return null;
+        }
+
+        return route('applications.create', [
+            'financing_product' => $this->financing_type,
+            'debtor_type' => $this->debtor_type,
+        ]);
+    }
+
     /* ------------------------------------------------------------ Validasi */
 
     /** @return array<string, array<int, mixed>> */
@@ -295,7 +349,7 @@ final class OfficerSimulation extends Component
             'driver_amount' => ['required', 'integer', 'min:0'],
             'passenger_amount' => ['required', 'integer', 'min:0'],
             'passenger_count' => ['required', 'integer', 'min:0', 'max:20'],
-            'deposit_instalment' => ['required', 'integer', 'min:0'],
+            'deposit_instalment' => ['required', 'integer', 'min:0', 'max:10'],
             'bbnkb_amount' => ['required', 'integer', 'min:0'],
             'pkb_amount' => ['required', 'integer', 'min:0'],
             'invoice_amount' => ['required', 'integer', 'min:0'],
@@ -356,7 +410,20 @@ final class OfficerSimulation extends Component
             default => null,
         };
 
+        if ($this->debtor_type === DebtorType::LEGAL_ENTITY->value) {
+            $this->reset('age_group_id');
+        }
+
+        if (in_array($property, ['referral_category_id', 'financing_type', 'usage_id', 'brand_id', 'type_id', 'model_id'], true)) {
+            unset($this->selectedCategory, $this->subCategories, $this->usages, $this->brands, $this->vehicleTypes, $this->vehicleModels, $this->vehicleYears);
+        }
+
         $this->hasCalculated = false;
+        $this->calculationError = null;
+        $this->rows = [];
+        $this->summary = null;
+        $this->traces = [];
+        $this->persistFormState();
     }
 
     public function traceTenor(int $tenor): void
@@ -368,11 +435,12 @@ final class OfficerSimulation extends Component
     {
         foreach ([
             'unit_price', 'desired_amount', 'up_admin', 'tjh_amount', 'driver_amount',
-            'passenger_amount', 'deposit_instalment', 'bbnkb_amount', 'pkb_amount', 'invoice_amount',
+            'passenger_amount', 'bbnkb_amount', 'pkb_amount', 'invoice_amount',
         ] as $field) {
             $this->{$field} = RupiahInput::normalize($this->{$field});
         }
 
+        $this->persistFormState();
         $this->calculationError = null;
         $this->hasCalculated = false;
         $this->rows = [];
@@ -416,7 +484,7 @@ final class OfficerSimulation extends Component
                     passengerCoverageAmount: (float) $validated['passenger_amount'],
                     passengerCount: (int) $validated['passenger_count'],
                     engineWarrantyEnabled: $this->engine_warranty,
-                    depositInstalmentAmount: (float) $validated['deposit_instalment'],
+                    depositInstalmentCount: (int) $validated['deposit_instalment'],
                     bbnkbAmount: (float) $validated['bbnkb_amount'],
                     pkbAmount: (float) $validated['pkb_amount'],
                     invoiceAmount: (float) $validated['invoice_amount'],
@@ -465,6 +533,20 @@ final class OfficerSimulation extends Component
         }
     }
 
+    public function clearFormData(): void
+    {
+        session()->forget(self::FORM_SESSION_KEY);
+        $this->resetFormStateProperties();
+        $this->resetValidation();
+        $this->calculationError = null;
+        $this->hasCalculated = false;
+        $this->rows = [];
+        $this->summary = null;
+        $this->traces = [];
+        $this->outcome = null;
+        $this->clearComputedOptions();
+    }
+
     /* ------------------------------------------------------------- Jejak */
 
     /**
@@ -491,6 +573,103 @@ final class OfficerSimulation extends Component
     private function fraction(string|int|float|null $percent): float
     {
         return ((float) $percent) / 100;
+    }
+
+    private function defaultReferralCategoryId(): string
+    {
+        return (string) (ReferralCategory::query()
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->value('id') ?? '');
+    }
+
+    private function restoreFormState(): void
+    {
+        $state = session()->get(self::FORM_SESSION_KEY, []);
+
+        if (! is_array($state)) {
+            return;
+        }
+
+        foreach (self::FORM_STATE_PROPERTIES as $property) {
+            if (array_key_exists($property, $state)) {
+                $this->{$property} = $state[$property];
+            }
+        }
+    }
+
+    private function persistFormState(): void
+    {
+        session()->put(self::FORM_SESSION_KEY, $this->formState());
+    }
+
+    /** @return array<string, mixed> */
+    private function formState(): array
+    {
+        $state = [];
+
+        foreach (self::FORM_STATE_PROPERTIES as $property) {
+            $state[$property] = $this->{$property};
+        }
+
+        return $state;
+    }
+
+    private function resetFormStateProperties(): void
+    {
+        $this->referral_category_id = $this->defaultReferralCategoryId();
+        $this->referral_sub_category_id = null;
+        $this->financing_type = 'DTN';
+        $this->mode = 'A';
+        $this->debtor_type = 'non_entrepreneur';
+        $this->age_group_id = null;
+        $this->usage_id = null;
+        $this->brand_id = null;
+        $this->type_id = null;
+        $this->model_id = null;
+        $this->vehicle_year = null;
+        $this->instalment_type = 'ADDB';
+        $this->coverage_type = 'comprehensive_then_tlo';
+        $this->stnk_ownership = 'own';
+        $this->unit_price = '';
+        $this->desired_amount = '';
+        $this->rate_variant = 'Batas Bawah';
+        $this->up_rate = '0';
+        $this->up_admin = '0';
+        $this->up_provisi = '0';
+        $this->up_acp = '';
+        $this->ext_flood = false;
+        $this->ext_earthquake = false;
+        $this->ext_riot = false;
+        $this->ext_terrorism = false;
+        $this->tjh_amount = '0';
+        $this->driver_amount = '0';
+        $this->passenger_amount = '0';
+        $this->passenger_count = '0';
+        $this->engine_warranty = true;
+        $this->deposit_instalment = '0';
+        $this->bbnkb_amount = '0';
+        $this->pkb_amount = '0';
+        $this->invoice_amount = '0';
+        $this->traced_tenor = 12;
+    }
+
+    private function clearComputedOptions(): void
+    {
+        unset(
+            $this->categories,
+            $this->subCategories,
+            $this->selectedCategory,
+            $this->ageGroups,
+            $this->usages,
+            $this->brands,
+            $this->vehicleTypes,
+            $this->vehicleModels,
+            $this->vehicleYears,
+            $this->isUcf,
+            $this->isModeB,
+            $this->trace,
+        );
     }
 
     public function render(): View

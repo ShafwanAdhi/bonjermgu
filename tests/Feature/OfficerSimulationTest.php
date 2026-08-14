@@ -169,3 +169,83 @@ it('applies the upping an officer enters without touching the Product', function
 
     Carbon::setTestNow();
 });
+
+/*
+ * The only two fields Amount Finance handoff can carry: financing product and
+ * debtor type. Referral (a specific account) and Amount Finance are both
+ * absent from this screen, so a create-application link can only prefill this
+ * much — see CreateApplication's docblock.
+ */
+it('offers a create-application link carrying financing product and debtor type once calculated', function () {
+    [$category, $model, $price] = officerMaster();
+    Carbon::setTestNow(Carbon::create($price->year + 1, 8, 4));
+
+    $component = Livewire::actingAs(User::factory()->accountOfficer()->create())
+        ->test(OfficerSimulation::class)
+        ->set('financing_type', 'UCF')
+        ->set(officerState($category, $model, $price->year))
+        ->set('debtor_type', 'entrepreneur')
+        ->set('unit_price', (string) $price->price)
+        ->call('calculate')
+        ->assertHasNoErrors();
+
+    $url = $component->instance()->createApplicationUrl();
+
+    expect($url)->not->toBeNull()
+        ->and($url)->toContain(route('applications.create', absolute: false))
+        ->and($url)->toContain('financing_product=UCF')
+        ->and($url)->toContain('debtor_type=entrepreneur');
+
+    Carbon::setTestNow();
+});
+
+it('has no create-application link before a simulation is calculated', function () {
+    [$category] = officerMaster();
+
+    $component = Livewire::actingAs(User::factory()->accountOfficer()->create())
+        ->test(OfficerSimulation::class)
+        ->set('referral_category_id', (string) $category->id);
+
+    expect($component->instance()->createApplicationUrl())->toBeNull();
+});
+
+it('keeps officer simulation form data until the officer clears it', function () {
+    [$category, $model, $price] = officerMaster();
+    $officer = User::factory()->accountOfficer()->create();
+
+    Livewire::actingAs($officer)
+        ->test(OfficerSimulation::class)
+        ->set('financing_type', 'UCF')
+        ->set(officerState($category, $model, $price->year))
+        ->set('mode', 'B')
+        ->set('unit_price', 'Rp '.number_format($price->price, 0, ',', '.'))
+        ->set('desired_amount', 'Rp 25.000.000')
+        ->set('up_admin', 'Rp 500.000')
+        ->set('ext_flood', true);
+
+    expect(session('simulation.officer.form.financing_type'))->toBe('UCF')
+        ->and(session('simulation.officer.form.mode'))->toBe('B')
+        ->and(session('simulation.officer.form.unit_price'))->toBe('Rp '.number_format($price->price, 0, ',', '.'))
+        ->and(session('simulation.officer.form.desired_amount'))->toBe('Rp 25.000.000')
+        ->and(session('simulation.officer.form.up_admin'))->toBe('Rp 500.000')
+        ->and(session('simulation.officer.form.ext_flood'))->toBeTrue();
+
+    Livewire::actingAs($officer)
+        ->test(OfficerSimulation::class)
+        ->assertSet('financing_type', 'UCF')
+        ->assertSet('mode', 'B')
+        ->assertSet('unit_price', 'Rp '.number_format($price->price, 0, ',', '.'))
+        ->assertSet('desired_amount', 'Rp 25.000.000')
+        ->assertSet('up_admin', 'Rp 500.000')
+        ->assertSet('ext_flood', true)
+        ->call('clearFormData')
+        ->assertSet('financing_type', 'DTN')
+        ->assertSet('mode', 'A')
+        ->assertSet('unit_price', '')
+        ->assertSet('desired_amount', '')
+        ->assertSet('up_admin', '0')
+        ->assertSet('ext_flood', false)
+        ->assertSet('hasCalculated', false);
+
+    expect(session()->has('simulation.officer.form'))->toBeFalse();
+});

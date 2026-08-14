@@ -96,7 +96,7 @@
             </span>
         </div>
 
-        <x-ui.table min-width="920px">
+        <x-ui.table min-width="920px" label="Daftar akun Referral">
             <x-slot:head>
                 <x-ui.th>Nama</x-ui.th>
                 <x-ui.th>Nama User</x-ui.th>

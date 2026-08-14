@@ -45,7 +45,7 @@ final class ConfigurationIntegrityValidator
 
     private const MONEY_SETTING_KEYS = [
         'engine_warranty_fee',
-        'default_deposit_instalment_amount',
+        'default_deposit_instalment_count',
         'default_bbnkb_amount',
         'default_pkb_amount',
         'default_invoice_amount',

@@ -11,6 +11,7 @@ use App\Domain\Application\SpouseIncomeType;
 use App\Domain\Application\TrackingStatus;
 use App\Models\Scopes\ApplicationVisibilityScope;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -96,6 +97,19 @@ class Application extends Model
     public function trackings(): HasMany
     {
         return $this->hasMany(ApplicationTracking::class);
+    }
+
+    /**
+     * Pipe Line: not yet Go Live and not cancelled — docs/lending.md section 3.
+     *
+     * Both halves matter. A cancelled application has no Go Live date either,
+     * so filtering on that column alone leaves cancelled work counted as
+     * pending.
+     */
+    public function scopePipeline(Builder $query): void
+    {
+        $query->whereNull('go_live_date')
+            ->where('application_status', ApplicationStatus::Pipeline->value);
     }
 
     public function isGoLive(): bool

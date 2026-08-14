@@ -80,7 +80,7 @@
                 </div>
             </div>
 
-            <x-ui.table class="mb-lg hidden sm:block">
+            <x-ui.table label="Hasil simulasi kredit" class="mb-lg hidden sm:block">
                 <x-slot:head>
                     <x-ui.th>Tenor</x-ui.th>
                     <x-ui.th align="right">{{ $disbursementHeading }}</x-ui.th>

@@ -12,6 +12,7 @@ Dokumen ini mencatat perubahan penting yang dikerjakan dalam sesi pengembangan 2
 - Animasi digunakan untuk memperjelas feedback atau memberi polish, bukan untuk mengubah desain utama.
 - Scroll animation tidak digunakan pada halaman yang secara eksplisit dimatikan, seperti detail aplikasi, profil, hasil simulasi, dan page Admin yang dibuka lewat module grid.
 - Button click effect digunakan pada kontrol pilihan penting, termasuk pilihan produk pembiayaan dan dasar simulasi.
+- Accessibility polish lintas halaman dilakukan melalui komponen bersama: skip link ke konten utama, `aria-current` pada navigasi aktif, field label/error/helper yang terhubung ke input, live region untuk loading dan callout, role dialog pada popup/modal, label tabel, state `aria-pressed` pada segmented control, dan fallback `prefers-reduced-motion`.
 
 ---
 
@@ -65,6 +66,7 @@ Dokumen ini mencatat perubahan penting yang dikerjakan dalam sesi pengembangan 2
 - Pada simulasi AO, klik pilihan tenor Rincian Perhitungan tidak lagi memicu kalkulasi ulang atau terasa seperti refresh; trace lima tenor disimpan setelah hitung.
 - Card collapsible pada simulasi AO, seperti Asuransi serta Upping dan Pengurang Pencairan, kini membuka dan menutup dengan animasi height/opacity yang halus.
 - Halaman Uji Konfigurasi Admin diselaraskan dengan layout simulasi AO: step cards, hasil lima tenor di panel kanan, scroll otomatis ke hasil setelah Hitung Simulasi, selector tenor ter-highlight, kolom Jejak dihapus, dan copy internal yang tidak perlu dipangkas.
+- Form Uji Konfigurasi Admin menyimpan nilai input sementara di session per user agar tetap terisi saat Admin berpindah halaman. Tombol Hapus Data menghapus state sementara tersebut tanpa menyimpan hasil hitung sebagai cache permanen.
 - Pada halaman Uji Konfigurasi Admin, "Rate Product Terpilih" diubah dari grid tile menjadi table ringkas agar lebih terbaca dan tidak overlap di mobile.
 - Migration idempotent ditambahkan untuk memastikan seluruh `simulation_settings` wajib tersedia pada database existing, termasuk `acp_max_loan_amount` dan `ucf_non_japan_net_dp_rate`. Engine simulasi juga memakai fallback default resmi agar database lama yang kehilangan row default tidak menampilkan error teknis ke user.
 - Page `configuration/fees` kini menampilkan field Net DP `UCF · Non Japan`, karena nilai tersebut dipakai oleh perhitungan Mobil Bekas.
@@ -81,6 +83,7 @@ Dokumen ini mencatat perubahan penting yang dikerjakan dalam sesi pengembangan 2
 - Toggle status dokumen dan tracking pada detail aplikasi dibuat lebih simpel dan seragam.
 - Dashboard AO mendapat animation polish dan halaman input aplikasi mendapat click effect.
 - Pada simulasi AO, tabel Hasil Lima Tenor tidak lagi menampilkan kolom Jejak; pilihan tenor Rincian Perhitungan dipusatkan sebagai segmented control, dan setelah Hitung Simulasi halaman otomatis scroll ke Hasil Lima Tenor.
+- Form simulasi AO menyimpan nilai input sementara di session per user agar tetap terisi saat user berpindah halaman. Tombol Hapus Data menghapus state sementara tersebut tanpa menyimpan hasil hitung sebagai cache permanen.
 - Aplikasi kini memiliki state `Canceled` untuk status yang masih Pipe Line. AO dapat membatalkan aplikasi non-Go Live dari detail aplikasi, status tampil sinkron di daftar aplikasi, dan filter daftar aplikasi memiliki opsi Canceled.
 
 ---
@@ -89,6 +92,7 @@ Dokumen ini mencatat perubahan penting yang dikerjakan dalam sesi pengembangan 2
 
 - Dashboard Admin mengganti keterangan tekstual internal dengan visualisasi data.
 - Minimal dua grafik ditampilkan untuk membantu membaca komposisi dan trend Lending.
+- Bagian bawah dashboard menampilkan AO dan Referral paling aktif berdasarkan total unit Actual + Pipe Line dari agregasi Lending yang sama dengan dashboard. Nama Referral ditampilkan bersama kategorinya, misalnya `Budi Aktif (Dealer Prioritas)`.
 - Filter waktu dashboard berisi `1 bulan`, `3 bulan`, `12 bulan`, dan `Semua`; default adalah `Semua`.
 - Scroll animation diperbolehkan khusus pada dashboard Admin.
 - Navbar desktop Admin dirapikan agar avatar/logo bulat sempurna dan navigasi padat memakai pola "Lainnya" tanpa scrollbar navbar.

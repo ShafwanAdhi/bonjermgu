@@ -6,6 +6,7 @@ use App\Domain\Application\ApplicationCreator;
 use App\Domain\Application\DebtorType;
 use App\Domain\Application\FinancingProduct;
 use App\Domain\Application\SpouseIncomeType;
+use App\Domain\Simulation\DebtorType as SimulationDebtorType;
 use App\Models\Application;
 use App\Models\Referral;
 use App\Support\RupiahInput;
@@ -25,6 +26,14 @@ use Livewire\Component;
  * Amount Finance is typed in by the AO and is deliberately NOT carried over
  * from a simulation: the final figure follows verification and can differ from
  * the estimate (docs/application-tracking.md section 2).
+ *
+ * financing_product and debtor_type may arrive via query string from the
+ * Account Officer simulation screen — the only two fields the two screens
+ * share. Referral is a specific account the simulation never chose, and debtor
+ * identity is not collected there at all (CLAUDE.md rule 9), so nothing else
+ * can follow. Query values are whitelisted against the enums; anything else
+ * is silently ignored rather than rejected, since arriving here from a typed
+ * link is optional convenience, not a validated submission.
  */
 #[Layout('components.layouts.app')]
 class CreateApplication extends Component
@@ -57,6 +66,32 @@ class CreateApplication extends Component
     public function mount(): void
     {
         $this->authorize('create', Application::class);
+
+        $product = FinancingProduct::tryFrom((string) request()->query('financing_product'));
+        if ($product !== null) {
+            $this->financing_product = $product->value;
+        }
+
+        $debtorType = $this->debtorTypeFromSimulation((string) request()->query('debtor_type'));
+        if ($debtorType !== null) {
+            $this->debtor_type = $debtorType->value;
+        }
+    }
+
+    /**
+     * Maps the simulation screen's DebtorType (rate lookup) onto this screen's
+     * DebtorType (document catalogue). The two enums are deliberately distinct
+     * — see App\Domain\Application\DebtorType — so the value never passes
+     * through unchanged.
+     */
+    private function debtorTypeFromSimulation(string $value): ?DebtorType
+    {
+        return match (SimulationDebtorType::tryFrom($value)) {
+            SimulationDebtorType::ENTREPRENEUR => DebtorType::PeroranganWiraswasta,
+            SimulationDebtorType::NON_ENTREPRENEUR => DebtorType::PeroranganNonWiraswasta,
+            SimulationDebtorType::LEGAL_ENTITY => DebtorType::BadanHukumUsaha,
+            null => null,
+        };
     }
 
     #[Computed]

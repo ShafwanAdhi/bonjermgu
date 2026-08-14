@@ -484,7 +484,7 @@ Parameter berikut memiliki nilai default yang dikonfigurasi Admin. Referral tida
 
 | Parameter                  | Default |
 | -------------------------- | ------- |
-| Deposit / Titipan Angsuran | 0       |
+| Deposit Angsuran (jumlah angsuran, 0-10) | 0       |
 | BBNKB                      | 0       |
 | PKB                        | 0       |
 | Faktur                     | 0       |

@@ -15,9 +15,13 @@
     @livewireStyles
 </head>
 <body class="bg-canvas">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[90] focus:rounded-sm focus:bg-primary focus:px-4 focus:py-3 focus:text-body-md focus:font-medium focus:text-on-primary">
+        Lewati ke konten utama
+    </a>
+
     <header class="border-b border-hairline bg-canvas">
         <div class="mx-auto flex h-14 max-w-container items-center gap-xs px-sm sm:h-16 sm:gap-sm sm:px-lg md:px-xxl">
-            <a href="{{ route('landing') }}" class="mr-auto flex items-center gap-2.5">
+            <a href="{{ route('landing') }}" class="mr-auto flex items-center gap-2.5" aria-label="Kebon Jeruk Multiguna, ke halaman utama">
                 <x-ui.wordmark />
             </a>
 
@@ -32,7 +36,7 @@
         </div>
     </header>
 
-    <main>
+    <main id="main-content" tabindex="-1">
         {{ $slot }}
     </main>
 

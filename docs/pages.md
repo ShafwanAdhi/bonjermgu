@@ -172,6 +172,7 @@ Pintasan ke Buat Credit Application
 Ringkasan Actual Lending dan Pipe Line
 Jumlah akun Referral dan AO
 Visualisasi komposisi lending, performa produk, dan trend Actual bulanan
+Tiga AO dan tiga Referral paling aktif berdasarkan total unit Actual + Pipe Line. Nama Referral ditampilkan sebagai `Nama Referral (Kategori Referral)`.
 ```
 
 Dashboard Admin memiliki filter waktu: 1 bulan, 3 bulan, 12 bulan, dan Semua. Nilai default adalah **Semua**. Grafik dashboard boleh memakai scroll animation untuk reveal konten, namun animasi ini dibatasi pada dashboard Admin dan tidak berlaku untuk page module/leaf Admin lain.
@@ -207,6 +208,8 @@ Nilai pada bagian 5 dan 6 berlaku untuk satu simulasi saja. Tidak ada yang ditul
 Halaman ini tidak meminta Nama, NIK, maupun Tanggal Lahir. Tidak ada dokumen yang dihasilkan, sehingga tidak ada alasan menyentuh identitas debitur.
 
 Panel hasil menampilkan lima tenor beserta jejak penurunan angka per tenor, memakai `CalculationTrace` yang sama dengan Uji Konfigurasi Admin. AO membutuhkan angka LTV untuk mengisi Amount Finance pada Credit Application.
+
+Input form Simulasi Kredit AO disimpan sementara di session per user agar tetap terisi saat user berpindah halaman. Tombol **Hapus Data** menghapus state sementara tersebut dan mengembalikan form ke default. Hasil hitung tidak dipersist sebagai cache permanen; user menghitung ulang untuk memastikan hasil mengikuti konfigurasi terbaru.
 
 ---
 
@@ -497,6 +500,10 @@ Persentase refund
 ### Nilai Default Simulasi
 
 Nilai tunggal: batas usia maksimal unit, garansi mesin, wilayah asuransi aktif, varian rate, dan seluruh default pada `credit-simulation-configuration.md` bagian 12.
+
+### Uji Konfigurasi
+
+Input form Uji Konfigurasi Admin disimpan sementara di session per user agar tetap terisi saat Admin berpindah halaman. Tombol **Hapus Data** menghapus state sementara tersebut dan mengembalikan form ke default. Hasil hitung tidak dipersist sebagai cache permanen; Admin menghitung ulang untuk memastikan hasil mengikuti konfigurasi terbaru.
 
 ### Ketentuan Bersama
 

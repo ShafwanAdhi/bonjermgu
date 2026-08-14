@@ -7,6 +7,7 @@
 
 <select
     @disabled($disabled)
+    @if ($invalid) aria-invalid="true" @endif
     {{ $attributes->class([
         'h-11 w-full rounded-sm border bg-canvas px-4 text-body-md text-ink',
         'focus:border-info-border focus:ring-0',

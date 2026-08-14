@@ -108,7 +108,7 @@
     </div>
 
     <div class="hidden md:block" wire:loading.class="opacity-60" wire:target="search,product,goLive,gotoPage,nextPage,previousPage" data-reveal>
-        <x-ui.table min-width="880px">
+        <x-ui.table min-width="880px" label="Daftar aplikasi">
             <x-slot:head>
                 <x-ui.th>Kode Aplikasi</x-ui.th>
                 <x-ui.th>Nama Debitur</x-ui.th>

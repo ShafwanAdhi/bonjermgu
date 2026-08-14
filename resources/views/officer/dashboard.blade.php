@@ -36,7 +36,7 @@
 
         <h2 class="mb-md text-title-lg text-ink" data-reveal>Tahapan tertunda</h2>
 
-        <x-ui.table min-width="760px" data-reveal="table">
+        <x-ui.table min-width="760px" label="Tahapan tertunda" data-reveal="table">
             <x-slot:head>
                 <x-ui.th>Kode Aplikasi</x-ui.th>
                 <x-ui.th>Nama Debitur</x-ui.th>

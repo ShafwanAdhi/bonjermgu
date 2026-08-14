@@ -84,6 +84,7 @@ final class DanaTunaiCalculator
         $modeATotalAr = $modeALtvAmount * (1 + $sellingInterestRate);
         $insurance = $this->insuranceCalculator->calculate($input, $config, $otrPrice, $tenorMonths, $currentYear, $modeATotalAr);
         $fees = $this->feeCalculator->calculate(FinancingType::DTN, $config, $modeALtvAmount, $otrPrice);
+        $modeAInstalment = Rounding::up($modeATotalAr / $tenorMonths, 1000);
 
         if ($input->mode === SimulationMode::A) {
             $netDpRate = $minimumNetDpRate;
@@ -93,7 +94,8 @@ final class DanaTunaiCalculator
             $totalDownPayment = $netDpAmount + $insurance->total + $fees->total();
             $firstPayment = $totalDownPayment;
             $grossDisbursement = $otrPrice - $firstPayment;
-            $netDisbursement = $grossDisbursement - $config->disbursementDeductions();
+            $depositAmount = $config->depositFor($modeAInstalment);
+            $netDisbursement = $grossDisbursement - $config->disbursementDeductions() - $depositAmount;
             $outputAmount = $netDisbursement;
             $desiredAmount = 0;
         } else {
@@ -107,6 +109,7 @@ final class DanaTunaiCalculator
             // exact rupiah value instead of exposing a binary-float artefact.
             $ltvAmount = $meetsMinimum ? $input->phpmPrice - $netDpAmount : 0;
             $grossDisbursement = 0;
+            $depositAmount = 0;
             $netDisbursement = 0;
             $outputAmount = $input->desiredAmount;
             $desiredAmount = $input->desiredAmount;
@@ -146,6 +149,7 @@ final class DanaTunaiCalculator
             totalDownPayment: $totalDownPayment,
             desiredAmount: $desiredAmount,
             grossDisbursement: $grossDisbursement,
+            depositInstalmentAmount: $depositAmount,
             netDisbursement: $netDisbursement,
             refund: RefundBreakdown::zero(),
             allInDisbursement: $netDisbursement,

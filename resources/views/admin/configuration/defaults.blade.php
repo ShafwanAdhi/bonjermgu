@@ -4,7 +4,7 @@
             <x-ui.callout>{{ session('admin_success') }}</x-ui.callout>
         @endif
         @error('configuration')
-            <div class="rounded-md border border-signature-coral bg-danger-bg px-md py-3 text-[13px] text-signature-coral">{{ $message }}</div>
+            <div role="alert" class="rounded-md border border-signature-coral bg-danger-bg px-md py-3 text-[13px] text-signature-coral">{{ $message }}</div>
         @enderror
 
         <x-ui.card title="Parameter Default" note="Wilayah aktif hanya dapat dipilih setelah matriks Insurance lengkap.">
@@ -33,6 +33,7 @@
                         @else
                             <x-ui.input wire:model="settings.{{ $key }}" type="number"
                                         min="{{ $definition['type'] === 'positive_integer' ? 1 : 0 }}"
+                                        @if ($definition['type'] === 'deposit_count') max="10" @endif
                                         :invalid="$errors->has('settings.'.$key)" />
                         @endif
                     </x-ui.field>

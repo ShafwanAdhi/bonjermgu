@@ -2,11 +2,11 @@
 
 namespace App\Livewire\Application;
 
+use App\Domain\Application\ApplicationStatus;
 use App\Domain\Application\DebtorType;
 use App\Domain\Application\DocumentReconciler;
 use App\Domain\Application\DocumentStatus;
 use App\Domain\Application\FinancingProduct;
-use App\Domain\Application\ApplicationStatus;
 use App\Domain\Application\SpouseIncomeType;
 use App\Domain\Application\TrackingStatus;
 use App\Models\Application;
@@ -39,6 +39,9 @@ class ApplicationDetail extends Component
     public bool $confirmingGoLive = false;
 
     public bool $confirmingCancel = false;
+
+    /** Asked for in the Go Live dialog, not part of the edit form. */
+    public ?string $goLiveAmountFinance = null;
 
     /* Edit form */
     public string $financing_product = '';
@@ -282,6 +285,10 @@ class ApplicationDetail extends Component
         // Marking stage 11 moves the application into Actual Lending, so it
         // asks first. Un-marking needs no confirmation.
         if ($stageNo === TrackingStage::GO_LIVE_STAGE && $tracking->status === TrackingStatus::Belum) {
+            $this->goLiveAmountFinance = $this->application->amount_finance !== null
+                ? (string) $this->application->amount_finance
+                : null;
+            $this->resetValidation('goLiveAmountFinance');
             $this->confirmingGoLive = true;
 
             return;
@@ -292,6 +299,14 @@ class ApplicationDetail extends Component
             : TrackingStatus::Selesai);
     }
 
+    /**
+     * Go Live writes an Actual Lending row. Amount Finance is asked for here
+     * because an Actual row without it counts a unit against Rp 0, and the
+     * Lending report is wrong in a way nobody can see from the report itself.
+     *
+     * This answers Open Item 5 in docs/application-tracking.md by requiring the
+     * value at Go Live. Relax it to a warning if the client decides otherwise.
+     */
     public function confirmGoLive(): void
     {
         $this->authorize('updateTracking', $this->application);
@@ -300,11 +315,31 @@ class ApplicationDetail extends Component
             return;
         }
 
+        $this->goLiveAmountFinance = RupiahInput::normalize($this->goLiveAmountFinance);
+
+        $this->validateOnly(
+            'goLiveAmountFinance',
+            ['goLiveAmountFinance' => ['required', 'integer', 'min:1']],
+            ['goLiveAmountFinance.required' => 'Amount Finance wajib diisi sebelum aplikasi ditandai Go Live.'],
+            ['goLiveAmountFinance' => 'Amount Finance'],
+        );
+
         $tracking = ApplicationTracking::where('application_id', $this->application->id)
             ->where('stage_no', TrackingStage::GO_LIVE_STAGE)
             ->firstOrFail();
 
-        $this->writeStage($tracking, TrackingStatus::Selesai);
+        // One transaction: the observer fills go_live_date from the stage write,
+        // so the amount and the Actual classification land together or not at all.
+        DB::transaction(function () use ($tracking) {
+            $this->application->update([
+                'amount_finance' => (int) $this->goLiveAmountFinance,
+            ]);
+
+            $tracking->update(['status' => TrackingStatus::Selesai, 'updated_by' => Auth::id()]);
+        });
+
+        $this->application->refresh();
+        $this->clearDerived();
 
         $this->confirmingGoLive = false;
 
@@ -313,6 +348,7 @@ class ApplicationDetail extends Component
 
     public function cancelGoLive(): void
     {
+        $this->resetValidation('goLiveAmountFinance');
         $this->confirmingGoLive = false;
     }
 

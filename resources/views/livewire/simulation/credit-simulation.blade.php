@@ -1,7 +1,7 @@
 <div class="band py-xl md:py-xxl"
      data-motion-click-only
      x-data
-     x-on:simulation-calculated.window="$nextTick(() => $el.querySelector('#simulation-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' }))">
+     x-on:simulation-calculated.window="$nextTick(() => $el.querySelector('#simulation-results')?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' }))">
     <x-ui.page-header title="Simulasi Kredit"
                       meta="Lengkapi parameter pembiayaan, lalu klik Hitung Simulasi untuk melihat estimasi lima tenor." />
 
@@ -12,6 +12,7 @@
                     @foreach ([['DTN', 'Dana Tunai'], ['UCF', 'Pembiayaan Mobil Bekas']] as [$key, $label])
                         <button type="button" wire:click="$set('financing_type', '{{ $key }}')"
                                 data-motion-action
+                                aria-pressed="{{ $financing_type === $key ? 'true' : 'false' }}"
                                 @class([
                                     'flex flex-1 items-center gap-sm rounded-lg border px-[18px] py-3.5 text-left',
                                     'border-primary shadow-[0_0_0_1px_#181d26_inset]' => $financing_type === $key,
@@ -35,19 +36,21 @@
                     @endforeach
                 </div>
                 @error('financing_type')
-                    <p class="mt-sm text-helper text-signature-coral">{{ $message }}</p>
+                    <p role="alert" class="mt-sm text-helper text-signature-coral">{{ $message }}</p>
                 @enderror
             </x-ui.card>
 
             <div x-data="{ expanded: true }">
                 <x-ui.card>
                     <button type="button" class="mb-5 flex min-h-11 w-full items-center gap-sm md:cursor-default"
+                            aria-controls="credit-profile-panel"
+                            x-bind:aria-expanded="expanded.toString()"
                             x-on:click="expanded = !expanded">
                         <span class="text-title-sm text-ink">2 · Profil Perhitungan</span>
                         <span class="ml-auto text-helper text-muted md:hidden" x-text="expanded ? 'Tutup' : 'Buka'"></span>
                     </button>
 
-                    <div :class="expanded ? 'block' : 'hidden md:block'">
+                    <div id="credit-profile-panel" :class="expanded ? 'block' : 'hidden md:block'">
                         <div class="grid grid-cols-1 gap-md sm:grid-cols-2">
                             <x-ui.field label="Domisili Debitur" required :error="$errors->first('domicile_id')">
                                 <x-ui.select wire:model.live="domicile_id" :invalid="$errors->has('domicile_id')">
@@ -86,12 +89,14 @@
             <div x-data="{ expanded: true }">
                 <x-ui.card>
                     <button type="button" class="mb-5 flex min-h-11 w-full items-center gap-sm md:cursor-default"
+                            aria-controls="credit-vehicle-panel"
+                            x-bind:aria-expanded="expanded.toString()"
                             x-on:click="expanded = !expanded">
                         <span class="text-title-sm text-ink">3 · Data Kendaraan</span>
                         <span class="ml-auto text-helper text-muted md:hidden" x-text="expanded ? 'Tutup' : 'Buka'"></span>
                     </button>
 
-                    <div :class="expanded ? 'block' : 'hidden md:block'">
+                    <div id="credit-vehicle-panel" :class="expanded ? 'block' : 'hidden md:block'">
                         <div class="grid grid-cols-1 gap-md sm:grid-cols-2">
                             <x-ui.field label="Penggunaan Unit" required :error="$errors->first('usage_id')">
                                 <x-ui.select wire:model.live="usage_id" :invalid="$errors->has('usage_id')">
@@ -211,6 +216,7 @@
                     @foreach ($this->modeOptions() as $key => $option)
                         <button type="button" wire:click="$set('mode', '{{ $key }}')"
                                 data-motion-action
+                                aria-pressed="{{ $mode === $key ? 'true' : 'false' }}"
                                 @class([
                                     'rounded-lg border p-md text-left',
                                     'border-primary shadow-[0_0_0_1px_#181d26_inset]' => $mode === $key,
@@ -266,13 +272,13 @@
                     @endif
                 </div>
 
-                <div class="mb-md rounded-md border border-info-border bg-info-bg px-md py-3 text-[13px] text-body"
+                <div role="status" aria-live="polite" class="mb-md rounded-md border border-info-border bg-info-bg px-md py-3 text-[13px] text-body"
                      wire:loading.delay wire:target="calculate">
                     Menghitung lima tenor di server…
                 </div>
 
                 @if ($calculationError)
-                    <div @class([
+                    <div role="alert" @class([
                         'mb-md rounded-md border px-md py-3 text-[13px] leading-[1.5]',
                         'border-signature-coral bg-danger-bg text-signature-coral' => ! $priceUnavailable,
                         'border-warning-border bg-warning-bg text-body' => $priceUnavailable,
@@ -332,7 +338,7 @@
                             </div>
                         </div>
 
-                        <x-ui.table class="hidden sm:block">
+                        <x-ui.table label="Hasil lima tenor simulasi" class="hidden sm:block">
                             <x-slot:head>
                                 <x-ui.th>Tenor</x-ui.th>
                                 <x-ui.th align="right">{{ $this->disbursementHeading() }}</x-ui.th>
