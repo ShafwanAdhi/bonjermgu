@@ -7,6 +7,7 @@ use App\Http\Controllers\SimulationController;
 use App\Http\Controllers\VehicleCascadeController;
 use App\Livewire\Admin\Accounts\OfficerAccounts;
 use App\Livewire\Admin\Accounts\ReferralAccounts;
+use App\Livewire\Admin\Configuration\AuditLog;
 use App\Livewire\Admin\Configuration\Defaults as ConfigurationDefaults;
 use App\Livewire\Admin\Configuration\Fees as ConfigurationFees;
 use App\Livewire\Admin\Configuration\Insurance as ConfigurationInsurance;
@@ -161,6 +162,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     // Uji Konfigurasi — Admin menjalankan engine atas Product terpilih.
     // Tanpa data debitur, tanpa cetak, tanpa penyimpanan hasil.
     Route::get('/configuration/simulation', ConfigurationSimulation::class)->name('configuration.simulation');
+    Route::get('/configuration/audit', AuditLog::class)->name('configuration.audit');
 
     Route::view('/master', 'admin.master.index')->name('master.index');
     Route::get('/master/vehicles', MasterVehicles::class)->name('master.vehicles');

@@ -48,6 +48,7 @@ function screenMap(): array
         '/configuration/insurance' => ['admin', 'Casco dan TLO'],
         '/configuration/fees' => ['admin', 'Fiducia Fee'],
         '/configuration/defaults' => ['admin', 'Nilai Default Simulasi'],
+        '/configuration/audit' => ['admin', 'Belum ada perubahan konfigurasi yang tercatat.'],
         '/master' => ['admin', 'Pilih modul master data'],
         '/master/vehicles' => ['admin', 'Harga per Tahun'],
         '/master/referral' => ['admin', 'Tambah Kategori'],

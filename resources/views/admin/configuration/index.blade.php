@@ -9,6 +9,7 @@
             ['label' => 'Biaya dan Down Payment', 'description' => 'Fiducia, admin, provisi, dan DP.', 'route' => 'configuration.fees', 'url' => route('configuration.fees')],
             ['label' => 'Nilai Default Simulasi', 'description' => 'Default input dan parameter simulasi.', 'route' => 'configuration.defaults', 'url' => route('configuration.defaults')],
             ['label' => 'Uji Konfigurasi', 'description' => 'Cek hasil engine sebelum dipakai.', 'route' => 'configuration.simulation', 'url' => route('configuration.simulation')],
+            ['label' => 'Riwayat Perubahan', 'description' => 'Jejak perubahan konfigurasi dan master data.', 'route' => 'configuration.audit', 'url' => route('configuration.audit')],
         ]" />
     </div>
 </x-layouts.app>

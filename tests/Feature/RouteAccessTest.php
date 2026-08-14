@@ -72,6 +72,7 @@ it('refuses admin screens to referral and officer', function (string $path, stri
     '/configuration/insurance',
     '/configuration/fees',
     '/configuration/defaults',
+    '/configuration/audit',
     '/master',
     '/master/vehicles',
     '/master/referral',

@@ -16,6 +16,20 @@
             'rows' => $activityLeaders['referrals'] ?? [],
         ],
     ];
+    $leaderTones = [
+        [
+            'bar' => 'bg-signature-forest',
+            'rank' => 'bg-primary text-on-primary',
+        ],
+        [
+            'bar' => 'bg-signature-mustard',
+            'rank' => 'bg-signature-mustard text-ink',
+        ],
+        [
+            'bar' => 'bg-signature-peach',
+            'rank' => 'bg-signature-peach text-ink',
+        ],
+    ];
 @endphp
 
 <x-layouts.app title="Ringkasan - Kebon Jeruk Multiguna">
@@ -67,13 +81,13 @@
             </div>
 
             <div class="grid grid-cols-2 gap-lg lg:grid-cols-1">
-                <div class="rounded-md border border-hairline bg-surface-soft px-lg py-5">
+                <div class="rounded-md border border-hairline bg-signature-yellow/10 px-lg py-5">
                     <p class="mb-2 text-[13px] font-medium leading-[1.35] text-muted">Akun Referral</p>
-                    <p class="font-display text-[32px] leading-[1.1] text-ink">{{ $referralAccounts }}</p>
+                    <p class="font-display text-[32px] leading-[1.1] text-signature-mustard">{{ $referralAccounts }}</p>
                 </div>
-                <div class="rounded-md border border-hairline bg-surface-soft px-lg py-5">
+                <div class="rounded-md border border-hairline bg-signature-mint/25 px-lg py-5">
                     <p class="mb-2 text-[13px] font-medium leading-[1.35] text-muted">Akun Account Officer</p>
-                    <p class="font-display text-[32px] leading-[1.1] text-ink">{{ $officerAccounts }}</p>
+                    <p class="font-display text-[32px] leading-[1.1] text-signature-forest">{{ $officerAccounts }}</p>
                     @if ($inactiveAccounts > 0)
                         <p class="mt-1 text-helper text-muted">{{ $inactiveAccounts }} akun nonaktif</p>
                     @endif
@@ -87,13 +101,13 @@
                     <div class="flex flex-col gap-lg sm:flex-row sm:items-center xl:flex-col xl:items-start">
                         <div
                             class="relative mx-auto aspect-square w-44 shrink-0 rounded-full sm:mx-0"
-                            style="background: conic-gradient(#12351f 0 {{ $actualPercent }}%, #f5a66f {{ $actualPercent }}% {{ $actualPercent + $pipelinePercent }}%, #eef0ea {{ $actualPercent + $pipelinePercent }}% 100%);"
+                            style="background: conic-gradient(#0a2e0e 0 {{ $actualPercent }}%, #fcab79 {{ $actualPercent }}% {{ $actualPercent + $pipelinePercent }}%, #f5e9d4 {{ $actualPercent + $pipelinePercent }}% 100%);"
                             role="img"
                             aria-label="Komposisi Actual Lending {{ $actualPercent }} persen dan Pipe Line {{ $pipelinePercent }} persen"
                         >
-                            <div class="absolute inset-7 flex flex-col items-center justify-center rounded-full bg-primary text-center text-on-primary shadow-[0_10px_30px_rgba(24,29,38,0.16)]">
-                                <span class="text-[12px] font-medium uppercase tracking-[0.14em] text-white/70">Actual</span>
-                                <span class="font-display text-[30px] leading-none text-white">{{ $actualPercent }}%</span>
+                            <div class="absolute inset-7 flex flex-col items-center justify-center rounded-full border border-hairline bg-canvas text-center shadow-[0_10px_30px_rgba(24,29,38,0.10)]">
+                                <span class="text-[12px] font-medium uppercase tracking-[0.14em] text-signature-forest">Actual</span>
+                                <span class="font-display text-[30px] leading-none text-ink">{{ $actualPercent }}%</span>
                             </div>
                         </div>
 
@@ -104,7 +118,7 @@
                             <div class="mt-5 space-y-3">
                                 <div class="flex items-center justify-between gap-md">
                                     <span class="flex items-center gap-2 text-body-md text-muted">
-                                        <span class="h-2.5 w-2.5 rounded-full bg-primary"></span>
+                                        <span class="h-2.5 w-2.5 rounded-full bg-signature-forest"></span>
                                         Actual
                                     </span>
                                     <span class="text-body-md font-medium tabular-nums text-ink">{{ $actualPercent }}%</span>
@@ -142,7 +156,7 @@
                                 </div>
                                 <div class="h-3 overflow-hidden rounded-full bg-surface-soft" aria-hidden="true">
                                     <div class="flex h-full" style="width: {{ $product['totalPercent'] }}%">
-                                        <span class="bg-primary" style="width: {{ $product['actualPercent'] }}%"></span>
+                                        <span class="bg-signature-forest" style="width: {{ $product['actualPercent'] }}%"></span>
                                         <span class="bg-signature-peach" style="width: {{ $product['pipelinePercent'] }}%"></span>
                                     </div>
                                 </div>
@@ -157,7 +171,7 @@
                             <p class="text-caption text-muted">Trend Actual</p>
                             <h3 class="mt-1 font-display text-[26px] leading-[1.15] text-ink">Go Live Bulanan</h3>
                         </div>
-                        <span class="rounded-sm bg-surface-soft px-2.5 py-1 text-[12px] font-medium text-muted">A/F</span>
+                        <span class="rounded-sm bg-signature-yellow/20 px-2.5 py-1 text-[12px] font-medium text-ink">A/F</span>
                     </div>
 
                     <div class="mt-6 overflow-x-auto pb-1">
@@ -191,7 +205,7 @@
                                             'flex-1' => ! $singleMonthTrend,
                                         ])>
                                             <div
-                                                class="w-full rounded-t-sm bg-primary/85 transition-all hover:bg-primary"
+                                                class="w-full rounded-t-sm bg-signature-mustard/90 transition-all hover:bg-signature-mustard"
                                                 style="height: {{ max(4, $month['percent']) }}%"
                                                 title="{{ $month['label'] }}: {{ Format::rupiah($month['amount']) }} · {{ $month['units'] }} unit"
                                                 aria-label="{{ $month['label'] }} {{ Format::rupiah($month['amount']) }}"
@@ -229,14 +243,15 @@
                                 <p class="text-caption text-muted">{{ $panel['label'] }}</p>
                                 <h3 class="mt-1 font-display text-[26px] leading-[1.15] text-ink">{{ $panel['title'] }}</h3>
                             </div>
-                            <span class="w-fit rounded-sm bg-surface-soft px-2.5 py-1 text-[12px] font-medium text-muted">Top 3</span>
+                            <span class="w-fit rounded-sm bg-signature-mint/40 px-2.5 py-1 text-[12px] font-medium text-signature-forest">Top 3</span>
                         </div>
 
                         <div class="mt-6 space-y-3">
                             @forelse ($panel['rows'] as $row)
+                                @php($tone = $leaderTones[($loop->iteration - 1) % count($leaderTones)])
                                 <div class="rounded-md border border-hairline bg-surface-soft p-md">
                                     <div class="flex items-start gap-sm">
-                                        <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-[12px] font-medium text-on-primary">
+                                        <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[12px] font-medium {{ $tone['rank'] }}">
                                             {{ $loop->iteration }}
                                         </span>
 
@@ -247,7 +262,7 @@
                                             </div>
 
                                             <div class="mt-3 h-2 overflow-hidden rounded-full bg-canvas" aria-hidden="true">
-                                                <span class="block h-full rounded-full bg-primary" style="width: {{ $row['activityPercent'] }}%"></span>
+                                                <span class="block h-full rounded-full {{ $tone['bar'] }}" style="width: {{ $row['activityPercent'] }}%"></span>
                                             </div>
 
                                             <div class="mt-2 flex flex-wrap items-center justify-between gap-2 text-helper text-muted">
