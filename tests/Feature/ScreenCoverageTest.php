@@ -118,6 +118,7 @@ it('renders every screen in the mockups', function (string $path, string $role, 
     test()->get($path)
         ->assertOk()
         ->assertSee($expected, escape: false)
+        ->assertSee('rel="icon"', escape: false)
         ->assertSee('images/brand/bonjemgu-logo.svg', escape: false);
 })->with(collect(screenMap())->map(
     fn ($spec, $path) => [$path, $spec[0], $spec[1]],
