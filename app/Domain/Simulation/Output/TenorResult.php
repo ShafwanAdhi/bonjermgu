@@ -41,6 +41,8 @@ final readonly class TenorResult
         public int|float $netDisbursement,
         public RefundBreakdown $refund,
         public int|float $outputAmount,
+        /** Why this tenor is zero. Null when it is not (or the caller predates this field). */
+        public ?ZeroReason $zeroReason = null,
     ) {}
 
     public static function zero(
@@ -48,6 +50,7 @@ final readonly class TenorResult
         int $eligibilityScore = 0,
         bool $eligible = false,
         bool $rateAvailable = false,
+        ?ZeroReason $reason = null,
     ): self {
         return new self(
             tenorMonths: $tenorMonths,
@@ -81,6 +84,7 @@ final readonly class TenorResult
             netDisbursement: 0,
             refund: RefundBreakdown::zero(),
             outputAmount: 0,
+            zeroReason: $reason,
         );
     }
 

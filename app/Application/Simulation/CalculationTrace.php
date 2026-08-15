@@ -5,6 +5,7 @@ namespace App\Application\Simulation;
 use App\Domain\Simulation\FinancingType;
 use App\Domain\Simulation\InstalmentType;
 use App\Domain\Simulation\Output\TenorResult;
+use App\Domain\Simulation\Output\ZeroReason;
 use App\Domain\Simulation\SimulationMode;
 use App\Domain\Simulation\SimulationProfile;
 use App\Support\Format;
@@ -37,7 +38,7 @@ final class CalculationTrace
         $isModeA = $input->mode === SimulationMode::A;
         $isOfficer = $config->profile === SimulationProfile::OFFICER;
 
-        if (! $tenor->eligible || ! $tenor->rateAvailable) {
+        if ($tenor->zeroReason !== null) {
             return [self::blockedSection($tenor, $outcome)];
         }
 
@@ -57,14 +58,19 @@ final class CalculationTrace
     /** A tenor that produces nothing must say why, not just show zeros. */
     private static function blockedSection(TenorResult $tenor, ConfigurationSimulationOutcome $outcome): array
     {
-        $reason = ! $tenor->rateAvailable
-            ? 'Rate tenor ini kosong pada Product terpilih. Kosong berarti tenor tidak tersedia — bukan rate 0%.'
-            : sprintf(
+        $reason = match ($tenor->zeroReason) {
+            ZeroReason::RateUnavailable => 'Rate tenor ini kosong pada Product terpilih. Kosong berarti tenor tidak tersedia — bukan rate 0%.',
+            ZeroReason::NotEligible => sprintf(
                 'Usia unit melebihi batas di akhir tenor. Batas usia maksimal unit %d tahun, kendaraan tahun %d, tahun berjalan %d.',
                 $outcome->config->maxVehicleAge,
                 $outcome->input->vehicleYear,
                 $outcome->currentYear,
-            );
+            ),
+            ZeroReason::PriceUnavailable => 'Harga kendaraan tidak tersedia pada master PHPM untuk tahun yang dipilih.',
+            ZeroReason::DownPaymentExceedsPrice => 'Deviasi mendorong Net DP mencapai atau melampaui harga unit, sehingga tidak ada nilai yang dapat dibiayai.',
+            ZeroReason::DownPaymentBelowMinimum => 'Nominal yang dikehendaki menghasilkan DP Net di bawah Net DP minimum yang disyaratkan.',
+            null => 'Tenor tidak menghasilkan pembiayaan.',
+        };
 
         return [
             'title' => 'Tenor tidak menghasilkan pembiayaan',

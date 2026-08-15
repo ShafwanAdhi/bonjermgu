@@ -68,7 +68,7 @@ class AdminAuditLogSeeder extends Seeder
 
     private function rows(User $actor): array
     {
-        return [
+        $rows = [
             [
                 'actor_id' => $actor->id,
                 'actor_name' => $actor->username,
@@ -125,5 +125,29 @@ class AdminAuditLogSeeder extends Seeder
                 'created_at' => now()->subDays(2)->setTime(9, 10),
             ],
         ];
+
+        foreach (range(1, 24) as $index) {
+            $rows[] = [
+                'actor_id' => $actor->id,
+                'actor_name' => $actor->username,
+                'audit_module' => $index % 2 === 0 ? 'configuration.fees' : 'master.vehicles',
+                'subject_type' => $index % 2 === 0 ? 'App\\Models\\SimulationSetting' : 'App\\Models\\VehicleVariant',
+                'subject_table' => $index % 2 === 0 ? 'simulation_settings' : 'vehicle_variants',
+                'subject_id' => 4800 + $index,
+                'action' => $index % 3 === 0 ? 'created' : 'updated',
+                'before_values' => $index % 3 === 0 ? null : [
+                    'name' => "Data audit demo {$index}",
+                    'value' => 1000000 + ($index * 25000),
+                ],
+                'after_values' => [
+                    'name' => "Data audit demo {$index}",
+                    'value' => 1250000 + ($index * 25000),
+                    'note' => 'Baris contoh untuk memvalidasi navigasi halaman audit.',
+                ],
+                'created_at' => now()->subDays($index + 3)->setTime(10 + ($index % 8), 15),
+            ];
+        }
+
+        return $rows;
     }
 }

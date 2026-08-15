@@ -16,7 +16,7 @@
         <x-ui.callout class="mb-md" data-reveal>{{ session('application_success') }}</x-ui.callout>
     @endif
 
-    <div class="mb-lg grid gap-sm md:grid-cols-[minmax(260px,1fr)_210px_180px] md:items-end" data-reveal>
+    <div class="mb-lg grid gap-sm md:grid-cols-[minmax(220px,1fr)_190px_170px_170px] md:items-end" data-reveal>
         <div>
             <x-ui.input wire:model.live.debounce.400ms="search" type="search"
                         placeholder="Cari Kode Aplikasi atau Nama Debitur…" />
@@ -39,9 +39,13 @@
                 <option value="canceled">Canceled</option>
             </x-ui.select>
         </x-ui.field>
+
+        <x-ui.field label="Bulan">
+            <x-ui.input wire:model.live="month" type="month" />
+        </x-ui.field>
     </div>
 
-    <div class="md:hidden" wire:loading.class="opacity-60" wire:target="search,product,goLive,gotoPage,nextPage,previousPage">
+    <div class="md:hidden" wire:loading.class="opacity-60" wire:target="search,product,goLive,month,gotoPage,nextPage,previousPage">
         <div class="flex flex-col gap-sm" data-motion-stagger>
             @forelse ($this->applications as $application)
                 <a href="{{ route('applications.show', $application) }}" wire:navigate
@@ -79,13 +83,17 @@
                             <p class="text-helper text-muted">Tahapan</p>
                             <p class="font-medium text-ink">{{ Format::ratio($application->trackings_done_count, 11) }}</p>
                         </div>
+                        <div>
+                            <p class="text-helper text-muted">Dibuat</p>
+                            <p class="text-body">{{ Format::date($application->created_at) }}</p>
+                        </div>
                     </div>
 
                     <p class="mt-3 text-[13px] font-medium text-link">Lihat detail</p>
                 </a>
             @empty
                 <div class="rounded-lg border border-hairline bg-canvas px-5 py-xl text-center" data-reveal>
-                    @if ($search !== '' || $product !== '' || $goLive !== '')
+                    @if ($search !== '' || $product !== '' || $goLive !== '' || $month !== '')
                         <p class="text-body-md text-ink">Tidak ada aplikasi yang cocok dengan penyaring ini.</p>
                         <button type="button" wire:click="resetFilters"
                                 class="mt-3 inline-flex min-h-11 items-center rounded-sm px-3 text-[13px] font-medium text-link">
@@ -107,8 +115,8 @@
         </div>
     </div>
 
-    <div class="hidden md:block" wire:loading.class="opacity-60" wire:target="search,product,goLive,gotoPage,nextPage,previousPage" data-reveal>
-        <x-ui.table min-width="880px" label="Daftar aplikasi">
+    <div class="hidden md:block" wire:loading.class="opacity-60" wire:target="search,product,goLive,month,gotoPage,nextPage,previousPage" data-reveal>
+        <x-ui.table min-width="980px" label="Daftar aplikasi">
             <x-slot:head>
                 <x-ui.th>Kode Aplikasi</x-ui.th>
                 <x-ui.th>Nama Debitur</x-ui.th>
@@ -117,6 +125,7 @@
                 <x-ui.th>Dokumen</x-ui.th>
                 <x-ui.th>Tahapan</x-ui.th>
                 <x-ui.th>Status</x-ui.th>
+                <x-ui.th>Dibuat</x-ui.th>
                 <x-ui.th align="right">Aksi</x-ui.th>
             </x-slot:head>
 
@@ -142,6 +151,7 @@
                             {{ $application->statusLabel() }}
                         </x-ui.chip>
                     </x-ui.td>
+                    <x-ui.td class="text-muted">{{ Format::date($application->created_at) }}</x-ui.td>
                     <x-ui.td align="right">
                         <a href="{{ route('applications.show', $application) }}" wire:navigate
                            class="text-[13px] font-medium text-link">
@@ -153,8 +163,8 @@
                 {{-- The empty state says why and what to do next, not just
                      "tidak ada data" — pages.md §18. --}}
                 <tr>
-                    <td colspan="8" class="px-5 py-xl text-center">
-                        @if ($search !== '' || $product !== '' || $goLive !== '')
+                    <td colspan="9" class="px-5 py-xl text-center">
+                        @if ($search !== '' || $product !== '' || $goLive !== '' || $month !== '')
                             <p class="text-body-md text-ink">Tidak ada aplikasi yang cocok dengan penyaring ini.</p>
                             <button type="button" wire:click="resetFilters"
                                     class="mt-2 text-[13px] font-medium text-link">Bersihkan penyaring</button>

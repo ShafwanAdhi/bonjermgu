@@ -159,6 +159,10 @@
                     {{ Format::rupiah($application->amount_finance, 'Belum diisi') }}
                 </x-ui.key-value>
                 <x-ui.key-value label="Jumlah Unit">{{ $application->unit_count }}</x-ui.key-value>
+                <x-ui.key-value label="Dibuat"
+                                 :note="$this->lastActivityAt->gt($application->created_at) ? 'Diperbarui '.Format::date($this->lastActivityAt) : null">
+                    {{ Format::date($application->created_at) }}
+                </x-ui.key-value>
 
                 @if ($application->go_live_date)
                     <x-ui.key-value label="Tanggal Go Live" tone="success">

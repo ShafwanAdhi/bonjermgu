@@ -71,59 +71,62 @@
                                 <time datetime="{{ $entry->created_at->toIso8601String() }}">{{ $entry->created_at->translatedFormat('d F Y H.i') }}</time>
                             </div>
                         </div>
-                        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-hairline bg-canvas text-[18px] leading-none text-muted"
+                        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-hairline bg-canvas text-[18px] leading-none text-muted transition-transform duration-200 motion-reduce:transition-none"
+                              x-bind:class="open ? 'rotate-180' : 'rotate-0'"
                               x-text="open ? '-' : '+'"
                               aria-hidden="true"></span>
                     </button>
 
-                    <div x-show="open" x-cloak
-                         x-transition:enter="transition ease-out duration-150"
-                         x-transition:enter-start="opacity-0"
-                         x-transition:enter-end="opacity-100"
-                         class="border-t border-divider px-md py-3.5">
-                        @if ($keys->isEmpty())
-                            <p class="text-helper text-muted">Tidak ada rincian kolom untuk perubahan ini.</p>
-                        @else
-                            <div class="space-y-2">
-                                <div class="hidden grid-cols-[minmax(0,180px)_minmax(0,1fr)_minmax(0,1fr)] gap-md px-sm text-helper font-medium text-muted sm:grid">
-                                    <span>Kolom</span>
-                                    <span>Sebelum</span>
-                                    <span>Sesudah</span>
-                                </div>
-                                @foreach ($keys as $key)
-                                    @php
-                                        $before = data_get($entry->before_values, $key);
-                                        $after = data_get($entry->after_values, $key);
-                                        $render = fn ($value) => match (true) {
-                                            $value === null => '—',
-                                            is_bool($value) => $value ? 'true' : 'false',
-                                            is_array($value) => json_encode($value),
-                                            default => (string) $value,
-                                        };
-                                    @endphp
-                                    <div class="rounded-md border border-divider bg-canvas p-sm sm:grid sm:grid-cols-[minmax(0,180px)_minmax(0,1fr)_minmax(0,1fr)] sm:gap-md sm:border-0 sm:bg-transparent sm:px-sm sm:py-2">
-                                        <div class="mb-2 min-w-0 sm:mb-0">
-                                            <span class="block text-[11px] font-medium uppercase leading-none text-muted sm:hidden">Kolom</span>
-                                            <span class="mt-1 block break-words font-mono text-[13px] text-ink sm:mt-0">{{ $key }}</span>
+                    <div class="grid border-t transition-[grid-template-rows,opacity,border-color] duration-300 ease-out motion-reduce:transition-none"
+                         x-bind:class="open ? 'grid-rows-[1fr] border-divider opacity-100' : 'grid-rows-[0fr] border-transparent opacity-0'">
+                        <div class="min-h-0 overflow-hidden">
+                            <div class="px-md py-3.5 transition-transform duration-300 ease-out motion-reduce:transition-none"
+                                 x-bind:class="open ? 'translate-y-0' : '-translate-y-2'">
+                                @if ($keys->isEmpty())
+                                    <p class="text-helper text-muted">Tidak ada rincian kolom untuk perubahan ini.</p>
+                                @else
+                                    <div class="space-y-2">
+                                        <div class="hidden grid-cols-[minmax(0,180px)_minmax(0,1fr)_minmax(0,1fr)] gap-md px-sm text-helper font-medium text-muted sm:grid">
+                                            <span>Kolom</span>
+                                            <span>Sebelum</span>
+                                            <span>Sesudah</span>
                                         </div>
-                                        <div class="grid gap-xs sm:contents">
-                                            <div class="min-w-0 rounded-sm bg-surface-soft px-3 py-2 sm:bg-transparent sm:p-0">
-                                                <span class="block text-[11px] font-medium uppercase leading-none text-muted sm:hidden">Sebelum</span>
-                                                <span class="mt-1 block break-words text-[13px] leading-[1.5] {{ $entry->action !== 'created' && $before !== $after ? 'text-signature-coral' : 'text-body' }}">
-                                                    {{ $entry->action === 'created' ? '—' : $render($before) }}
-                                                </span>
+                                        @foreach ($keys as $key)
+                                            @php
+                                                $before = data_get($entry->before_values, $key);
+                                                $after = data_get($entry->after_values, $key);
+                                                $render = fn ($value) => match (true) {
+                                                    $value === null => '—',
+                                                    is_bool($value) => $value ? 'true' : 'false',
+                                                    is_array($value) => json_encode($value),
+                                                    default => (string) $value,
+                                                };
+                                            @endphp
+                                            <div class="rounded-md border border-divider bg-canvas p-sm sm:grid sm:grid-cols-[minmax(0,180px)_minmax(0,1fr)_minmax(0,1fr)] sm:gap-md sm:border-0 sm:bg-transparent sm:px-sm sm:py-2">
+                                                <div class="mb-2 min-w-0 sm:mb-0">
+                                                    <span class="block text-[11px] font-medium uppercase leading-none text-muted sm:hidden">Kolom</span>
+                                                    <span class="mt-1 block break-words font-mono text-[13px] text-ink sm:mt-0">{{ $key }}</span>
+                                                </div>
+                                                <div class="grid gap-xs sm:contents">
+                                                    <div class="min-w-0 rounded-sm bg-surface-soft px-3 py-2 sm:bg-transparent sm:p-0">
+                                                        <span class="block text-[11px] font-medium uppercase leading-none text-muted sm:hidden">Sebelum</span>
+                                                        <span class="mt-1 block break-words text-[13px] leading-[1.5] {{ $entry->action !== 'created' && $before !== $after ? 'text-signature-coral' : 'text-body' }}">
+                                                            {{ $entry->action === 'created' ? '—' : $render($before) }}
+                                                        </span>
+                                                    </div>
+                                                    <div class="min-w-0 rounded-sm bg-surface-soft px-3 py-2 sm:bg-transparent sm:p-0">
+                                                        <span class="block text-[11px] font-medium uppercase leading-none text-muted sm:hidden">Sesudah</span>
+                                                        <span class="mt-1 block break-words text-[13px] leading-[1.5] {{ $entry->action !== 'created' && $before !== $after ? 'font-medium text-ink' : 'text-body' }}">
+                                                            {{ $entry->action === 'deleted' ? '—' : $render($after) }}
+                                                        </span>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div class="min-w-0 rounded-sm bg-surface-soft px-3 py-2 sm:bg-transparent sm:p-0">
-                                                <span class="block text-[11px] font-medium uppercase leading-none text-muted sm:hidden">Sesudah</span>
-                                                <span class="mt-1 block break-words text-[13px] leading-[1.5] {{ $entry->action !== 'created' && $before !== $after ? 'font-medium text-ink' : 'text-body' }}">
-                                                    {{ $entry->action === 'deleted' ? '—' : $render($after) }}
-                                                </span>
-                                            </div>
-                                        </div>
+                                        @endforeach
                                     </div>
-                                @endforeach
+                                @endif
                             </div>
-                        @endif
+                        </div>
                     </div>
                 </div>
             @empty

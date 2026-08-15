@@ -82,6 +82,28 @@ it('calculates five tenors and a derivation for the Officer profile', function (
     Carbon::setTestNow();
 });
 
+/*
+ * pages.md §18: a failed calculation must name the cause, not show a bare
+ * zero. Pushing the clock far past the vehicle's year makes every tenor fail
+ * eligibility, which is the cheapest reliable way to force a zero row without
+ * touching product/rate configuration.
+ */
+it('explains a tenor that fails eligibility instead of showing a bare zero', function () {
+    [$category, $model, $price] = officerMaster();
+    // Thirty years out, even the 12-month tenor fails eligibility.
+    Carbon::setTestNow(Carbon::create($price->year + 30, 8, 4));
+
+    Livewire::actingAs(User::factory()->accountOfficer()->create())
+        ->test(OfficerSimulation::class)
+        ->set(officerState($category, $model, $price->year))
+        ->set('unit_price', (string) $price->price)
+        ->call('calculate')
+        ->assertHasNoErrors()
+        ->assertSee('Usia kendaraan melebihi batas kelayakan untuk tenor ini.');
+
+    Carbon::setTestNow();
+});
+
 it('switches the calculation trace tenor without recalculating the simulation', function () {
     [$category, $model, $price] = officerMaster();
     Carbon::setTestNow(Carbon::create($price->year + 1, 8, 4));

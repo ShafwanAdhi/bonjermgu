@@ -8,6 +8,7 @@ use App\Domain\Simulation\Input\SimulationInput;
 use App\Domain\Simulation\Insurance\InsuranceCalculator;
 use App\Domain\Simulation\Output\SimulationResult;
 use App\Domain\Simulation\Output\TenorResult;
+use App\Domain\Simulation\Output\ZeroReason;
 use App\Domain\Simulation\Rate\FlatRateConverter;
 use App\Domain\Simulation\Refund\RefundBreakdown;
 use App\Domain\Simulation\Refund\RefundCalculator;
@@ -58,8 +59,19 @@ final class DanaTunaiCalculator
         // straight off the PHPM master.
         $officer = $config->profile === SimulationProfile::OFFICER;
 
-        if (! $eligible || ! $rateAvailable || $input->phpmPrice <= 0 || ($officer && $input->marketPrice <= 0)) {
-            return TenorResult::zero($tenorMonths, $score, $eligible, $rateAvailable);
+        // Same combined guard as before, split so each exit carries its own
+        // reason. The condition it replaces was:
+        // ! $eligible || ! $rateAvailable || $input->phpmPrice <= 0 || ($officer && $input->marketPrice <= 0)
+        if (! $eligible) {
+            return TenorResult::zero($tenorMonths, $score, $eligible, $rateAvailable, ZeroReason::NotEligible);
+        }
+
+        if (! $rateAvailable) {
+            return TenorResult::zero($tenorMonths, $score, $eligible, $rateAvailable, ZeroReason::RateUnavailable);
+        }
+
+        if ($input->phpmPrice <= 0 || ($officer && $input->marketPrice <= 0)) {
+            return TenorResult::zero($tenorMonths, $score, $eligible, $rateAvailable, ZeroReason::PriceUnavailable);
         }
 
         $otrPrice = $officer
@@ -77,7 +89,7 @@ final class DanaTunaiCalculator
         // price. Nothing is financed, so the tenor normalises to zero instead
         // of reporting a negative disbursement.
         if ($modeALtvAmount <= 0) {
-            return TenorResult::zero($tenorMonths, $score, $eligible, $rateAvailable);
+            return TenorResult::zero($tenorMonths, $score, $eligible, $rateAvailable, ZeroReason::DownPaymentExceedsPrice);
         }
 
         $flatRate = $this->flatRateConverter->convert($effectiveRate, $tenorMonths, $input->instalmentType);
@@ -112,6 +124,7 @@ final class DanaTunaiCalculator
             // Refund is paid out separately; it never tops up the disbursement.
             $outputAmount = $netDisbursement;
             $desiredAmount = 0;
+            $zeroReason = null;
         } else {
             $totalDownPayment = $insurance->total + $fees->total();
             $firstPayment = $totalDownPayment;
@@ -130,6 +143,7 @@ final class DanaTunaiCalculator
             $netDisbursement = 0;
             $outputAmount = $input->desiredAmount;
             $desiredAmount = $input->desiredAmount;
+            $zeroReason = $meetsMinimum ? null : ZeroReason::DownPaymentBelowMinimum;
         }
 
         $interestAmount = $ltvAmount * $sellingInterestRate;
@@ -170,6 +184,7 @@ final class DanaTunaiCalculator
             netDisbursement: $netDisbursement,
             refund: $refund,
             outputAmount: $outputAmount,
+            zeroReason: $zeroReason,
         );
     }
 

@@ -503,11 +503,7 @@ final class OfficerSimulation extends Component
                         'disbursement' => Format::rupiah((int) round($result->outputAmount)),
                         'instalment' => Format::rupiah($result->instalment),
                         'zero' => $result->instalment === 0,
-                        'reason' => match (true) {
-                            ! $result->rateAvailable => 'Rate kosong',
-                            ! $result->eligible => 'Usia unit',
-                            default => null,
-                        },
+                        'reason' => Format::zeroReasonLabel($result->zeroReason),
                     ];
                 })->all();
 

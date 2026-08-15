@@ -14,6 +14,7 @@ use App\Models\ApplicationDocument;
 use App\Models\ApplicationTracking;
 use App\Models\TrackingStage;
 use App\Support\RupiahInput;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -111,6 +112,21 @@ class ApplicationDetail extends Component
     public function trackingSummary(): string
     {
         return $this->trackings->where('status', TrackingStatus::Selesai)->count().' / 11';
+    }
+
+    /**
+     * Most recent movement on this application: its own row, or any document
+     * or tracking status change. Reuses the already-loaded collections above
+     * rather than a fourth query.
+     */
+    #[Computed]
+    public function lastActivityAt(): Carbon
+    {
+        return collect([
+            $this->application->updated_at,
+            $this->documents->max('updated_at'),
+            $this->trackings->max('updated_at'),
+        ])->filter()->max();
     }
 
     #[Computed]
@@ -423,6 +439,7 @@ class ApplicationDetail extends Component
             $this->documentSummary,
             $this->trackingSummary,
             $this->determinantsChanged,
+            $this->lastActivityAt,
         );
     }
 

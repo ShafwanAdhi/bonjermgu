@@ -172,6 +172,48 @@ test('Referral calculates both products and modes on the server then prints the 
     Carbon::setTestNow();
 });
 
+/*
+ * pages.md §18: a failed calculation must name the cause, not show a bare
+ * zero. Pushing the clock far past the vehicle's year makes every tenor fail
+ * eligibility, which is the cheapest reliable way to force a zero row without
+ * touching product/rate configuration.
+ */
+test('a tenor that fails eligibility explains why instead of showing a bare zero', function () {
+    $this->seed(ReferralMasterSeeder::class);
+    $this->seed(SimulationConfigurationSeeder::class);
+    TestVehicleMaster::seed();
+
+    $category = ReferralCategory::query()
+        ->where('segment', 'Reguler')
+        ->where('tier', 'Referral')
+        ->with('subCategories')
+        ->firstOrFail();
+    $referral = Referral::factory()->create([
+        'category_id' => $category->id,
+        'sub_category_id' => $category->subCategories->firstOrFail()->id,
+        'institution_id' => null,
+    ])->load(['user', 'category']);
+
+    $model = VehicleModel::query()
+        ->whereHas('type.brand.usage', fn ($query) => $query->where('name', 'Passenger'))
+        ->whereHas('prices', fn ($query) => $query->where('price', '>', 0))
+        ->with(['type.brand.usage', 'prices' => fn ($query) => $query->where('price', '>', 0)->orderByDesc('year')])
+        ->firstOrFail();
+    $price = $model->prices->first();
+    // Thirty years out, even the 12-month tenor fails eligibility.
+    Carbon::setTestNow(Carbon::create($price->year + 30, 8, 4));
+
+    Livewire::actingAs($referral->user)
+        ->test(CreditSimulation::class)
+        ->set(validSimulationState($model, $price->year))
+        ->call('calculate')
+        ->assertHasNoErrors()
+        ->assertSet('hasCalculated', true)
+        ->assertSee('Usia kendaraan melebihi batas kelayakan untuk tenor ini.');
+
+    Carbon::setTestNow();
+});
+
 test('simulation keeps calculating when legacy databases are missing newer default settings', function () {
     $this->seed(ReferralMasterSeeder::class);
     $this->seed(SimulationConfigurationSeeder::class);

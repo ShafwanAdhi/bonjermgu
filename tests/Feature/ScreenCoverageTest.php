@@ -1,6 +1,7 @@
 <?php
 
 use App\Domain\Application\ApplicationCreator;
+use App\Domain\Application\ApplicationStatus;
 use App\Models\AccountOfficer;
 use App\Models\Admin;
 use App\Models\Application;
@@ -120,7 +121,8 @@ it('renders every screen in the mockups', function (string $path, string $role, 
         ->assertOk()
         ->assertSee($expected, escape: false)
         ->assertSee('rel="icon"', escape: false)
-        ->assertSee('images/brand/bonjemgu-logo.svg', escape: false);
+        ->assertSee('images/brand/bonjemgu-logo.svg', escape: false)
+        ->assertDontSee('fonts.googleapis.com', escape: false);
 })->with(collect(screenMap())->map(
     fn ($spec, $path) => [$path, $spec[0], $spec[1]],
 )->values()->all());
@@ -265,6 +267,41 @@ it('keeps the normal dashboard greeting when today is not the user birthday', fu
         ->assertSee('Selamat datang, Andi.', escape: false)
         ->assertDontSee('Selamat ulang tahun, semoga selalu diberikan kesehatan.', escape: false)
         ->assertDontSee('birthday-fireworks', escape: false);
+});
+
+/*
+ * The dashboard used to derive the chip straight from go_live_date, which
+ * predates the Canceled status and never learned about it — a cancelled
+ * application showed "Pipe Line" here while the list already said
+ * "Canceled". Model::statusLabel()/statusTone() is the single source now.
+ */
+it('shows a cancelled application as Canceled on the referral dashboard, not Pipe Line', function () {
+    $this->seed(DocumentRequirementSeeder::class);
+    $this->seed(TrackingStageSeeder::class);
+
+    $officer = AccountOfficer::factory()->create();
+    $referral = Referral::factory()->create();
+
+    $this->actingAs($officer->user);
+
+    $application = ApplicationCreator::create([
+        'account_officer_id' => $officer->id,
+        'referral_id' => $referral->id,
+        'financing_product' => 'DTN',
+        'debtor_name' => 'Rina Kusuma',
+        'debtor_nik' => '3173054505880003',
+        'debtor_birth_date' => '1990-01-01',
+        'debtor_type' => 'Perorangan Non Wiraswasta',
+        'spouse_income_type' => 'Tidak Ada',
+        'unit_count' => 1,
+    ]);
+    $application->update(['application_status' => ApplicationStatus::Canceled]);
+
+    $this->actingAs($referral->user)
+        ->get('/dashboard')
+        ->assertOk()
+        ->assertSee('Canceled')
+        ->assertDontSee('Pipe Line');
 });
 
 it('renders both lending reports', function (string $path, string $expected) {

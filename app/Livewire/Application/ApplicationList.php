@@ -9,6 +9,7 @@ use App\Domain\Application\TrackingStatus;
 use App\Enums\Role;
 use App\Models\Application;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -38,6 +39,9 @@ class ApplicationList extends Component
     #[Url(as: 'status', except: '')]
     public string $goLive = '';
 
+    #[Url(as: 'bulan', except: '')]
+    public string $month = '';
+
     public function mount(): void
     {
         $this->authorize('viewAny', Application::class);
@@ -58,6 +62,11 @@ class ApplicationList extends Component
         $this->resetPage();
     }
 
+    public function updatedMonth(): void
+    {
+        $this->resetPage();
+    }
+
     #[Computed]
     public function isOfficer(): bool
     {
@@ -67,6 +76,8 @@ class ApplicationList extends Component
     #[Computed]
     public function applications(): LengthAwarePaginator
     {
+        $monthRange = $this->selectedMonthRange();
+
         return Application::query()
             ->with([
                 'referral:id,full_name',
@@ -91,6 +102,7 @@ class ApplicationList extends Component
             ->when($this->goLive === 'canceled', fn ($q) => $q
                 ->whereNull('go_live_date')
                 ->where('application_status', ApplicationStatus::Canceled->value))
+            ->when($monthRange !== null, fn ($q) => $q->whereBetween('created_at', $monthRange))
             ->latest('created_at')
             ->paginate(15);
     }
@@ -103,8 +115,27 @@ class ApplicationList extends Component
 
     public function resetFilters(): void
     {
-        $this->reset('search', 'product', 'goLive');
+        $this->reset('search', 'product', 'goLive', 'month');
         $this->resetPage();
+    }
+
+    private function selectedMonthRange(): ?array
+    {
+        if (! preg_match('/^\d{4}-\d{2}$/', $this->month)) {
+            return null;
+        }
+
+        try {
+            $start = Carbon::createFromFormat('!Y-m-d', $this->month.'-01')->startOfMonth();
+        } catch (\Throwable) {
+            return null;
+        }
+
+        if ($start->format('Y-m') !== $this->month) {
+            return null;
+        }
+
+        return [$start, $start->copy()->endOfMonth()];
     }
 
     public function render()

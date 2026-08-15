@@ -18,6 +18,7 @@ use App\Models\VehiclePrice;
 use App\Repositories\MasterLookupRepository;
 use App\Repositories\VehicleCascadeRepository;
 use App\Services\SimulationService;
+use App\Support\Format;
 use App\Support\RupiahInput;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
@@ -555,6 +556,7 @@ final class CreditSimulation extends Component
                 'disbursement' => $this->rupiah($tenorResult->outputAmount),
                 'instalment' => $this->rupiah($tenorResult->instalment),
                 'zero' => $tenorResult->outputAmount == 0 || $tenorResult->instalment === 0,
+                'reason' => Format::zeroReasonLabel($tenorResult->zeroReason),
             ];
         }
 

@@ -18,6 +18,7 @@ use App\Models\Referral;
 use App\Models\Scopes\ApplicationVisibilityScope;
 use Database\Seeders\DocumentRequirementSeeder;
 use Database\Seeders\TrackingStageSeeder;
+use Illuminate\Support\Carbon;
 use Livewire\Livewire;
 
 beforeEach(function () {
@@ -154,6 +155,15 @@ it('refuses application creation to a referral', function () {
 
 /* ---------------------------------------------------------- Daftar & filter */
 
+it('shows when the application was created on the list', function () {
+    $application = makeApplication();
+    $application->forceFill(['created_at' => '2026-01-05 10:00:00'])->save();
+
+    Livewire::actingAs($this->officer->user)
+        ->test(ApplicationList::class)
+        ->assertSee('05 Januari 2026');
+});
+
 it('lists only the officer own applications', function () {
     $mine = makeApplication();
 
@@ -192,6 +202,26 @@ it('filters by product and go live status', function () {
         ->set('goLive', 'live')
         ->assertDontSee($dtn->code)
         ->assertDontSee($ucf->code);
+});
+
+it('filters applications by created month', function () {
+    $january = makeApplication();
+    $january->forceFill(['created_at' => '2026-01-15 10:00:00'])->save();
+
+    $february = makeApplication([
+        'debtor_nik' => '3173054505880007',
+        'debtor_name' => 'Debitur Februari',
+    ]);
+    $february->forceFill(['created_at' => '2026-02-03 10:00:00'])->save();
+
+    Livewire::actingAs($this->officer->user)
+        ->test(ApplicationList::class)
+        ->set('month', '2026-02')
+        ->assertSee($february->code)
+        ->assertDontSee($january->code)
+        ->set('month', '2026-99')
+        ->assertSee($february->code)
+        ->assertSee($january->code);
 });
 
 it('filters canceled applications separately from active pipe line', function () {
@@ -413,6 +443,36 @@ it('shows officer document and tracking updates on the referral application deta
         ->assertSet('canEdit', false)
         ->assertSee("1 / {$documentCount} lengkap")
         ->assertSee('1 / 11 selesai');
+});
+
+/*
+ * "Dibuat" always shows the creation date. "Diperbarui" only appears once
+ * something on the application actually moved — a stage toggle counts even
+ * though it only touches application_trackings, not the applications row
+ * itself.
+ */
+it('shows no update note until something on the application moves', function () {
+    Carbon::setTestNow('2026-01-05 09:00:00');
+    $application = makeApplication();
+    Carbon::setTestNow();
+
+    Livewire::actingAs($this->officer->user)
+        ->test(ApplicationDetail::class, ['application' => $application])
+        ->assertSee('05 Januari 2026')
+        ->assertDontSee('Diperbarui');
+});
+
+it('shows the update note after a tracking stage moves', function () {
+    Carbon::setTestNow('2026-01-05 09:00:00');
+    $application = makeApplication();
+    Carbon::setTestNow('2026-02-10 09:00:00');
+
+    Livewire::actingAs($this->officer->user)
+        ->test(ApplicationDetail::class, ['application' => $application])
+        ->call('toggleStage', 3)
+        ->assertSee('Diperbarui 10 Februari 2026');
+
+    Carbon::setTestNow();
 });
 
 it('accepts a later stage while earlier ones are still Belum', function () {

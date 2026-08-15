@@ -307,6 +307,11 @@
                                         ])>
                                             {{ $row['tenor'] }}
                                         </p>
+                                        @if ($row['reason'] ?? null)
+                                            <p class="mt-1 text-[12px] leading-[1.4] text-signature-coral">
+                                                {{ $row['reason'] }}
+                                            </p>
+                                        @endif
                                         <div class="mt-2 grid grid-cols-2 gap-sm">
                                             <div>
                                                 <p class="text-[11px] uppercase leading-[1.3] text-muted">
@@ -349,6 +354,9 @@
                                 <tr wire:key="result-{{ $row['tenor'] }}">
                                     <x-ui.td :class="$row['zero'] ? 'text-border-strong' : 'text-ink'">
                                         {{ $row['tenor'] }}
+                                        @if ($row['reason'] ?? null)
+                                            <span class="block text-helper text-signature-coral">{{ $row['reason'] }}</span>
+                                        @endif
                                     </x-ui.td>
                                     <x-ui.td align="right" numeric
                                              :class="$row['zero'] ? 'text-border-strong' : 'font-medium text-ink'">

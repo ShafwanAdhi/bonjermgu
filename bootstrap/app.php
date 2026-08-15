@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureAccountIsActive;
 use App\Http\Middleware\EnsureUserHasRole;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -15,6 +16,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => EnsureUserHasRole::class,
         ]);
+
+        // Runs on every request, not only the routes gated by 'auth', so a
+        // deactivation takes effect immediately instead of at next login.
+        $middleware->appendToGroup('web', EnsureAccountIsActive::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

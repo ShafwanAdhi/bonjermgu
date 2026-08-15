@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Domain\Simulation\Output\ZeroReason;
 use Illuminate\Support\Carbon;
 
 /**
@@ -58,5 +59,23 @@ class Format
     public static function ratio(int $done, int $total): string
     {
         return $done.' / '.$total;
+    }
+
+    /**
+     * Why a tenor came back zero — pages.md section 18: a failed calculation
+     * must name the cause, not just show a bare figure. Kept in plain language
+     * without the underlying numbers; the numbers themselves stay on the
+     * Admin trace (CalculationTrace), never on the Referral or AO screen.
+     */
+    public static function zeroReasonLabel(?ZeroReason $reason): ?string
+    {
+        return match ($reason) {
+            null => null,
+            ZeroReason::NotEligible => 'Usia kendaraan melebihi batas kelayakan untuk tenor ini.',
+            ZeroReason::RateUnavailable => 'Tenor ini tidak tersedia untuk produk yang dipilih.',
+            ZeroReason::PriceUnavailable => 'Harga kendaraan tidak tersedia untuk tahun yang dipilih.',
+            ZeroReason::DownPaymentExceedsPrice => 'Selisih harga terlalu besar, tidak ada nilai yang dapat dibiayai.',
+            ZeroReason::DownPaymentBelowMinimum => 'Nominal yang dikehendaki tidak memenuhi Down Payment minimum.',
+        };
     }
 }

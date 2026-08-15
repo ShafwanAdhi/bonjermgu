@@ -27,6 +27,21 @@ it('refuses logout to guests', function () {
     $this->post('/logout')->assertRedirect(route('login'));
 });
 
+/*
+ * Deactivation was previously only checked at login. A session started
+ * before Admin flipped is_active stayed valid until it expired on its own.
+ */
+it('logs out a session as soon as its account is deactivated mid-session', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)->get('/dashboard')->assertOk();
+
+    $user->update(['is_active' => false]);
+
+    $this->get('/dashboard')->assertRedirect(route('login'));
+    $this->assertGuest();
+});
+
 it('lets each role reach the shared dashboard route', function (string $state) {
     $user = User::factory()->{$state}()->create();
 

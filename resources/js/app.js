@@ -195,12 +195,9 @@ const adminMotionTargets = [
 const isAdminModuleLeafPage = () => {
     const path = window.location.pathname;
 
-    return [
-        "/configuration/",
-        "/master/",
-        "/accounts/",
-        "/lending/",
-    ].some((prefix) => path.startsWith(prefix));
+    return ["/configuration/", "/master/", "/accounts/", "/lending/"].some(
+        (prefix) => path.startsWith(prefix),
+    );
 };
 
 const prepareAdminDashboardScrollMotion = () => {
@@ -243,8 +240,8 @@ const prepareAdminDashboardScrollMotion = () => {
             });
         },
         {
-            rootMargin: "0px 0px -14% 0px",
-            threshold: 0.16,
+            rootMargin: "0px 0px -10% 0px",
+            threshold: 0.1,
         },
     );
 
@@ -359,7 +356,10 @@ const scrollProfileFormIntoView = () => {
 
         const rect = target.getBoundingClientRect();
         const targetTop =
-            rect.top + window.scrollY - window.innerHeight / 2 + rect.height / 2;
+            rect.top +
+            window.scrollY -
+            window.innerHeight / 2 +
+            rect.height / 2;
 
         window.scrollTo({
             top: Math.max(targetTop, 0),
@@ -468,7 +468,10 @@ document.addEventListener("livewire:navigated", () => {
 });
 window.addEventListener("profile-editing", scrollProfileFormIntoView);
 window.addEventListener("profile-password-updated", scrollProfileTopIntoView);
-window.addEventListener("configuration-product-selected", scrollProductEditorIntoView);
+window.addEventListener(
+    "configuration-product-selected",
+    scrollProductEditorIntoView,
+);
 window.addEventListener("master-panel-opened", scrollMasterPanelIntoView);
 window.addEventListener("master-step-attention", scrollMasterStepIntoView);
 document.addEventListener("livewire:initialized", () => {
