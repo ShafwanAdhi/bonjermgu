@@ -565,7 +565,7 @@ final class OfficerSimulation extends Component
         return match (true) {
             ! $this->isUcf && ! $this->isModeB => 'Pencairan Maksimal',
             ! $this->isUcf => 'Pencairan',
-            ! $this->isModeB => 'Pencairan All In',
+            ! $this->isModeB => 'Pencairan Neto',
             default => 'Total DP',
         };
     }

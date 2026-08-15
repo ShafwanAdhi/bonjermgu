@@ -363,7 +363,7 @@ final class CalculationTrace
 
         return [
             'title' => '8 · Refund',
-            'note' => 'Refund menambah pencairan all in.',
+            'note' => 'Refund dibayarkan terpisah dan tidak menambah pencairan. Dana Tunai hanya memperoleh Refund Bunga dan Refund Provisi.',
             'steps' => [
                 [
                     'label' => 'Refund asuransi',
@@ -377,7 +377,7 @@ final class CalculationTrace
                 ],
                 [
                     'label' => 'Refund provisi',
-                    'formula' => 'upping provisi × persentase',
+                    'formula' => 'biaya provisi × persentase',
                     'value' => Format::rupiah((int) round($refund->provision)),
                 ],
                 [
@@ -400,7 +400,7 @@ final class CalculationTrace
         $heading = match (true) {
             ! $isUcf && $isModeA => 'Pencairan Maksimal',
             ! $isUcf => 'Pencairan',
-            $isModeA => 'Pencairan All In',
+            $isModeA => 'Pencairan Neto',
             default => 'Total DP',
         };
 

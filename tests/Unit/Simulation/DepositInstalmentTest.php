@@ -71,7 +71,7 @@ it('withholds from Mobil Bekas disbursement without touching Total Bayar Pertama
 
     expect($held->depositInstalmentAmount)->toEqual(2 * $free->instalment)
         ->and($held->firstPayment)->toEqual($free->firstPayment)
-        ->and($held->allInDisbursement)->toEqual($free->allInDisbursement - 2 * $free->instalment);
+        ->and($held->outputAmount)->toEqual($free->outputAmount - 2 * $free->instalment);
 });
 
 it('withholds nothing in Mode B, which produces no disbursement', function () {

@@ -40,7 +40,6 @@ final readonly class TenorResult
         public int|float $depositInstalmentAmount,
         public int|float $netDisbursement,
         public RefundBreakdown $refund,
-        public int|float $allInDisbursement,
         public int|float $outputAmount,
     ) {}
 
@@ -81,7 +80,6 @@ final readonly class TenorResult
             depositInstalmentAmount: 0,
             netDisbursement: 0,
             refund: RefundBreakdown::zero(),
-            allInDisbursement: 0,
             outputAmount: 0,
         );
     }

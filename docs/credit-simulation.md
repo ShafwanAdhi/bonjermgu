@@ -423,12 +423,34 @@ Total Bayar Pertama = Net DP (Rp) + Total Asuransi + Provisi
 
 ```text
 Refund Asuransi = (Casco + Loading + Perluasan) × Persentase Dasar × Persentase Refund
-Refund Bunga    = (LTV (Rp) × (Up Rate × Tenor Tahun)) ÷ (1 + Bunga Jual (%)) × Persentase Refund
+Refund Bunga    = (LTV (Rp) × (Up Rate × Tenor Tahun)) ÷ (1 + Flat Rate × Tenor Tahun) × Persentase Refund
 Refund Provisi  = Provisi (Rp) × Persentase Refund
 Refund Admin    = Up Admin × Persentase Refund
 
 Total Refund = ROUNDDOWN(seluruh komponen, ribuan)
 ```
+
+Penyebut Refund Bunga memakai **Flat Rate sebelum Up Rate**, bukan Bunga Jual. Up Rate adalah hal yang direfund, jadi ia tidak ikut mendiskonto refundnya sendiri. Ditetapkan klien 15 Agustus 2026 lewat contoh berikut:
+
+```text
+Pokok Hutang 100.000.000, Up Rate 3%, tenor 60 bulan,
+Flat Rate 10% per tahun, Persentase Refund 80%
+
+  100.000.000 × (3% × 5)          = 15.000.000
+  1 + (10% × 5)                   = 1,50
+  15.000.000 ÷ 1,50 × 80%         = 8.000.000
+```
+
+**Refund adalah komisi Referral.** Ia dibayarkan kepada Referral yang membawa pengajuan, bukan kepada debitur maupun penjual unit. Karena itu Refund adalah pembayaran tersendiri dan **tidak pernah menambah Pencairan**. Bunga tidak dibebankan di muka, sehingga melipat Refund Bunga ke dalam pencairan akan membuat rate yang lebih tinggi justru menaikkan uang yang diterima — perilaku draft yang dikoreksi 15 Agustus 2026.
+
+Dana Tunai memperoleh **Refund Bunga dan Refund Provisi** saja. Refund Asuransi dan Refund Admin tetap milik Pembiayaan Mobil Bekas.
+
+Akibatnya, upping bergerak pada satu arah saja masing-masing:
+
+| Upping     | Angsuran   | Pencairan            |
+| ---------- | ---------- | -------------------- |
+| Up Rate    | Naik       | Tidak bergerak       |
+| Up Provisi | Tetap      | Turun sebesar Provisi |
 
 **Pencairan**
 
@@ -436,7 +458,6 @@ Total Refund = ROUNDDOWN(seluruh komponen, ribuan)
 Pencairan Gross  = Harga OTR - Total Bayar Pertama
 Deposit Angsuran = Jumlah Angsuran Dititipkan x Angsuran tenor tersebut
 Pencairan Neto   = Pencairan Gross - (BBNKB + PKB + Faktur) - Deposit Angsuran
-Pencairan All In = Pencairan Neto + Total Refund
 ```
 
 ### Output Mode A
@@ -444,7 +465,7 @@ Pencairan All In = Pencairan Neto + Total Refund
 | Kolom            | Isi                          |
 | ---------------- | ---------------------------- |
 | Tenor            | 12 / 24 / 36 / 48 / 60 Bulan |
-| Pencairan All In | Pencairan All In             |
+| Pencairan Neto   | Pencairan Neto               |
 | Angsuran         | Angsuran per bulan           |
 
 ---
@@ -508,8 +529,8 @@ Apabila LTV bernilai 0, Angsuran bernilai 0.
 | Pembulatan Total Asuransi                 | ROUNDDOWN ratusan                 | ROUNDUP ratusan                |
 | Angsuran Pertama pada Total Bayar Pertama | Tidak termasuk                    | Termasuk jika ADDM             |
 | Dasar Deposit Angsuran                    | Angsuran                          | Angsuran                       |
-| Refund                                    | Tidak ada                         | Ada                            |
-| Output Mode A                             | Pencairan Maksimal                | Pencairan All In               |
+| Refund                                    | Bunga dan Provisi                 | Seluruh komponen               |
+| Output Mode A                             | Pencairan Maksimal                | Pencairan Neto                 |
 | Input Mode B                              | Dana yang dibutuhkan              | Total DP dikehendaki           |
 
 ---
@@ -592,7 +613,7 @@ Ketentuan yang berlaku pada kedua profil:
 | ---------------------------------------------- | ------------------------------------------------------------------------------ |
 | Kombinasi kunci tidak ada pada master PHPM     | Simulasi tidak dapat dijalankan                                                |
 | Model tidak memiliki harga pada tahun terpilih | Seluruh hasil tenor bernilai 0                                                 |
-| Unit tidak memenuhi ketentuan kelayakan        | Hasil tenor terkait bernilai 0, **termasuk Total Refund dan Pencairan All In** |
+| Unit tidak memenuhi ketentuan kelayakan        | Hasil tenor terkait bernilai 0, **termasuk Total Refund dan Pencairan** |
 | Rate tenor tidak tersedia pada Product         | Hasil tenor terkait bernilai 0                                                 |
 | DP Net kurang dari Net DP minimum (Mode B)     | LTV dan Angsuran bernilai 0                                                    |
 | Net DP mencapai atau melampaui harga unit      | Seluruh komponen tenor bernilai 0                                              |
@@ -603,7 +624,7 @@ Ketentuan yang berlaku pada kedua profil:
 
 Ketika sebuah tenor dinyatakan tidak menghasilkan pembiayaan, **seluruh** komponen tenor tersebut bernilai 0, termasuk Total Asuransi, Total Bayar Pertama, Total Refund, Pencairan, dan Angsuran.
 
-Tidak boleh ada komponen yang tetap terhitung sendiri. Pada draft, Total Refund pada Pembiayaan Mobil Bekas tetap dihitung meskipun Harga PHPM bernilai 0, sehingga Pencairan All In menampilkan nilai kecil yang tidak valid.
+Tidak boleh ada komponen yang tetap terhitung sendiri. Pada draft, Total Refund pada Pembiayaan Mobil Bekas tetap dihitung meskipun Harga PHPM bernilai 0, sehingga Pencairan menampilkan nilai kecil yang tidak valid.
 
 ### Ketentuan Rate Tenor Kosong
 

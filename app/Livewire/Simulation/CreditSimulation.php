@@ -468,7 +468,7 @@ final class CreditSimulation extends Component
         return match ($this->financing_type.'-'.$this->mode) {
             'DTN-A' => 'Pencairan Maksimal',
             'DTN-B' => 'Pencairan',
-            'UCF-A' => 'Pencairan All In',
+            'UCF-A' => 'Pencairan Neto',
             'UCF-B' => 'Total DP',
             default => 'Pencairan',
         };

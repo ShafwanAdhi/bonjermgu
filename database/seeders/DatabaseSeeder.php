@@ -18,6 +18,8 @@ class DatabaseSeeder extends Seeder
             TrackingStageSeeder::class,
             // Depends on the master data above. Skips itself in production.
             UserSeeder::class,
+            // Local review rows for the read-only Admin audit screen. Skips production.
+            AdminAuditLogSeeder::class,
             // Depends on the seeded AO, Referral, document catalogue, and stages.
             ApplicationSeeder::class,
         ]);

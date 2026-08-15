@@ -50,23 +50,30 @@
                         ->sort()
                         ->values();
                 @endphp
-                <div class="rounded-lg border border-hairline bg-canvas" wire:key="audit-{{ $entry->id }}" x-data="{ open: false }">
+                <div class="overflow-hidden rounded-lg border border-hairline bg-canvas" wire:key="audit-{{ $entry->id }}" x-data="{ open: false }">
                     <button type="button" x-on:click="open = ! open" x-bind:aria-expanded="open"
-                            class="flex w-full flex-wrap items-center justify-between gap-sm px-md py-3.5 text-left">
-                        <div class="flex flex-wrap items-center gap-sm">
-                            <x-ui.chip :tone="match ($entry->action) {
-                                'created' => 'success',
-                                'deleted' => 'danger',
-                                default => 'neutral',
-                            }">{{ AuditLog::actionLabel($entry->action) }}</x-ui.chip>
-                            <span class="text-body-md font-medium text-ink">{{ AuditLog::moduleLabel($entry->audit_module) }}</span>
-                            <span class="text-helper text-muted">{{ $entry->subject_table }} #{{ $entry->subject_id }}</span>
+                            class="flex w-full items-start gap-md px-md py-4 text-left transition-colors hover:bg-surface-soft">
+                        <div class="min-w-0 flex-1">
+                            <div class="flex min-w-0 flex-wrap items-center gap-xs sm:gap-sm">
+                                <x-ui.chip :tone="match ($entry->action) {
+                                    'created' => 'success',
+                                    'deleted' => 'danger',
+                                    default => 'neutral',
+                                }">{{ AuditLog::actionLabel($entry->action) }}</x-ui.chip>
+                                <span class="min-w-0 text-body-md font-medium text-ink">{{ AuditLog::moduleLabel($entry->audit_module) }}</span>
+                            </div>
+
+                            <div class="mt-2 flex min-w-0 flex-col gap-1 text-helper text-muted sm:flex-row sm:flex-wrap sm:items-center sm:gap-sm">
+                                <span class="min-w-0 break-words font-mono">{{ $entry->subject_table }} #{{ $entry->subject_id }}</span>
+                                <span class="hidden text-border-strong sm:inline" aria-hidden="true">&middot;</span>
+                                <span>{{ $entry->actor?->username ?? $entry->actor_name }}</span>
+                                <span class="hidden text-border-strong sm:inline" aria-hidden="true">&middot;</span>
+                                <time datetime="{{ $entry->created_at->toIso8601String() }}">{{ $entry->created_at->translatedFormat('d F Y H.i') }}</time>
+                            </div>
                         </div>
-                        <div class="flex items-center gap-sm text-helper text-muted">
-                            <span>{{ $entry->actor?->username ?? $entry->actor_name }}</span>
-                            <span>{{ $entry->created_at->translatedFormat('d F Y H.i') }}</span>
-                            <span x-text="open ? '−' : '+'" aria-hidden="true"></span>
-                        </div>
+                        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-hairline bg-canvas text-[18px] leading-none text-muted"
+                              x-text="open ? '-' : '+'"
+                              aria-hidden="true"></span>
                     </button>
 
                     <div x-show="open" x-cloak
@@ -77,10 +84,12 @@
                         @if ($keys->isEmpty())
                             <p class="text-helper text-muted">Tidak ada rincian kolom untuk perubahan ini.</p>
                         @else
-                            <div class="grid grid-cols-1 gap-2 sm:grid-cols-[minmax(0,180px)_1fr_1fr]">
-                                <span class="hidden text-helper font-medium text-muted sm:block">Kolom</span>
-                                <span class="hidden text-helper font-medium text-muted sm:block">Sebelum</span>
-                                <span class="hidden text-helper font-medium text-muted sm:block">Sesudah</span>
+                            <div class="space-y-2">
+                                <div class="hidden grid-cols-[minmax(0,180px)_minmax(0,1fr)_minmax(0,1fr)] gap-md px-sm text-helper font-medium text-muted sm:grid">
+                                    <span>Kolom</span>
+                                    <span>Sebelum</span>
+                                    <span>Sesudah</span>
+                                </div>
                                 @foreach ($keys as $key)
                                     @php
                                         $before = data_get($entry->before_values, $key);
@@ -92,14 +101,25 @@
                                             default => (string) $value,
                                         };
                                     @endphp
-                                    <div class="contents">
-                                        <span class="font-mono text-[13px] text-ink">{{ $key }}</span>
-                                        <span class="text-[13px] {{ $entry->action !== 'created' && $before !== $after ? 'text-signature-coral' : 'text-body' }}">
-                                            {{ $entry->action === 'created' ? '—' : $render($before) }}
-                                        </span>
-                                        <span class="text-[13px] {{ $entry->action !== 'created' && $before !== $after ? 'font-medium text-ink' : 'text-body' }}">
-                                            {{ $entry->action === 'deleted' ? '—' : $render($after) }}
-                                        </span>
+                                    <div class="rounded-md border border-divider bg-canvas p-sm sm:grid sm:grid-cols-[minmax(0,180px)_minmax(0,1fr)_minmax(0,1fr)] sm:gap-md sm:border-0 sm:bg-transparent sm:px-sm sm:py-2">
+                                        <div class="mb-2 min-w-0 sm:mb-0">
+                                            <span class="block text-[11px] font-medium uppercase leading-none text-muted sm:hidden">Kolom</span>
+                                            <span class="mt-1 block break-words font-mono text-[13px] text-ink sm:mt-0">{{ $key }}</span>
+                                        </div>
+                                        <div class="grid gap-xs sm:contents">
+                                            <div class="min-w-0 rounded-sm bg-surface-soft px-3 py-2 sm:bg-transparent sm:p-0">
+                                                <span class="block text-[11px] font-medium uppercase leading-none text-muted sm:hidden">Sebelum</span>
+                                                <span class="mt-1 block break-words text-[13px] leading-[1.5] {{ $entry->action !== 'created' && $before !== $after ? 'text-signature-coral' : 'text-body' }}">
+                                                    {{ $entry->action === 'created' ? '—' : $render($before) }}
+                                                </span>
+                                            </div>
+                                            <div class="min-w-0 rounded-sm bg-surface-soft px-3 py-2 sm:bg-transparent sm:p-0">
+                                                <span class="block text-[11px] font-medium uppercase leading-none text-muted sm:hidden">Sesudah</span>
+                                                <span class="mt-1 block break-words text-[13px] leading-[1.5] {{ $entry->action !== 'created' && $before !== $after ? 'font-medium text-ink' : 'text-body' }}">
+                                                    {{ $entry->action === 'deleted' ? '—' : $render($after) }}
+                                                </span>
+                                            </div>
+                                        </div>
                                     </div>
                                 @endforeach
                             </div>

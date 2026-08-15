@@ -103,7 +103,7 @@ test('Referral calculates both products and modes on the server then prints the 
         ->assertCount('results', 5);
 
     $ucfModeA = $component->get('results')[0]['disbursement'];
-    expect($component->instance()->disbursementHeading())->toBe('Pencairan All In')
+    expect($component->instance()->disbursementHeading())->toBe('Pencairan Neto')
         ->and($ucfModeA)->not->toBe($dtnModeA);
 
     $component

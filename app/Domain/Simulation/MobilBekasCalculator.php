@@ -100,17 +100,19 @@ final class MobilBekasCalculator
             $depositAmount = $config->depositFor($instalment);
             $netDisbursement = $grossDisbursement - $config->disbursementDeductions() - $depositAmount;
             $refund = $this->refundCalculator->calculate(
+                FinancingType::UCF,
                 $insurance,
                 $config->product,
                 $config->refund,
                 $ltvAmount,
                 $tenorMonths,
-                $sellingInterestRate,
+                // Rate bottom saja — Up Rate tidak mendiskonto refundnya sendiri.
+                $flatRate * ($tenorMonths / 12),
                 $fees->provision,
             );
-            $allInDisbursement = $netDisbursement + $refund->total;
             $desiredAmount = 0;
-            $outputAmount = $allInDisbursement;
+            // Refund is paid out separately; it never tops up the disbursement.
+            $outputAmount = $netDisbursement;
         } else {
             $firstPayment = $insurance->total + $fees->total();
             $basis = $otrPrice - ($input->desiredAmount - $firstPayment);
@@ -139,7 +141,6 @@ final class MobilBekasCalculator
             $grossDisbursement = 0;
             $depositAmount = 0;
             $netDisbursement = 0;
-            $allInDisbursement = 0;
             $outputAmount = $input->desiredAmount;
         }
 
@@ -174,7 +175,6 @@ final class MobilBekasCalculator
             depositInstalmentAmount: $depositAmount,
             netDisbursement: $netDisbursement,
             refund: $refund,
-            allInDisbursement: $allInDisbursement,
             outputAmount: $outputAmount,
         );
     }

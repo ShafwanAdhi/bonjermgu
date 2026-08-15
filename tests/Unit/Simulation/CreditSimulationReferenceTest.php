@@ -60,8 +60,8 @@ test('S2 Mobil Bekas ADDB matches the reference vectors', function () {
     assertMoneySeries([12 => 2_930_000, 24 => 4_288_500, 36 => 5_618_400, 48 => 7_134_200, 60 => 8_549_900], fn ($tenor) => $modeA->forTenor($tenor)->insurance->total);
     assertMoneySeries([12 => 19_130_000, 24 => 20_488_500, 36 => 21_818_400, 48 => 23_334_200, 60 => 24_749_900], fn ($tenor) => $modeA->forTenor($tenor)->firstPayment);
     assertMoneySeries([12 => 90_870_000, 24 => 89_511_500, 36 => 88_181_600, 48 => 86_665_800, 60 => 85_250_100], fn ($tenor) => $modeA->forTenor($tenor)->netDisbursement);
-    assertMoneySeries([12 => 436_000, 24 => 812_000, 36 => 1_139_000, 48 => 1_385_000, 60 => 1_613_000], fn ($tenor) => $modeA->forTenor($tenor)->refund->total);
-    assertMoneySeries([12 => 91_306_000, 24 => 90_323_500, 36 => 89_320_600, 48 => 88_050_800, 60 => 86_863_100], fn ($tenor) => $modeA->forTenor($tenor)->outputAmount);
+    assertMoneySeries([12 => 438_000, 24 => 818_000, 36 => 1_151_000, 48 => 1_402_000, 60 => 1_635_000], fn ($tenor) => $modeA->forTenor($tenor)->refund->total);
+    assertMoneySeries([12 => 90_870_000, 24 => 89_511_500, 36 => 88_181_600, 48 => 86_665_800, 60 => 85_250_100], fn ($tenor) => $modeA->forTenor($tenor)->outputAmount);
     assertMoneySeries([12 => 8_953_000, 24 => 4_827_000, 36 => 3_452_000, 48 => 2_859_000, 60 => 2_476_000], fn ($tenor) => $modeA->forTenor($tenor)->instalment);
     assertMoneySeries([12 => 8_130_000, 24 => 9_488_500, 36 => 10_818_400, 48 => 12_334_200, 60 => 13_749_900], fn ($tenor) => $modeB->forTenor($tenor)->firstPayment);
     assertMoneySeries([12 => 51_870_000, 24 => 50_511_500, 36 => 49_181_600, 48 => 47_665_800, 60 => 46_250_100], fn ($tenor) => $modeB->forTenor($tenor)->netDpAmount);
@@ -81,11 +81,11 @@ test('S3 and S4 ADDM match the reference vectors', function () {
     assertMoneySeries([12 => 92_131_800, 24 => 90_773_300, 36 => 89_443_400, 48 => 87_927_600, 60 => 86_511_900], fn ($tenor) => $dtnA->forTenor($tenor)->outputAmount);
     assertMoneySeries([12 => 6_518_200, 24 => 7_876_700, 36 => 9_206_600, 48 => 10_722_400, 60 => 12_138_100], fn ($tenor) => $dtnA->forTenor($tenor)->insurance->total);
     assertMoneySeries([12 => 17_868_200, 24 => 19_226_700, 36 => 20_556_600, 48 => 22_072_400, 60 => 23_488_100], fn ($tenor) => $dtnA->forTenor($tenor)->firstPayment);
-    assertMoneySeries([12 => 82_464_000, 24 => 85_562_500, 36 => 85_920_600, 48 => 85_244_800, 60 => 84_437_100], fn ($tenor) => $ucfA->forTenor($tenor)->outputAmount);
+    assertMoneySeries([12 => 82_024_000, 24 => 84_742_500, 36 => 84_770_600, 48 => 83_843_800, 60 => 82_807_100], fn ($tenor) => $ucfA->forTenor($tenor)->outputAmount);
     assertMoneySeries([12 => 8_846_000, 24 => 4_769_000, 36 => 3_411_000, 48 => 2_822_000, 60 => 2_443_000], fn ($tenor) => $ucfA->forTenor($tenor)->instalment);
     assertMoneySeries([12 => 5_704_000, 24 => 3_011_000, 36 => 2_170_000, 48 => 1_829_000, 60 => 1_613_000], fn ($tenor) => $ucfB->forTenor($tenor)->instalment);
     assertMoneySeries([12 => 2_930_000, 24 => 4_288_500, 36 => 5_618_400, 48 => 7_134_200, 60 => 8_549_900], fn ($tenor) => $ucfA->forTenor($tenor)->insurance->total);
-    assertMoneySeries([12 => 440_000, 24 => 820_000, 36 => 1_150_000, 48 => 1_401_000, 60 => 1_630_000], fn ($tenor) => $ucfA->forTenor($tenor)->refund->total);
+    assertMoneySeries([12 => 442_000, 24 => 826_000, 36 => 1_162_000, 48 => 1_418_000, 60 => 1_653_000], fn ($tenor) => $ucfA->forTenor($tenor)->refund->total);
 });
 
 test('S5 deviation and minimum DP rejection match the reference vectors', function () {
@@ -102,8 +102,8 @@ test('S5 deviation and minimum DP rejection match the reference vectors', functi
     foreach ([12 => 97_916_818.45868836, 24 => 99_433_518.45868836, 36 => 101_186_618.45868836, 48 => 103_184_718.45868836, 60 => 105_050_818.45868836] as $tenor => $firstPayment) {
         expect($modeA->forTenor($tenor)->firstPayment)->toEqualWithDelta($firstPayment, 1.0E-6);
     }
-    foreach ([12 => 47_350_181.54131164, 24 => 46_065_481.54131164, 36 => 44_538_381.54131164, 48 => 42_716_281.54131164, 60 => 41_015_181.54131164] as $tenor => $allIn) {
-        expect($modeA->forTenor($tenor)->outputAmount)->toEqualWithDelta($allIn, 1.0E-6);
+    foreach ([12 => 47_083_181.54131164, 24 => 45_566_481.54131164, 36 => 43_813_381.54131164, 48 => 41_815_281.54131164, 60 => 39_949_181.54131164] as $tenor => $disbursement) {
+        expect($modeA->forTenor($tenor)->outputAmount)->toEqualWithDelta($disbursement, 1.0E-6);
     }
     assertMoneySeries([12 => 5_007_000, 24 => 2_700_000, 36 => 1_931_000, 48 => 1_599_000, 60 => 1_385_000], fn ($tenor) => $modeA->forTenor($tenor)->instalment);
     assertMoneySeries([12 => 0, 24 => 0, 36 => 0, 48 => 0, 60 => 0], fn ($tenor) => $modeB->forTenor($tenor)->ltvAmount);

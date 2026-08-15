@@ -10,6 +10,7 @@ use App\Domain\Simulation\Output\SimulationResult;
 use App\Domain\Simulation\Output\TenorResult;
 use App\Domain\Simulation\Rate\FlatRateConverter;
 use App\Domain\Simulation\Refund\RefundBreakdown;
+use App\Domain\Simulation\Refund\RefundCalculator;
 use InvalidArgumentException;
 
 final class DanaTunaiCalculator
@@ -18,6 +19,7 @@ final class DanaTunaiCalculator
         private readonly FlatRateConverter $flatRateConverter = new FlatRateConverter,
         private readonly InsuranceCalculator $insuranceCalculator = new InsuranceCalculator,
         private readonly FeeCalculator $feeCalculator = new FeeCalculator,
+        private readonly RefundCalculator $refundCalculator = new RefundCalculator,
         private readonly VehicleEligibility $vehicleEligibility = new VehicleEligibility,
     ) {}
 
@@ -96,6 +98,18 @@ final class DanaTunaiCalculator
             $grossDisbursement = $otrPrice - $firstPayment;
             $depositAmount = $config->depositFor($modeAInstalment);
             $netDisbursement = $grossDisbursement - $config->disbursementDeductions() - $depositAmount;
+            $refund = $this->refundCalculator->calculate(
+                FinancingType::DTN,
+                $insurance,
+                $config->product,
+                $config->refund,
+                $modeALtvAmount,
+                $tenorMonths,
+                // Rate bottom saja — Up Rate tidak mendiskonto refundnya sendiri.
+                $flatRate * ($tenorMonths / 12),
+                $fees->provision,
+            );
+            // Refund is paid out separately; it never tops up the disbursement.
             $outputAmount = $netDisbursement;
             $desiredAmount = 0;
         } else {
@@ -108,6 +122,9 @@ final class DanaTunaiCalculator
             // Algebraically identical to PHPM × LTV rate, while preserving an
             // exact rupiah value instead of exposing a binary-float artefact.
             $ltvAmount = $meetsMinimum ? $input->phpmPrice - $netDpAmount : 0;
+            // Mode B quotes an instalment against a chosen amount; there is no
+            // disbursement, and no refund on either product.
+            $refund = RefundBreakdown::zero();
             $grossDisbursement = 0;
             $depositAmount = 0;
             $netDisbursement = 0;
@@ -151,8 +168,7 @@ final class DanaTunaiCalculator
             grossDisbursement: $grossDisbursement,
             depositInstalmentAmount: $depositAmount,
             netDisbursement: $netDisbursement,
-            refund: RefundBreakdown::zero(),
-            allInDisbursement: $netDisbursement,
+            refund: $refund,
             outputAmount: $outputAmount,
         );
     }

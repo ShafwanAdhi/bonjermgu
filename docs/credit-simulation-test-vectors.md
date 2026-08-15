@@ -162,31 +162,33 @@ LTV: 90% — 99.000.000
 
 | Tenor | Total Asuransi | Total Bayar Pertama | Pencairan Neto | Total Refund |
 | ----- | -------------- | ------------------- | -------------- | ------------ |
-| 12    | 2.215.000      | 18.415.000          | 91.585.000     | 436.000      |
-| 24    | 2.858.500      | 19.058.500          | 90.941.500     | 812.000      |
-| 36    | 3.430.500      | 19.630.500          | 90.369.500     | 1.139.000    |
-| 48    | 3.931.000      | 20.131.000          | 89.869.000     | 1.385.000    |
-| 60    | 4.431.500      | 20.631.500          | 89.368.500     | 1.613.000    |
+| 12    | 2.930.000      | 19.130.000          | 90.870.000     | 438.000      |
+| 24    | 4.288.500      | 20.488.500          | 89.511.500     | 818.000      |
+| 36    | 5.618.400      | 21.818.400          | 88.181.600     | 1.151.000    |
+| 48    | 7.134.200      | 23.334.200          | 86.665.800     | 1.402.000    |
+| 60    | 8.549.900      | 24.749.900          | 85.250.100     | 1.635.000    |
+
+Total Refund tidak menambah Pencairan; lihat bagian 10c.
 
 ### Output Mode A
 
-| Tenor | Pencairan All In | Angsuran  |
-| ----- | ---------------- | --------- |
-| 12    | 92.021.000       | 8.953.000 |
-| 24    | 91.753.500       | 4.827.000 |
-| 36    | 91.508.500       | 3.452.000 |
-| 48    | 91.254.000       | 2.859.000 |
-| 60    | 90.981.500       | 2.476.000 |
+| Tenor | Pencairan Neto | Angsuran  |
+| ----- | -------------- | --------- |
+| 12    | 90.870.000     | 8.953.000 |
+| 24    | 89.511.500     | 4.827.000 |
+| 36    | 88.181.600     | 3.452.000 |
+| 48    | 86.665.800     | 2.859.000 |
+| 60    | 85.250.100     | 2.476.000 |
 
 ### Output Mode B
 
 | Tenor | Total Bayar Pertama | DP Net     | LTV        | Angsuran  |
 | ----- | ------------------- | ---------- | ---------- | --------- |
-| 12    | 7.415.000           | 52.585.000 | 57.415.000 | 5.192.000 |
-| 24    | 8.058.500           | 51.941.500 | 58.058.500 | 2.831.000 |
-| 36    | 8.630.500           | 51.369.500 | 58.630.500 | 2.044.000 |
-| 48    | 9.131.000           | 50.869.000 | 59.131.000 | 1.708.000 |
-| 60    | 9.631.500           | 50.368.500 | 59.631.500 | 1.491.000 |
+| 12    | 8.130.000           | 51.870.000 | 58.130.000 | 5.257.000 |
+| 24    | 9.488.500           | 50.511.500 | 59.488.500 | 2.901.000 |
+| 36    | 10.818.400          | 49.181.600 | 60.818.400 | 2.121.000 |
+| 48    | 12.334.200          | 47.665.800 | 62.334.200 | 1.800.000 |
+| 60    | 13.749.900          | 46.250.100 | 63.749.900 | 1.594.000 |
 
 ---
 
@@ -224,25 +226,25 @@ Konfigurasi sama dengan S2, Type Angsuran diubah menjadi **ADDM**.
 
 ### Output Mode A
 
-| Tenor | Total Bayar Pertama | Pencairan All In | Angsuran  |
-| ----- | ------------------- | ---------------- | --------- |
-| 12    | 27.261.000          | 83.179.000       | 8.846.000 |
-| 24    | —                   | 86.992.500       | 4.769.000 |
-| 36    | —                   | 88.108.500       | 3.411.000 |
-| 48    | —                   | 88.448.000       | 2.822.000 |
-| 60    | —                   | 88.555.500       | 2.443.000 |
+| Tenor | Total Bayar Pertama | Pencairan Neto | Angsuran  |
+| ----- | ------------------- | -------------- | --------- |
+| 12    | 27.976.000          | 82.024.000     | 8.846.000 |
+| 24    | 25.257.500          | 84.742.500     | 4.769.000 |
+| 36    | 25.229.400          | 84.770.600     | 3.411.000 |
+| 48    | 26.156.200          | 83.843.800     | 2.822.000 |
+| 60    | 27.192.900          | 82.807.100     | 2.443.000 |
 
 ### Output Mode B
 
 | Tenor | Angsuran  |
 | ----- | --------- |
-| 12    | 5.634.000 |
-| 24    | 2.939.000 |
-| 36    | 2.092.000 |
-| 48    | 1.735.000 |
-| 60    | 1.509.000 |
+| 12    | 5.704.000 |
+| 24    | 3.011.000 |
+| 36    | 2.170.000 |
+| 48    | 1.829.000 |
+| 60    | 1.613.000 |
 
-Berbeda dengan Dana Tunai, Angsuran Pertama **menambah** Total Bayar Pertama sehingga Pencairan All In turun signifikan.
+Berbeda dengan Dana Tunai, Angsuran Pertama **menambah** Total Bayar Pertama sehingga Pencairan turun signifikan pada tenor pendek.
 
 ---
 
@@ -259,26 +261,26 @@ Konfigurasi sama dengan S2, dengan perubahan:
 
 ```text
 Deviasi (Rp) = 145.000.000 - 110.000.026 = 34.999.974
-Deviasi (%)  = 34.999.974 ÷ 145.000.000 = 0,241379131034483
-Net DP (%)   = 30% + 24,1379131034483% = 54,1379131034483%
-Net DP (Rp)  = 78.499.974
+Deviasi (%)  = 34.999.974 ÷ 110.000.026 = 0,318181506611644
+Net DP (%)   = 30% + 31,8181506611644% = 61,8181506611644%
+Net DP (Rp)  = 89.636.318,45868836
 ```
 
-Menggunakan Harga OTR yang telah dibulatkan sebagai pengurang akan menghasilkan Net DP 78.500.000 dan menyebabkan selisih Rp 26 pada seluruh nilai turunan.
+Deviasi diukur terhadap **Harga PHPM**, bukan Harga Pasar — ditetapkan 11 Agustus 2026. Memakai Harga PHPM yang telah dibulatkan sebagai pengurang akan menyebabkan selisih Rp 26 pada seluruh nilai turunan.
 
 ### Output Mode A
 
-| Tenor | Total Asuransi | Total Bayar Pertama | Pencairan All In | Angsuran  |
-| ----- | -------------- | ------------------- | ---------------- | --------- |
-| 12    | 2.138.000      | 85.837.974          | 59.470.026       | 6.014.000 |
-| 24    | 2.712.200      | 86.412.174          | 59.162.826       | 3.242.000 |
-| 36    | 3.466.200      | 87.166.174          | 58.665.826       | 2.319.000 |
-| 48    | 4.126.000      | 87.825.974          | 58.204.026       | 1.921.000 |
-| 60    | 4.785.700      | 88.485.674          | 57.729.326       | 1.663.000 |
+| Tenor | Total Asuransi | Total Bayar Pertama | Pencairan Neto | Angsuran  |
+| ----- | -------------- | ------------------- | -------------- | --------- |
+| 12    | 3.080.500      | 97.916.818,46       | 47.083.181,54  | 5.007.000 |
+| 24    | 4.597.200      | 99.433.518,46       | 45.566.481,54  | 2.700.000 |
+| 36    | 6.350.300      | 101.186.618,46      | 43.813.381,54  | 1.931.000 |
+| 48    | 8.348.400      | 103.184.718,46      | 41.815.281,54  | 1.599.000 |
+| 60    | 10.214.500     | 105.050.818,46      | 39.949.181,54  | 1.385.000 |
 
 ### Output Mode B
 
-Total DP dikehendaki 60.000.000 tidak mencapai Net DP minimum 54,14% dari 145.000.000.
+Total DP dikehendaki 60.000.000 tidak mencapai Net DP minimum 61,82% dari 145.000.000.
 
 | Tenor | LTV | Angsuran |
 | ----- | --- | -------- |
@@ -399,6 +401,67 @@ Cacat draft berikut tidak berpengaruh pada hasil karena silang-kabel antar produ
 | `Home Int!K173` | Referensi `'UC Int'!$O$7882` tidak valid |
 
 Hasil aljabar yang **bukan** cacat, dicatat supaya tidak diperiksa ulang: pada Mode B Mobil Bekas ADDM, sel `F69` dan `G74` menghasilkan angka identik. Substitusi `LTV = Dasar + Angsuran` ke dalam `LTV × (1 + Bunga) ÷ Tenor Bulan` mengembalikan `Angsuran` itu sendiri.
+
+---
+
+## 10c. Koreksi 15 Agustus 2026 — Refund Keluar dari Pencairan
+
+Stakeholder melaporkan bahwa menaikkan upping "malah ngurangin pencairan". Penelusuran menemukan dua hal.
+
+**Yang dikeluhkan memang benar dan disengaja.** Up Provisi membebankan biaya di muka, jadi pencairan turun sebesar Provisi. Itulah gunanya upping.
+
+**Yang keliru justru kebalikannya.** Pada draft, Total Refund ditambahkan ke Pencairan All In. Karena bunga tidak dibebankan di muka, menaikkan Up Rate 3% justru **menaikkan** pencairan Pembiayaan Mobil Bekas dari 105.988.186 menjadi 108.434.186 — tepat sebesar Refund Bunga. Rate yang lebih tinggi membayar penerima lebih banyak.
+
+Dua ketentuan yang berlaku sejak koreksi ini:
+
+| No | Ketentuan |
+| -- | --------- |
+| 1  | Refund adalah komisi Referral, bukan uang debitur, sehingga tidak pernah menambah Pencairan |
+| 2  | Dana Tunai memperoleh Refund Bunga dan Refund Provisi; Refund Asuransi dan Refund Admin tetap milik Pembiayaan Mobil Bekas |
+| 3  | Penyebut Refund Bunga memakai Flat Rate sebelum Up Rate, bukan Bunga Jual |
+
+Ketentuan 3 mengubah Total Refund pada S2 dan S4. Pencairan tidak ikut bergerak, karena Refund memang sudah keluar dari Pencairan.
+
+| Skenario | Tenor | Refund lama | Refund berlaku |
+| -------- | ----- | ----------- | -------------- |
+| S2 | 12 | 436.000 | 438.000 |
+| S2 | 24 | 812.000 | 818.000 |
+| S2 | 36 | 1.139.000 | 1.151.000 |
+| S2 | 48 | 1.385.000 | 1.402.000 |
+| S2 | 60 | 1.613.000 | 1.635.000 |
+| S4 | 12 | 440.000 | 442.000 |
+| S4 | 24 | 820.000 | 826.000 |
+| S4 | 36 | 1.150.000 | 1.162.000 |
+| S4 | 48 | 1.401.000 | 1.418.000 |
+| S4 | 60 | 1.630.000 | 1.653.000 |
+
+Setelah koreksi, tiap upping bergerak pada satu arah saja: Up Rate hanya menaikkan Angsuran, Up Provisi hanya menurunkan Pencairan.
+
+### Nilai Acuan yang Berubah
+
+Nilai baru sama persis dengan nilai lama dikurangi Total Refund pada tenor yang sama. Lima belas titik diperiksa, seluruhnya cocok.
+
+| Skenario | Tenor | Lama | Refund | Berlaku |
+| -------- | ----- | ---- | ------ | ------- |
+| S2 | 12 | 91.306.000 | 436.000 | 90.870.000 |
+| S2 | 24 | 90.323.500 | 812.000 | 89.511.500 |
+| S2 | 36 | 89.320.600 | 1.139.000 | 88.181.600 |
+| S2 | 48 | 88.050.800 | 1.385.000 | 86.665.800 |
+| S2 | 60 | 86.863.100 | 1.613.000 | 85.250.100 |
+| S4 | 12 | 82.464.000 | 440.000 | 82.024.000 |
+| S4 | 24 | 85.562.500 | 820.000 | 84.742.500 |
+| S4 | 36 | 85.920.600 | 1.150.000 | 84.770.600 |
+| S4 | 48 | 85.244.800 | 1.401.000 | 83.843.800 |
+| S4 | 60 | 84.437.100 | 1.630.000 | 82.807.100 |
+| S5 | 12 | 47.350.181,54 | 267.000 | 47.083.181,54 |
+| S5 | 24 | 46.065.481,54 | 499.000 | 45.566.481,54 |
+| S5 | 36 | 44.538.381,54 | 725.000 | 43.813.381,54 |
+| S5 | 48 | 42.716.281,54 | 901.000 | 41.815.281,54 |
+| S5 | 60 | 41.015.181,54 | 1.066.000 | 39.949.181,54 |
+
+S1, S3, S6, dan S7 tidak berubah: Dana Tunai memang tidak pernah menambahkan Refund ke Pencairan, dan konfigurasi acuannya tidak memakai upping sehingga Refund bernilai 0.
+
+Istilah **Pencairan All In** dihentikan. Nilai yang dimaksud sekarang adalah Pencairan Neto.
 
 ---
 
