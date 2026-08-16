@@ -12,13 +12,15 @@ class ProductRate extends Model
 
     public $timestamps = false;
 
-    protected $fillable = ['product_id', 'tenor_months', 'effective_rate'];
+    protected $fillable = ['product_id', 'tenor_months', 'effective_rate', 'flat_rate_addb', 'flat_rate_addm'];
 
     protected function casts(): array
     {
         return [
             'tenor_months' => 'integer',
             'effective_rate' => 'float',
+            'flat_rate_addb' => 'float',
+            'flat_rate_addm' => 'float',
         ];
     }
 

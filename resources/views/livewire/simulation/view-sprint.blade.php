@@ -1,0 +1,427 @@
+@use('App\Support\Format')
+
+<div class="band py-xl md:py-xxl">
+    <x-ui.back-link :href="route('simulation.officer')" wire:navigate class="mb-md" />
+    <x-ui.page-header title="View Sprint"
+                      meta="Lembar entri untuk SPRINT. Seluruh angka dibaca dari simulasi yang baru Anda jalankan." />
+
+    @if (! $this->available)
+        <x-ui.card>
+            <div class="py-xl text-center">
+                <p class="text-body-md text-ink">Belum ada simulasi.</p>
+                <p class="mt-1 text-helper text-muted">{{ $unavailableReason }}</p>
+                <x-ui.button :href="route('simulation.officer')" wire:navigate size="md" class="mt-lg">
+                    Ke Simulasi Kredit
+                </x-ui.button>
+            </div>
+        </x-ui.card>
+    @else
+        @php($s = $this->sheet())
+
+        <div class="flex flex-col gap-xl">
+
+            {{-- ------------------------------------------------- Isian AO --}}
+            <div class="grid grid-cols-1 gap-lg xl:grid-cols-3 xl:items-start">
+                {{--
+                    Kedua kode dirangkai dari satu token per dimensi, seperti
+                    Master!C5 dan Master!C6 merangkainya dari dropdown. Yang sudah
+                    dijawab simulasi dipilihkan di muka; sisanya diisi AO.
+                --}}
+                @php($lookupAvailable = $this->hasOfferingLookup)
+                @php($selectorOptions = $this->selectorOptions)
+                @php($productIdOptions = $this->productIdOptions)
+                @php($productOfferingOptions = $this->productOfferingOptions)
+                @php($selectorFields = [
+                    ['product', 'Product', 'Product SPRINT', false],
+                    ['channel', 'Kanal', 'Kanal pengajuan', false],
+                    ['unit', 'Jenis Kendaraan', 'Jenis kendaraan', false],
+                    ['brand', 'Brand', 'Brand kendaraan', false],
+                    ['profile', 'Profil Debitur', 'Profil debitur', true],
+                    ['debtor_type', 'Type Debitur', 'Type debitur', false],
+                    ['dp', 'Golongan DP', 'Golongan DP', false],
+                    ['region', 'Wilayah', 'Wilayah', false],
+                ])
+
+                <x-ui.card title="Pilihan SPRINT">
+                    <div class="flex flex-col gap-lg">
+                        <div class="grid grid-cols-1 gap-md sm:grid-cols-2">
+                            @foreach ($selectorFields as [$group, $label, $placeholder, $wide])
+                                <x-ui.field :label="$label" class="{{ $wide ? 'sm:col-span-2' : '' }}">
+                                    <x-ui.select wire:model.live="sprint_{{ $group }}">
+                                        <option value="">{{ $placeholder }}</option>
+                                        @foreach ($selectorOptions[$group] ?? [] as $option)
+                                            <option value="{{ $option }}">{{ $option }}</option>
+                                        @endforeach
+                                    </x-ui.select>
+                                </x-ui.field>
+                            @endforeach
+
+                            {{-- Ditentukan baris tenor yang dipilih AO, bukan dipilih di sini. --}}
+                            <x-ui.field label="Tenor">
+                                <x-ui.input type="text" value="{{ intdiv($tenor, 12) }}TH" disabled />
+                            </x-ui.field>
+
+                            <x-ui.field label="Jenis Angsuran">
+                                <x-ui.input type="text" value="{{ $sprint_instalment !== '' ? $sprint_instalment : '—' }}" disabled />
+                            </x-ui.field>
+
+                        </div>
+
+                        <div class="rounded-sm border border-hairline bg-surface-soft p-md">
+                            <div class="grid grid-cols-1 gap-md">
+                                <x-ui.field label="Product ID">
+                                    @if ($lookupAvailable)
+                                        <x-ui.select wire:model.live="product_id" :disabled="$productIdOptions === []">
+                                            <option value="">{{ $productIdOptions === [] ? 'Product ID belum tersedia' : 'Pilih Product ID' }}</option>
+                                            @foreach ($productIdOptions as $option)
+                                                <option value="{{ $option }}">{{ $option }}</option>
+                                            @endforeach
+                                        </x-ui.select>
+                                    @else
+                                        <x-ui.input type="text" value="{{ $product_id }}" disabled
+                                                    placeholder="Product ID belum tersedia" />
+                                    @endif
+                                </x-ui.field>
+
+                                <x-ui.field label="Product Offering"
+                                            :helper="$lookupAvailable && $product_id !== '' && $productOfferingOptions === []
+                                                ? 'Tidak ada offering yang cocok dengan filter yang dipilih.'
+                                                : null">
+                                    @if ($lookupAvailable)
+                                        <x-ui.select wire:model.live="product_offering" :disabled="$product_id === '' || $productOfferingOptions === []">
+                                            <option value="">
+                                                @if ($product_id === '')
+                                                    Pilih Product ID terlebih dahulu
+                                                @elseif ($productOfferingOptions === [])
+                                                    Product Offering belum tersedia
+                                                @else
+                                                    Pilih Product Offering
+                                                @endif
+                                            </option>
+                                            @foreach ($productOfferingOptions as $option)
+                                                <option value="{{ $option }}">{{ $option }}</option>
+                                            @endforeach
+                                        </x-ui.select>
+                                    @else
+                                        <x-ui.input type="text" value="{{ $product_offering }}" disabled
+                                                    placeholder="Product Offering belum tersedia" />
+                                    @endif
+                                </x-ui.field>
+                            </div>
+                        </div>
+                    </div>
+                </x-ui.card>
+
+                @php($wopOptions = ['AUTO COLLECTION', 'PDC/GIRO'])
+                @php($yesNoOptions = ['NO', 'YES'])
+                @php($vehicleConditionOptions = ['USED CAR', 'NEW CAR'])
+                @php($presenceOptions = ['ADA', 'TIDAK'])
+
+                <x-ui.card title="Diisi Account Officer">
+                    <div class="grid grid-cols-1 gap-md sm:grid-cols-2">
+                        <x-ui.field label="Nama Customer" class="sm:col-span-2">
+                            <x-ui.input wire:model.live.debounce.400ms="nama_customer" type="text"
+                                        placeholder="Nama customer sesuai pengajuan" />
+                        </x-ui.field>
+
+                        <x-ui.field label="Cara Pembayaran" class="sm:col-span-2">
+                            <x-ui.select wire:model.live="cara_pembayaran">
+                                @if ($cara_pembayaran !== '' && ! in_array($cara_pembayaran, $wopOptions, true))
+                                    <option value="{{ $cara_pembayaran }}">{{ $cara_pembayaran }}</option>
+                                @endif
+                                @foreach ($wopOptions as $option)
+                                    <option value="{{ $option }}">{{ $option }}</option>
+                                @endforeach
+                            </x-ui.select>
+                        </x-ui.field>
+
+                        <x-ui.field label="Mandiri KPM (KKB)">
+                            <x-ui.select wire:model.live="mandiri_kpm">
+                                @if ($mandiri_kpm !== '' && ! in_array($mandiri_kpm, $yesNoOptions, true))
+                                    <option value="{{ $mandiri_kpm }}">{{ $mandiri_kpm }}</option>
+                                @endif
+                                @foreach ($yesNoOptions as $option)
+                                    <option value="{{ $option }}">{{ $option }}</option>
+                                @endforeach
+                            </x-ui.select>
+                        </x-ui.field>
+
+                        <x-ui.field label="Kondisi Kendaraan" class="sm:col-span-2">
+                            <x-ui.select wire:model.live="kondisi_kendaraan">
+                                @if ($kondisi_kendaraan !== '' && ! in_array($kondisi_kendaraan, $vehicleConditionOptions, true))
+                                    <option value="{{ $kondisi_kendaraan }}">{{ $kondisi_kendaraan }}</option>
+                                @endif
+                                @foreach ($vehicleConditionOptions as $option)
+                                    <option value="{{ $option }}">{{ $option }}</option>
+                                @endforeach
+                            </x-ui.select>
+                        </x-ui.field>
+
+                        <x-ui.field label="Spesifik Product" class="sm:col-span-2">
+                            <x-ui.input wire:model.live.debounce.400ms="spesifik_product" type="text"
+                                        placeholder="Contoh: Fasilitas Dana" />
+                        </x-ui.field>
+
+                        <x-ui.field label="Wira No">
+                            <x-ui.input wire:model.live.debounce.400ms="wira_no" type="text"
+                                        placeholder="Isi 0 bila tidak ada" />
+                        </x-ui.field>
+
+                        <x-ui.field label="Is BELIV?">
+                            <x-ui.select wire:model.live="is_beliv">
+                                @foreach (['TIDAK', 'YA'] as $option)
+                                    <option value="{{ $option }}">{{ $option }}</option>
+                                @endforeach
+                            </x-ui.select>
+                        </x-ui.field>
+
+                        <x-ui.field label="Sisa Kewajiban">
+                            <x-ui.money-input wire:model.live.debounce.400ms="sisa_kewajiban" placeholder="Rp 0" />
+                        </x-ui.field>
+
+                        <x-ui.field label="Sisa OS LK Sebelumnya">
+                            <x-ui.money-input wire:model.live.debounce.400ms="sisa_os_lk" placeholder="Rp 0" />
+                        </x-ui.field>
+
+                        @foreach ([['acp_axp', 'ACP & AXP'], ['gap', 'GAP'], ['hic', 'HIC'], ['water_hammer', 'Water Hammer & Theft by Driver']] as [$field, $label])
+                            @php($fieldValue = ${$field})
+                            <x-ui.field :label="$label">
+                                <x-ui.select wire:model.live="{{ $field }}">
+                                    @if ($fieldValue !== '' && ! in_array($fieldValue, $presenceOptions, true))
+                                        <option value="{{ $fieldValue }}">{{ $fieldValue }}</option>
+                                    @endif
+                                    @foreach ($presenceOptions as $option)
+                                        <option value="{{ $option }}">{{ $option }}</option>
+                                    @endforeach
+                                </x-ui.select>
+                            </x-ui.field>
+                        @endforeach
+                    </div>
+                </x-ui.card>
+
+                <x-ui.card title="Insurance Paid Entry">
+                    <div class="flex flex-col gap-sm">
+                        @foreach (range(1, 5) as $year)
+                            <div wire:key="paid-{{ $year }}"
+                                 class="rounded-sm border border-hairline bg-canvas p-sm">
+                                <div class="mb-sm text-caption text-ink">
+                                    Tahun {{ $year }}
+                                </div>
+                                <div class="grid grid-cols-1 gap-sm sm:grid-cols-3 sm:items-end">
+                                    <x-ui.field label="Status">
+                                        <x-ui.select wire:model.live="paid_status.{{ $year }}">
+                                            <option value="CASH">CASH</option>
+                                            <option value="ON LOAN">ON LOAN</option>
+                                        </x-ui.select>
+                                    </x-ui.field>
+                                    <x-ui.field label="Diskon">
+                                        <x-ui.money-input wire:model.live.debounce.400ms="paid_discount.{{ $year }}" placeholder="Rp 0" />
+                                    </x-ui.field>
+                                    <x-ui.field label="Paid">
+                                        <x-ui.money-input wire:model.live.debounce.400ms="paid_amount.{{ $year }}" placeholder="Rp 0" />
+                                    </x-ui.field>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </x-ui.card>
+            </div>
+
+            {{-- ------------------------------------------------- Lembarnya --}}
+            <div class="flex min-w-0 flex-col gap-md"
+                 x-data="viewSprintExport()">
+                <div class="flex flex-wrap items-center gap-sm border-t border-hairline pt-lg">
+                    <span class="text-helper text-muted">Tenor {{ $s['tenor'] }} bulan</span>
+                    <div class="ml-auto flex gap-1">
+                        @foreach ([12, 24, 36, 48, 60] as $tenorOption)
+                            <a href="{{ route('simulation.officer.sprint', $tenorOption) }}" wire:navigate
+                               @class([
+                                   'rounded-sm border px-2.5 py-1 text-[12px] font-medium',
+                                   'border-primary bg-primary text-on-primary' => $tenorOption === $s['tenor'],
+                                   'border-hairline bg-canvas text-muted' => $tenorOption !== $s['tenor'],
+                               ])>{{ $tenorOption }}</a>
+                        @endforeach
+                    </div>
+                    <x-ui.button type="button" size="sm" x-on:click="save()" x-bind:disabled="busy">
+                        <span x-show="! busy">Unduh PNG</span>
+                        <span x-show="busy" x-cloak>Menyiapkan…</span>
+                    </x-ui.button>
+                </div>
+
+                {{-- Yang dipotret. Sengaja berlatar putih dan berukuran tetap
+                     supaya hasilnya sama di layar mana pun. --}}
+                <div x-ref="sheet" class="w-full overflow-x-auto">
+                    <div class="min-w-[900px] bg-white p-6 text-[12px] leading-[1.45] text-black">
+
+                        <div class="mb-4 flex items-start justify-between border-b-2 border-black pb-2">
+                            <div>
+                                <p class="text-[15px] font-bold">SIMULASI KREDIT</p>
+                            </div>
+                            <div class="text-right text-[11px]">
+                                <p><span class="font-semibold">Product ID</span> : {{ $product_id !== '' ? $product_id : '—' }}</p>
+                                <p><span class="font-semibold">Product Offering</span> : {{ $product_offering !== '' ? $product_offering : '—' }}</p>
+                                <p class="mt-1">{{ now()->translatedFormat('d F Y') }}</p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-6">
+                            {{-- kolom kiri --}}
+                            <div>
+                                <table class="w-full">
+                                    @foreach ([
+                                        ['NAMA CUSTOMER', $nama_customer !== '' ? $nama_customer : '—'],
+                                        ['TYPE UNIT / TAHUN', $s['type_unit'].' / '.$s['tahun_unit']],
+                                        ['HARGA KENDARAAN', Format::rupiah($s['harga_kendaraan'])],
+                                        ['UANG MUKA (DP)', Format::rupiah($s['uang_muka'])],
+                                        ['LEASING CASH DEPOSIT', Format::rupiah($s['leasing_cash_deposit'])],
+                                        ['ADMINISTRASI KREDIT', Format::rupiah($s['administrasi_kredit'])],
+                                        ['FIDUSIA', Format::rupiah($s['fidusia'])],
+                                        ['PROVISI', Format::rupiah($s['provisi'])],
+                                        ['ASURANSI', Format::rupiah($s['asuransi'])],
+                                        ['ANGSURAN', Format::rupiah($s['angsuran'])],
+                                        ['TENOR', $s['tenor'].' Bulan'],
+                                        ['RATE BUNGA', number_format($s['rate_bunga'] * 100, 4, ',', '.').'%'],
+                                        ['TOTAL BAYAR PERTAMA', Format::rupiah($s['total_bayar_pertama'])],
+                                        ['POKOK HUTANG', Format::rupiah($s['pokok_hutang'])],
+                                    ] as [$label, $value])
+                                        <tr class="border-b border-neutral-300">
+                                            <td class="w-[45%] py-[3px] pr-2 align-top font-medium">{{ $label }}</td>
+                                            <td class="py-[3px] text-right tabular-nums">{{ $value }}</td>
+                                        </tr>
+                                    @endforeach
+                                </table>
+                            </div>
+
+                            {{-- kolom kanan --}}
+                            <div class="flex flex-col gap-3">
+                                <div>
+                                    <p class="mb-1 bg-neutral-200 px-2 py-[3px] text-[11px] font-bold">APPLICATION DATA ENTRY</p>
+                                    <table class="w-full">
+                                        @foreach ([
+                                            ['CARA PEMBAYARAN', $cara_pembayaran],
+                                            ['MANDIRI KPM (KKB)', $mandiri_kpm],
+                                            ['ANGSURAN PERTAMA', $s['angsuran_pertama']],
+                                            ['KONDISI KENDARAAN', $kondisi_kendaraan],
+                                            ['SPESIFIK PRODUCT', $spesifik_product],
+                                            ['JUMLAH UNIT', $s['jumlah_unit']],
+                                            ['BBN', Format::rupiah($s['bbn'])],
+                                            ['SISA KEWAJIBAN', Format::rupiah((int) $sisa_kewajiban)],
+                                            ['SISA OS LK SEBELUMNYA', Format::rupiah((int) $sisa_os_lk)],
+                                            ['BIAYA PROSES FAKTUR', Format::rupiah($s['biaya_proses_faktur'])],
+                                            ['WIRA NO', $wira_no],
+                                            ['REFUND ADMINISTRATION', Format::rupiah($s['refund_administration'])],
+                                            ['REFUND PROVISION', Format::rupiah($s['refund_provision'])],
+                                            ['TYPE CUSTOMER', $s['type_customer']],
+                                            ['IS BELIV?', $is_beliv],
+                                        ] as [$label, $value])
+                                            <tr class="border-b border-neutral-300">
+                                                <td class="w-[58%] py-[3px] pr-2 align-top font-medium">{{ $label }}</td>
+                                                <td class="py-[3px] text-right tabular-nums">{{ $value }}</td>
+                                            </tr>
+                                        @endforeach
+                                    </table>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <p class="mb-1 bg-neutral-200 px-2 py-[3px] text-[11px] font-bold">INSURANCE ENTRY</p>
+                                        <table class="w-full">
+                                            @foreach ([
+                                                ['USAGE', $s['usage']],
+                                                ['RATE JUAL', $s['rate_jual']],
+                                                ['WILAYAH ASURANSI', $s['wilayah_asuransi']],
+                                                ['ASURANSI CLP', number_format($s['asuransi_clp'] * 100, 2, ',', '.').'%'],
+                                                ['ACP & AXP', $acp_axp],
+                                                ['GAP', $gap],
+                                                ['HIC', $hic],
+                                                ['GARANSI MESIN', $s['garansi_mesin']],
+                                            ] as [$label, $value])
+                                                <tr class="border-b border-neutral-300">
+                                                    <td class="py-[3px] pr-2 align-top font-medium">{{ $label }}</td>
+                                                    <td class="py-[3px] text-right tabular-nums">{{ $value }}</td>
+                                                </tr>
+                                            @endforeach
+                                        </table>
+                                    </div>
+                                    <div>
+                                        <p class="mb-1 bg-neutral-200 px-2 py-[3px] text-[11px] font-bold">FINANCIAL DATA ENTRY</p>
+                                        <table class="w-full">
+                                            @foreach ([
+                                                ['REFUND BUNGA', Format::rupiah($s['refund_bunga'])],
+                                                ['DEPOSIT ANGSURAN ('.$s['deposit_angsuran'].'×)', Format::rupiah($s['deposit_angsuran_rp'])],
+                                                ['REFUND PREMI INSURANCE', Format::rupiah($s['refund_premi_insurance'])],
+                                            ] as [$label, $value])
+                                                <tr class="border-b border-neutral-300">
+                                                    <td class="py-[3px] pr-2 align-top font-medium">{{ $label }}</td>
+                                                    <td class="py-[3px] text-right tabular-nums">{{ $value }}</td>
+                                                </tr>
+                                            @endforeach
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Detail asuransi per tahun --}}
+                        <p class="mt-4 mb-1 bg-neutral-200 px-2 py-[3px] text-[11px] font-bold">DETAIL ASURANSI</p>
+                        <table class="w-full border-collapse text-[11px]">
+                            <thead>
+                                <tr class="bg-neutral-100">
+                                    @foreach (['Tahun', 'Asuransi', 'TJH', 'Huru-hara', 'Banjir', 'Water Hammer & Theft by Driver', 'Gempa', 'Teroris', 'PA Pengemudi', 'PA Penumpang'] as $head)
+                                        <th class="border border-neutral-400 px-1 py-[3px] text-left font-semibold">{{ $head }}</th>
+                                    @endforeach
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($s['detail_asuransi'] as $year => $line)
+                                    <tr>
+                                        <td class="border border-neutral-400 px-1 py-[3px]">{{ $year }}</td>
+                                        @if ($line['aktif'])
+                                            <td class="border border-neutral-400 px-1 py-[3px]">{{ $line['asuransi'] }}</td>
+                                            <td class="border border-neutral-400 px-1 py-[3px] text-right tabular-nums">{{ Format::rupiah($line['tjh']) }}</td>
+                                            <td class="border border-neutral-400 px-1 py-[3px]">{{ $line['huru_hara'] }}</td>
+                                            <td class="border border-neutral-400 px-1 py-[3px]">{{ $line['banjir'] }}</td>
+                                            <td class="border border-neutral-400 px-1 py-[3px]">{{ $line['water_hammer'] }}</td>
+                                            <td class="border border-neutral-400 px-1 py-[3px]">{{ $line['gempa'] }}</td>
+                                            <td class="border border-neutral-400 px-1 py-[3px]">{{ $line['teroris'] }}</td>
+                                            <td class="border border-neutral-400 px-1 py-[3px]">{{ $line['pa_pengemudi'] }}</td>
+                                            <td class="border border-neutral-400 px-1 py-[3px] text-right tabular-nums">{{ Format::rupiah($line['pa_penumpang']) }}</td>
+                                        @else
+                                            <td class="border border-neutral-400 px-1 py-[3px] text-neutral-400" colspan="9">—</td>
+                                        @endif
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+
+                        {{-- Insurance paid entry --}}
+                        <p class="mt-4 mb-1 bg-neutral-200 px-2 py-[3px] text-[11px] font-bold">INSURANCE PAID ENTRY</p>
+                        <table class="w-full border-collapse text-[11px]">
+                            <thead>
+                                <tr class="bg-neutral-100">
+                                    @foreach (['Tahun', 'Cash / On Loan', 'Diskon', 'Paid'] as $head)
+                                        <th class="border border-neutral-400 px-1 py-[3px] text-left font-semibold">{{ $head }}</th>
+                                    @endforeach
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (range(1, 5) as $year)
+                                    <tr>
+                                        <td class="border border-neutral-400 px-1 py-[3px]">{{ $year }}</td>
+                                        <td class="border border-neutral-400 px-1 py-[3px]">{{ $paid_status[$year] ?? 'CASH' }}</td>
+                                        <td class="border border-neutral-400 px-1 py-[3px] text-right tabular-nums">{{ Format::rupiah((int) ($paid_discount[$year] ?? 0)) }}</td>
+                                        <td class="border border-neutral-400 px-1 py-[3px] text-right tabular-nums">{{ Format::rupiah((int) ($paid_amount[$year] ?? 0)) }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+
+                        <p class="mt-3 text-[10px] text-neutral-500">
+                            Nominal bersifat estimasi, dihitung sistem atas parameter yang berlaku saat lembar ini dibuat.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+</div>

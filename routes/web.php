@@ -14,6 +14,7 @@ use App\Livewire\Admin\Configuration\Insurance as ConfigurationInsurance;
 use App\Livewire\Admin\Configuration\Products as ConfigurationProducts;
 use App\Livewire\Admin\Master\Lookups as MasterLookups;
 use App\Livewire\Admin\Master\ReferralMaster;
+use App\Livewire\Admin\Master\SprintTokens as MasterSprintTokens;
 use App\Livewire\Admin\Master\Vehicles as MasterVehicles;
 use App\Livewire\Admin\Simulation\ConfigurationSimulation;
 use App\Livewire\Application\ApplicationDetail;
@@ -26,6 +27,7 @@ use App\Livewire\Auth\ResetPassword;
 use App\Livewire\Profile\AdminProfile;
 use App\Livewire\Simulation\CreditSimulation;
 use App\Livewire\Simulation\OfficerSimulation;
+use App\Livewire\Simulation\ViewSprint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -107,6 +109,10 @@ Route::middleware(['auth', 'role:referral'])->group(function () {
 
 Route::middleware(['auth', 'role:ao'])->group(function () {
     Route::get('/simulation/officer', OfficerSimulation::class)->name('simulation.officer');
+    // Lembar entri SPRINT untuk satu tenor. Menampilkan ulang simulasi yang
+    // sudah dijalankan; tidak menghitung apa pun sendiri.
+    Route::get('/simulation/officer/view-sprint/{tenor}', ViewSprint::class)
+        ->whereNumber('tenor')->name('simulation.officer.sprint');
 });
 
 /*
@@ -168,6 +174,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/master/vehicles', MasterVehicles::class)->name('master.vehicles');
     Route::get('/master/referral', ReferralMaster::class)->name('master.referral');
     Route::get('/master/lookups', MasterLookups::class)->name('master.lookups');
+    Route::get('/master/sprint-tokens', MasterSprintTokens::class)->name('master.sprint-tokens');
 
     Route::view('/accounts', 'admin.accounts.index')->name('accounts.index');
     Route::get('/accounts/profile', AdminProfile::class)->name('accounts.profile');

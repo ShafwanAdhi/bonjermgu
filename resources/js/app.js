@@ -480,3 +480,50 @@ document.addEventListener("livewire:initialized", () => {
         initMotion();
     });
 });
+
+/*
+ * View Sprint — merekam lembar entri menjadi PNG.
+ *
+ * Rasterisasi berjalan di peramban atas DOM yang seluruh angkanya sudah
+ * dihitung server. Tidak ada aritmetika di sini, hanya memotret; aturan 1
+ * CLAUDE.md tetap utuh. PNG, bukan JPG: lembar ini padat angka dan garis
+ * tabel, dan kompresi lossy membuatnya sulit dibaca saat diketik ulang.
+ */
+document.addEventListener("alpine:init", () => {
+    window.Alpine.data("viewSprintExport", () => ({
+        busy: false,
+
+        async save() {
+            const sheet = this.$refs.sheet?.firstElementChild;
+
+            if (!sheet || this.busy) {
+                return;
+            }
+
+            this.busy = true;
+
+            try {
+                const { default: html2canvas } = await import("html2canvas");
+                const canvas = await html2canvas(sheet, {
+                    // Dua kali lipat supaya angka tetap tajam saat diperbesar.
+                    scale: 2,
+                    backgroundColor: "#ffffff",
+                    useCORS: true,
+                    logging: false,
+                });
+
+                const link = document.createElement("a");
+                link.download = `view-sprint-${Date.now()}.png`;
+                link.href = canvas.toDataURL("image/png");
+                link.click();
+            } catch (error) {
+                console.error("Gagal menyimpan View Sprint", error);
+                window.alert(
+                    "Gambar gagal dibuat. Silakan gunakan tangkapan layar biasa.",
+                );
+            } finally {
+                this.busy = false;
+            }
+        },
+    }));
+});

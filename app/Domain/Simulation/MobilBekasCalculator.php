@@ -90,7 +90,11 @@ final class MobilBekasCalculator
             return TenorResult::zero($tenorMonths, $score, $eligible, $rateAvailable, ZeroReason::DownPaymentExceedsPrice);
         }
 
-        $flatRate = $this->flatRateConverter->convert($effectiveRate, $tenorMonths, $input->instalmentType);
+        // The card's own figure wherever MTF published one; converting from the
+        // effective rate cannot reproduce it, and the gap survives as a full
+        // 1.000 rupiah once the instalment rounds up.
+        $flatRate = $config->product->flatRateFor($tenorMonths, $input->instalmentType)
+            ?? $this->flatRateConverter->convert($effectiveRate, $tenorMonths, $input->instalmentType);
         $flatRateFinal = $flatRate + $config->product->upRate;
         $sellingInterestRate = $flatRateFinal * ($tenorMonths / 12);
         $modeATotalAr = $modeALtvAmount * (1 + $sellingInterestRate);

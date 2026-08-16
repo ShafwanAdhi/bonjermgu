@@ -4,7 +4,7 @@
      x-on:simulation-calculated.window="$nextTick(() => $el.querySelector('#simulation-results-card')?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' }))">
     <x-ui.page-header title="Simulasi Kredit" />
 
-    <div class="grid grid-cols-1 gap-lg xl:grid-cols-[1fr_520px] xl:items-start">
+    <div class="grid grid-cols-1 gap-lg xl:grid-cols-[1fr_620px] xl:items-start">
         <form wire:submit="calculate" class="flex flex-col gap-lg">
 
             {{-- ------------------------------------------------------ Produk --}}
@@ -447,6 +447,7 @@
                                 <x-ui.th>Tenor</x-ui.th>
                                 <x-ui.th align="right">{{ $this->disbursementHeading() }}</x-ui.th>
                                 <x-ui.th align="right">Angsuran</x-ui.th>
+                                <x-ui.th align="right">Sprint</x-ui.th>
                             </x-slot:head>
 
                             @foreach ($rows as $row)
@@ -466,6 +467,17 @@
                                              :class="$row['zero'] ? 'text-border-strong' : 'font-medium text-ink'">
                                         {{ $row['instalment'] }}
                                     </x-ui.td>
+                                    <x-ui.td align="right">
+                                        @if ($row['zero'])
+                                            <span class="text-[13px] text-border-strong">—</span>
+                                        @else
+                                            <x-ui.button :href="route('simulation.officer.sprint', $row['tenor'])"
+                                                         wire:navigate variant="secondary" size="sm"
+                                                         :aria-label="'Buka View Sprint tenor '.$row['label']">
+                                                Buka
+                                            </x-ui.button>
+                                        @endif
+                                    </x-ui.td>
                                 </tr>
                             @endforeach
                         </x-ui.table>
@@ -477,7 +489,8 @@
                     </x-ui.button>
                     <p class="mt-sm text-helper text-muted">
                         Membawa Produk Pembiayaan dan Type Debitur. Referral dan Amount Finance
-                        tetap diisi manual pada form aplikasi.
+                        tetap diisi manual pada form aplikasi. View Sprint menyiapkan lembar entri
+                        SPRINT untuk satu tenor, lengkap dengan unduhan PNG.
                     </p>
                 @endif
             </x-ui.card>

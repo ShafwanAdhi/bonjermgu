@@ -40,6 +40,18 @@ final class SimulationSettingDefaults
             'ucf_interest_refund_rate' => '0.8000',
             'ucf_provision_refund_rate' => '0.8000',
             'ucf_admin_refund_rate' => '0.8000',
+
+            // View Sprint hanya menampilkan; nilai ini jadi isian awal yang
+            // masih bisa diubah AO sebelum diekspor.
+            'view_sprint_cara_pembayaran' => 'AUTO COLLECTION',
+            'view_sprint_mandiri_kpm' => 'NO',
+            'view_sprint_kondisi_kendaraan' => 'USED CAR',
+            'view_sprint_is_beliv' => 'TIDAK',
+            'view_sprint_acp_axp' => 'ADA',
+            'view_sprint_gap' => 'NO',
+            'view_sprint_hic' => 'NO',
+            'view_sprint_water_hammer' => 'NO',
+            'view_sprint_modal_usaha_threshold' => '500000000',
         ];
     }
 }

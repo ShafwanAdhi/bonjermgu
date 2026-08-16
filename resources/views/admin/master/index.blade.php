@@ -7,6 +7,7 @@
             ['label' => 'Master Kendaraan', 'description' => 'Brand, type, model, dan harga tahun.', 'route' => 'master.vehicles', 'url' => route('master.vehicles')],
             ['label' => 'Master Referral', 'description' => 'Kategori, sub-kategori, dan instansi.', 'route' => 'master.referral', 'url' => route('master.referral')],
             ['label' => 'Domisili dan Kelompok Usia', 'description' => 'Wilayah, usia, tujuan, dan aturan dasar.', 'route' => 'master.lookups', 'url' => route('master.lookups')],
+            ['label' => 'Token SPRINT', 'description' => 'Ejaan Product ID dan Product Offering pada View Sprint.', 'route' => 'master.sprint-tokens', 'url' => route('master.sprint-tokens')],
         ]" />
     </div>
 </x-layouts.app>

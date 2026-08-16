@@ -176,15 +176,21 @@ final class SimulationConfigurationRepository
         }
 
         $rates = array_fill_keys([12, 24, 36, 48, 60], null);
+        $flatAddb = $rates;
+        $flatAddm = $rates;
 
         foreach ($product->rates as $rate) {
             $rates[$rate->tenor_months] = $rate->effective_rate;
+            $flatAddb[$rate->tenor_months] = $rate->flat_rate_addb;
+            $flatAddm[$rate->tenor_months] = $rate->flat_rate_addm;
         }
 
         return new ProductConfig(
             name: $product->name,
             effectiveRates: $rates,
             adminMax: (float) $product->admin_max,
+            flatRatesAddb: $flatAddb,
+            flatRatesAddm: $flatAddm,
             provisionRate: $product->provisi_rate,
             upRate: $product->up_rate,
             upAdmin: (float) $product->up_admin,

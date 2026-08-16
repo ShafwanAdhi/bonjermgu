@@ -17,3 +17,9 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+
+# Playwright MCP session logs and page snapshots
+/.playwright-mcp
+
+# Excel lock files left behind by an open workbook
+~$*.xlsx
