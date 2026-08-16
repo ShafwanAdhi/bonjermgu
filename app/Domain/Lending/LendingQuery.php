@@ -21,6 +21,35 @@ use Illuminate\Support\Facades\DB;
  */
 class LendingQuery
 {
+    /**
+     * Actual Lending per calendar month, keyed 'YYYY-MM', for the Admin
+     * dashboard trend.
+     *
+     * It lives here rather than in the controller for the reason above: the
+     * visibility scope may only be lifted inside this aggregate, so every
+     * bypass stays in one auditable place.
+     *
+     * A cancelled application never carries a Go Live date and cancelling is
+     * blocked once one is live, so the Actual filter already excludes them.
+     *
+     * @return Collection<string, array{amount: int, units: int}>
+     */
+    public static function monthlyActualSince(string $since): Collection
+    {
+        return Application::withoutGlobalScope(ApplicationVisibilityScope::class)
+            ->whereNotNull('go_live_date')
+            ->whereDate('go_live_date', '>=', $since)
+            ->groupBy(DB::raw("to_char(go_live_date, 'YYYY-MM')"))
+            ->select([
+                DB::raw("to_char(go_live_date, 'YYYY-MM') as bucket"),
+                DB::raw('SUM(COALESCE(amount_finance, 0)) as amount'),
+                DB::raw('SUM(unit_count) as units'),
+            ])
+            ->get()
+            ->keyBy('bucket')
+            ->map(fn ($row): array => ['amount' => (int) $row->amount, 'units' => (int) $row->units]);
+    }
+
     /** Rows for the Per AO report: one row per Account Officer. */
     public static function perOfficer(LendingFilters $filters): Collection
     {

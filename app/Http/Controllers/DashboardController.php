@@ -12,12 +12,10 @@ use App\Enums\Role;
 use App\Models\AccountOfficer;
 use App\Models\Application;
 use App\Models\Referral;
-use App\Models\Scopes\ApplicationVisibilityScope;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 /**
@@ -186,26 +184,7 @@ class DashboardController extends Controller
         $months = $period === 'all' ? 12 : (int) $period;
         $start = CarbonImmutable::now()->startOfMonth()->subMonths($months - 1);
 
-        $actualRows = Application::withoutGlobalScope(ApplicationVisibilityScope::class)
-            ->whereNotNull('go_live_date')
-            ->whereDate('go_live_date', '>=', $start->toDateString())
-            ->select([
-                DB::raw("to_char(go_live_date, 'YYYY-MM') as bucket"),
-                DB::raw('SUM(COALESCE(amount_finance, 0)) as amount'),
-                DB::raw('SUM(unit_count) as units'),
-            ])
-            ->groupBy(DB::raw("to_char(go_live_date, 'YYYY-MM')"))
-            ->pluck('amount', 'bucket');
-
-        $unitRows = Application::withoutGlobalScope(ApplicationVisibilityScope::class)
-            ->whereNotNull('go_live_date')
-            ->whereDate('go_live_date', '>=', $start->toDateString())
-            ->select([
-                DB::raw("to_char(go_live_date, 'YYYY-MM') as bucket"),
-                DB::raw('SUM(unit_count) as units'),
-            ])
-            ->groupBy(DB::raw("to_char(go_live_date, 'YYYY-MM')"))
-            ->pluck('units', 'bucket');
+        $monthly = LendingQuery::monthlyActualSince($start->toDateString());
 
         $rows = [];
         for ($i = 0; $i < $months; $i++) {
@@ -214,8 +193,8 @@ class DashboardController extends Controller
 
             $rows[] = [
                 'label' => $month->translatedFormat('M'),
-                'amount' => (int) ($actualRows[$bucket] ?? 0),
-                'units' => (int) ($unitRows[$bucket] ?? 0),
+                'amount' => $monthly[$bucket]['amount'] ?? 0,
+                'units' => $monthly[$bucket]['units'] ?? 0,
                 'percent' => 0.0,
             ];
         }
