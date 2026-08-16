@@ -112,10 +112,8 @@
                     </div>
                 </x-ui.card>
 
-                @php($wopOptions = ['AUTO COLLECTION', 'PDC/GIRO'])
-                @php($yesNoOptions = ['NO', 'YES'])
-                @php($vehicleConditionOptions = ['USED CAR', 'NEW CAR'])
-                @php($presenceOptions = ['ADA', 'TIDAK'])
+                {{-- Kosakata tiap field berbeda dan itu disengaja; lihat ViewSprint::MANUAL_OPTIONS. --}}
+                @php($manualOptions = \App\Livewire\Simulation\ViewSprint::MANUAL_OPTIONS)
 
                 <x-ui.card title="Diisi Account Officer">
                     <div class="grid grid-cols-1 gap-md sm:grid-cols-2">
@@ -126,10 +124,10 @@
 
                         <x-ui.field label="Cara Pembayaran" class="sm:col-span-2">
                             <x-ui.select wire:model.live="cara_pembayaran">
-                                @if ($cara_pembayaran !== '' && ! in_array($cara_pembayaran, $wopOptions, true))
+                                @if ($cara_pembayaran !== '' && ! in_array($cara_pembayaran, $manualOptions['cara_pembayaran'], true))
                                     <option value="{{ $cara_pembayaran }}">{{ $cara_pembayaran }}</option>
                                 @endif
-                                @foreach ($wopOptions as $option)
+                                @foreach ($manualOptions['cara_pembayaran'] as $option)
                                     <option value="{{ $option }}">{{ $option }}</option>
                                 @endforeach
                             </x-ui.select>
@@ -137,10 +135,10 @@
 
                         <x-ui.field label="Mandiri KPM (KKB)">
                             <x-ui.select wire:model.live="mandiri_kpm">
-                                @if ($mandiri_kpm !== '' && ! in_array($mandiri_kpm, $yesNoOptions, true))
+                                @if ($mandiri_kpm !== '' && ! in_array($mandiri_kpm, $manualOptions['mandiri_kpm'], true))
                                     <option value="{{ $mandiri_kpm }}">{{ $mandiri_kpm }}</option>
                                 @endif
-                                @foreach ($yesNoOptions as $option)
+                                @foreach ($manualOptions['mandiri_kpm'] as $option)
                                     <option value="{{ $option }}">{{ $option }}</option>
                                 @endforeach
                             </x-ui.select>
@@ -148,10 +146,10 @@
 
                         <x-ui.field label="Kondisi Kendaraan" class="sm:col-span-2">
                             <x-ui.select wire:model.live="kondisi_kendaraan">
-                                @if ($kondisi_kendaraan !== '' && ! in_array($kondisi_kendaraan, $vehicleConditionOptions, true))
+                                @if ($kondisi_kendaraan !== '' && ! in_array($kondisi_kendaraan, $manualOptions['kondisi_kendaraan'], true))
                                     <option value="{{ $kondisi_kendaraan }}">{{ $kondisi_kendaraan }}</option>
                                 @endif
-                                @foreach ($vehicleConditionOptions as $option)
+                                @foreach ($manualOptions['kondisi_kendaraan'] as $option)
                                     <option value="{{ $option }}">{{ $option }}</option>
                                 @endforeach
                             </x-ui.select>
@@ -169,7 +167,7 @@
 
                         <x-ui.field label="Is BELIV?">
                             <x-ui.select wire:model.live="is_beliv">
-                                @foreach (['TIDAK', 'YA'] as $option)
+                                @foreach ($manualOptions['is_beliv'] as $option)
                                     <option value="{{ $option }}">{{ $option }}</option>
                                 @endforeach
                             </x-ui.select>
@@ -187,10 +185,10 @@
                             @php($fieldValue = ${$field})
                             <x-ui.field :label="$label">
                                 <x-ui.select wire:model.live="{{ $field }}">
-                                    @if ($fieldValue !== '' && ! in_array($fieldValue, $presenceOptions, true))
+                                    @if ($fieldValue !== '' && ! in_array($fieldValue, $manualOptions[$field], true))
                                         <option value="{{ $fieldValue }}">{{ $fieldValue }}</option>
                                     @endif
-                                    @foreach ($presenceOptions as $option)
+                                    @foreach ($manualOptions[$field] as $option)
                                         <option value="{{ $option }}">{{ $option }}</option>
                                     @endforeach
                                 </x-ui.select>

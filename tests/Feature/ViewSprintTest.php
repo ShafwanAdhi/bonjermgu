@@ -2,8 +2,10 @@
 
 use App\Livewire\Simulation\OfficerSimulation;
 use App\Livewire\Simulation\ViewSprint;
+use App\Models\SimulationSetting;
 use App\Models\SprintOffering;
 use App\Models\User;
+use App\Support\SimulationSettingDefaults;
 use Carbon\Carbon;
 use Livewire\Livewire;
 
@@ -336,4 +338,41 @@ it('settles on the only Product ID the filters leave standing', function () {
         ->assertSet('product_offering', 'SATU-SATUNYA OFFERING DP5 1TH - ADDB');
 
     Carbon::setTestNow();
+});
+
+/*
+ * Nilai bawaan Admin harus salah satu dari pilihan yang ditawarkan field itu.
+ *
+ * Ketika keduanya berselisih, blade menyisipkan nilai simpanan sebagai opsi
+ * tambahan supaya tidak hilang diam-diam — dan AO melihat dropdown ganjil
+ * berisi "NO", "ADA", "TIDAK" sekaligus. Itu yang terjadi pada GAP, HIC, dan
+ * Water Hammer: bawaannya NO, tapi pilihannya ADA/TIDAK.
+ *
+ * Kosakatanya memang tidak seragam antar field, mengikuti data validation
+ * workbook: ADA/TIDAK untuk ACP & AXP, TIDAK/YA untuk BELIV, NO/YES untuk
+ * GAP, HIC, dan Water Hammer.
+ */
+it('offers each manual field a list its own Admin default belongs to', function () {
+    $sprint = new ViewSprint;
+    $defaults = (new ReflectionClass($sprint))->getConstant('MANUAL_DEFAULTS');
+
+    $mismatched = collect(ViewSprint::MANUAL_OPTIONS)
+        ->reject(function (array $options, string $field) use ($defaults): bool {
+            $value = SimulationSetting::query()->where('key', $defaults[$field])->value('value')
+                ?? SimulationSettingDefaults::values()[$defaults[$field]];
+
+            return in_array($value, $options, true);
+        })
+        ->keys()
+        ->all();
+
+    expect($mismatched)->toBe([]);
+});
+
+it('spells GAP, HIC and Water Hammer the way the workbook does', function () {
+    expect(ViewSprint::MANUAL_OPTIONS['acp_axp'])->toBe(['ADA', 'TIDAK'])
+        ->and(ViewSprint::MANUAL_OPTIONS['gap'])->toBe(['NO', 'YES'])
+        ->and(ViewSprint::MANUAL_OPTIONS['hic'])->toBe(['NO', 'YES'])
+        ->and(ViewSprint::MANUAL_OPTIONS['water_hammer'])->toBe(['NO', 'YES'])
+        ->and(ViewSprint::MANUAL_OPTIONS['is_beliv'])->toBe(['TIDAK', 'YA']);
 });

@@ -60,6 +60,29 @@ final class ViewSprint extends Component
         'water_hammer' => 'view_sprint_water_hammer',
     ];
 
+    /**
+     * Pilihan tiap field manual, mengikuti data validation workbook.
+     *
+     * Kosakatanya memang tidak seragam dan itu bukan kelalaian: SPRINT memakai
+     * ADA/TIDAK untuk ACP & AXP, YA/TIDAK untuk BELIV, dan YES/NO untuk GAP,
+     * HIC, serta Water Hammer. Lembar ini di-screenshot dan dikirim ke pusat,
+     * jadi menyeragamkannya justru membuat gambarnya berbeda dari yang mereka
+     * harapkan.
+     *
+     * Daftarnya di sini, bukan di blade, supaya nilai bawaan Admin dan pilihan
+     * yang ditawarkan tidak bisa berselisih tanpa ada yang tahu.
+     */
+    public const MANUAL_OPTIONS = [
+        'cara_pembayaran' => ['AUTO COLLECTION', 'PDC/GIRO'],
+        'mandiri_kpm' => ['NO', 'YES'],
+        'kondisi_kendaraan' => ['USED CAR', 'NEW CAR'],
+        'is_beliv' => ['TIDAK', 'YA'],
+        'acp_axp' => ['ADA', 'TIDAK'],
+        'gap' => ['NO', 'YES'],
+        'hic' => ['NO', 'YES'],
+        'water_hammer' => ['NO', 'YES'],
+    ];
+
     public int $tenor = 12;
 
     /* ------------------------------------------------- Diisi Account Officer */
