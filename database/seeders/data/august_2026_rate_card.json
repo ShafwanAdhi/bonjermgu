@@ -1,0 +1,353 @@
+{
+    "Captive Passenger Khusus Karyawan Bank Mandiri": {
+        "12": {
+            "effective": 0.1026,
+            "addb": 0.0565,
+            "addm": 0.0475
+        },
+        "24": {
+            "effective": 0.0966,
+            "addb": 0.0519,
+            "addm": 0.0475
+        },
+        "36": {
+            "effective": 0.0939,
+            "addb": 0.0505,
+            "addm": 0.0475
+        },
+        "48": {
+            "effective": 0.0966,
+            "addb": 0.0524,
+            "addm": 0.05
+        },
+        "60": {
+            "effective": 0.1037,
+            "addb": 0.0572,
+            "addm": 0.055
+        }
+    },
+    "Captive Passenger Khusus SME & Private/Prioritas": {
+        "12": {
+            "effective": 0.1374,
+            "addb": 0.076,
+            "addm": 0.0639
+        },
+        "24": {
+            "effective": 0.1345,
+            "addb": 0.0731,
+            "addm": 0.0668
+        },
+        "36": {
+            "effective": 0.135,
+            "addb": 0.074,
+            "addm": 0.0695
+        },
+        "48": {
+            "effective": 0.1497,
+            "addb": 0.0839,
+            "addm": 0.0798
+        },
+        "60": {
+            "effective": 0.1589,
+            "addb": 0.0912,
+            "addm": 0.0874
+        }
+    },
+    "Captive Passenger Semangat": {
+        "12": {
+            "effective": 0.1688,
+            "addb": 0.0938,
+            "addm": 0.0787
+        },
+        "24": {
+            "effective": 0.1636,
+            "addb": 0.0897,
+            "addm": 0.0817
+        },
+        "36": {
+            "effective": 0.1629,
+            "addb": 0.0903,
+            "addm": 0.0846
+        },
+        "48": {
+            "effective": 0.1762,
+            "addb": 0.1002,
+            "addm": 0.0951
+        },
+        "60": {
+            "effective": 0.1804,
+            "addb": 0.105,
+            "addm": 0.1005
+        }
+    },
+    "Captive Passenger Tengah": {
+        "12": {
+            "effective": 0.1769,
+            "addb": 0.0984,
+            "addm": 0.0825
+        },
+        "24": {
+            "effective": 0.1685,
+            "addb": 0.0925,
+            "addm": 0.0843
+        },
+        "36": {
+            "effective": 0.1697,
+            "addb": 0.0944,
+            "addm": 0.0884
+        },
+        "48": {
+            "effective": 0.1784,
+            "addb": 0.1015,
+            "addm": 0.0964
+        },
+        "60": {
+            "effective": 0.1865,
+            "addb": 0.109,
+            "addm": 0.1043
+        }
+    },
+    "Captive Passenger Cuan": {
+        "12": {
+            "effective": 0.1847,
+            "addb": 0.1029,
+            "addm": 0.0862
+        },
+        "24": {
+            "effective": 0.1733,
+            "addb": 0.0953,
+            "addm": 0.0868
+        },
+        "36": {
+            "effective": 0.1766,
+            "addb": 0.0985,
+            "addm": 0.0922
+        },
+        "48": {
+            "effective": 0.1805,
+            "addb": 0.1029,
+            "addm": 0.0976
+        },
+        "60": {
+            "effective": 0.1926,
+            "addb": 0.1131,
+            "addm": 0.1081
+        }
+    },
+    "Captive Commercial Semangat": {
+        "12": {
+            "effective": 0.1983,
+            "addb": 0.1107,
+            "addm": 0.0926
+        },
+        "24": {
+            "effective": 0.1907,
+            "addb": 0.1054,
+            "addm": 0.0959
+        },
+        "36": {
+            "effective": 0.1931,
+            "addb": 0.1085,
+            "addm": 0.1015
+        },
+        "48": {
+            "effective": 0.1921,
+            "addb": 0.1102,
+            "addm": 0.1045
+        },
+        "60": {
+            "effective": null,
+            "addb": null,
+            "addm": null
+        }
+    },
+    "Captive Commercial Tengah": {
+        "12": {
+            "effective": 0.2035,
+            "addb": 0.1137,
+            "addm": 0.0951
+        },
+        "24": {
+            "effective": 0.1979,
+            "addb": 0.1096,
+            "addm": 0.0997
+        },
+        "36": {
+            "effective": 0.1999,
+            "addb": 0.1126,
+            "addm": 0.1053
+        },
+        "48": {
+            "effective": 0.1981,
+            "addb": 0.114,
+            "addm": 0.1081
+        },
+        "60": {
+            "effective": null,
+            "addb": null,
+            "addm": null
+        }
+    },
+    "Captive Commercial Cuan": {
+        "12": {
+            "effective": 0.2088,
+            "addb": 0.1167,
+            "addm": 0.0976
+        },
+        "24": {
+            "effective": 0.205,
+            "addb": 0.1137,
+            "addm": 0.1034
+        },
+        "36": {
+            "effective": 0.2065,
+            "addb": 0.1167,
+            "addm": 0.1091
+        },
+        "48": {
+            "effective": 0.2039,
+            "addb": 0.1177,
+            "addm": 0.1116
+        },
+        "60": {
+            "effective": null,
+            "addb": null,
+            "addm": null
+        }
+    },
+    "Reguler Passenger Referral": {
+        "12": {
+            "effective": 0.1725,
+            "addb": 0.0959,
+            "addm": 0.0804
+        },
+        "24": {
+            "effective": 0.175,
+            "addb": 0.0962,
+            "addm": 0.0877
+        },
+        "36": {
+            "effective": 0.18,
+            "addb": 0.1005,
+            "addm": 0.0941
+        },
+        "48": {
+            "effective": 0.1867,
+            "addb": 0.1068,
+            "addm": 0.1013
+        },
+        "60": {
+            "effective": 0.1906,
+            "addb": 0.1117,
+            "addm": 0.1069
+        }
+    },
+    "Reguler Passenger TOMI Spesial Referral": {
+        "12": {
+            "effective": 0.1,
+            "addb": 0.0551,
+            "addm": 0.0464
+        },
+        "24": {
+            "effective": 0.1025,
+            "addb": 0.0552,
+            "addm": 0.0505
+        },
+        "36": {
+            "effective": 0.105,
+            "addb": 0.0568,
+            "addm": 0.0534
+        },
+        "48": {
+            "effective": 0.1075,
+            "addb": 0.0588,
+            "addm": 0.0561
+        },
+        "60": {
+            "effective": 0.11,
+            "addb": 0.061,
+            "addm": 0.0574
+        }
+    },
+    "Reguler Commercial Referral": {
+        "12": {
+            "effective": 0.2035,
+            "addb": 0.1137,
+            "addm": 0.0951
+        },
+        "24": {
+            "effective": 0.1955,
+            "addb": 0.1082,
+            "addm": 0.0984
+        },
+        "36": {
+            "effective": 0.1976,
+            "addb": 0.1112,
+            "addm": 0.104
+        },
+        "48": {
+            "effective": 0.1963,
+            "addb": 0.1129,
+            "addm": 0.107
+        },
+        "60": {
+            "effective": null,
+            "addb": null,
+            "addm": null
+        }
+    },
+    "Reguler Passenger Sales Dealer": {
+        "12": {
+            "effective": 0.1847,
+            "addb": 0.1029,
+            "addm": 0.0862
+        },
+        "24": {
+            "effective": 0.1733,
+            "addb": 0.0953,
+            "addm": 0.0868
+        },
+        "36": {
+            "effective": 0.1766,
+            "addb": 0.0985,
+            "addm": 0.0922
+        },
+        "48": {
+            "effective": 0.1805,
+            "addb": 0.1029,
+            "addm": 0.0976
+        },
+        "60": {
+            "effective": 0.1926,
+            "addb": 0.1131,
+            "addm": 0.1081
+        }
+    },
+    "Reguler Commercial Sales Dealer": {
+        "12": {
+            "effective": 0.2088,
+            "addb": 0.1167,
+            "addm": 0.0976
+        },
+        "24": {
+            "effective": 0.205,
+            "addb": 0.1137,
+            "addm": 0.1034
+        },
+        "36": {
+            "effective": 0.2065,
+            "addb": 0.1167,
+            "addm": 0.1091
+        },
+        "48": {
+            "effective": 0.2039,
+            "addb": 0.1177,
+            "addm": 0.1116
+        },
+        "60": {
+            "effective": null,
+            "addb": null,
+            "addm": null
+        }
+    }
+}

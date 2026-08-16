@@ -68,6 +68,54 @@ class SimulationConfigurationSeeder extends Seeder
             ['product_id', 'tenor_months'],
             ['effective_rate'],
         );
+
+        self::applyAugustRateCard();
+    }
+
+    /**
+     * Overlays the August 2026 rate card on the products it names.
+     *
+     * The rates above come from the older draft workbook and carry no flat
+     * figures at all; the card carries all three per tenor, and instalments are
+     * quoted from the flat ones. Products the card does not name keep the draft
+     * rates and go on converting.
+     *
+     * Public and static because the migration that first loaded the card calls
+     * it too: an already-seeded database has to pick the card up without a
+     * destructive re-seed, and one copy of the numbers must serve both paths.
+     */
+    public static function applyAugustRateCard(): void
+    {
+        $path = database_path('seeders/data/august_2026_rate_card.json');
+
+        if (! is_file($path)) {
+            throw new RuntimeException("Rate card Agustus 2026 tidak ditemukan: {$path}");
+        }
+
+        $card = json_decode((string) file_get_contents($path), true, flags: JSON_THROW_ON_ERROR);
+
+        foreach ($card as $product => $tenors) {
+            $productId = DB::table('products')->where('name', $product)->value('id');
+
+            if ($productId === null) {
+                continue;
+            }
+
+            foreach ($tenors as $tenor => $rate) {
+                $columns = ['flat_rate_addb' => $rate['addb'], 'flat_rate_addm' => $rate['addm']];
+
+                // A card row without an effective rate must not blank the one
+                // already loaded; the WIRA AGENT rows publish only the flat two.
+                if ($rate['effective'] !== null) {
+                    $columns['effective_rate'] = $rate['effective'];
+                }
+
+                DB::table('product_rates')
+                    ->where('product_id', $productId)
+                    ->where('tenor_months', (int) $tenor)
+                    ->update($columns);
+            }
+        }
     }
 
     private function seedCascoRates(): void
