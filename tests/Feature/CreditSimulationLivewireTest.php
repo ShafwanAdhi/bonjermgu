@@ -44,6 +44,9 @@ test('Referral calculates both products and modes on the server then prints the 
         ->where('segment', 'Reguler')
         ->where('tier', 'Referral')
         ->with('subCategories')
+        // Tanpa ORDER BY, PostgreSQL bebas memilih baris mana pun. Tes yang
+        // memilih baris berbeda tiap jalan gagal sesekali tanpa sebab terlihat.
+        ->orderBy('id')
         ->firstOrFail();
     $referral = Referral::factory()->create([
         'category_id' => $category->id,
@@ -55,6 +58,7 @@ test('Referral calculates both products and modes on the server then prints the 
         ->whereHas('type.brand.usage', fn ($query) => $query->where('name', 'Passenger'))
         ->whereHas('prices', fn ($query) => $query->where('price', '>', 0), '>=', 2)
         ->with(['type.brand.usage', 'prices' => fn ($query) => $query->where('price', '>', 0)->orderByDesc('year')])
+        ->orderBy('vehicle_models.id')
         ->firstOrFail();
     $price = $model->prices->first();
     Carbon::setTestNow(Carbon::create($price->year + 1, 8, 4));
@@ -187,6 +191,9 @@ test('a tenor that fails eligibility explains why instead of showing a bare zero
         ->where('segment', 'Reguler')
         ->where('tier', 'Referral')
         ->with('subCategories')
+        // Tanpa ORDER BY, PostgreSQL bebas memilih baris mana pun. Tes yang
+        // memilih baris berbeda tiap jalan gagal sesekali tanpa sebab terlihat.
+        ->orderBy('id')
         ->firstOrFail();
     $referral = Referral::factory()->create([
         'category_id' => $category->id,
@@ -198,6 +205,7 @@ test('a tenor that fails eligibility explains why instead of showing a bare zero
         ->whereHas('type.brand.usage', fn ($query) => $query->where('name', 'Passenger'))
         ->whereHas('prices', fn ($query) => $query->where('price', '>', 0))
         ->with(['type.brand.usage', 'prices' => fn ($query) => $query->where('price', '>', 0)->orderByDesc('year')])
+        ->orderBy('vehicle_models.id')
         ->firstOrFail();
     $price = $model->prices->first();
     // Thirty years out, even the 12-month tenor fails eligibility.
@@ -228,6 +236,9 @@ test('simulation keeps calculating when legacy databases are missing newer defau
         ->where('segment', 'Reguler')
         ->where('tier', 'Referral')
         ->with('subCategories')
+        // Tanpa ORDER BY, PostgreSQL bebas memilih baris mana pun. Tes yang
+        // memilih baris berbeda tiap jalan gagal sesekali tanpa sebab terlihat.
+        ->orderBy('id')
         ->firstOrFail();
     $referral = Referral::factory()->create([
         'category_id' => $category->id,
@@ -239,6 +250,7 @@ test('simulation keeps calculating when legacy databases are missing newer defau
         ->whereHas('type.brand.usage', fn ($query) => $query->where('name', 'Passenger'))
         ->whereHas('prices', fn ($query) => $query->where('price', '>', 0), '>=', 2)
         ->with(['type.brand.usage', 'prices' => fn ($query) => $query->where('price', '>', 0)->orderByDesc('year')])
+        ->orderBy('vehicle_models.id')
         ->firstOrFail();
     $price = $model->prices->first();
     Carbon::setTestNow(Carbon::create($price->year + 1, 8, 4));
@@ -266,6 +278,9 @@ test('legal entity simulation print does not require personal identity fields', 
         ->where('segment', 'Reguler')
         ->where('tier', 'Referral')
         ->with('subCategories')
+        // Tanpa ORDER BY, PostgreSQL bebas memilih baris mana pun. Tes yang
+        // memilih baris berbeda tiap jalan gagal sesekali tanpa sebab terlihat.
+        ->orderBy('id')
         ->firstOrFail();
     $referral = Referral::factory()->create([
         'category_id' => $category->id,
@@ -277,6 +292,7 @@ test('legal entity simulation print does not require personal identity fields', 
         ->whereHas('type.brand.usage', fn ($query) => $query->where('name', 'Passenger'))
         ->whereHas('prices', fn ($query) => $query->where('price', '>', 0), '>=', 1)
         ->with(['type.brand.usage', 'prices' => fn ($query) => $query->where('price', '>', 0)->orderByDesc('year')])
+        ->orderBy('vehicle_models.id')
         ->firstOrFail();
     $price = $model->prices->first();
     Carbon::setTestNow(Carbon::create($price->year + 1, 8, 4));
@@ -340,6 +356,9 @@ test('simulation form state is kept temporarily and can be cleared', function ()
         ->where('segment', 'Reguler')
         ->where('tier', 'Referral')
         ->with('subCategories')
+        // Tanpa ORDER BY, PostgreSQL bebas memilih baris mana pun. Tes yang
+        // memilih baris berbeda tiap jalan gagal sesekali tanpa sebab terlihat.
+        ->orderBy('id')
         ->firstOrFail();
     $referral = Referral::factory()->create([
         'category_id' => $category->id,
@@ -351,6 +370,7 @@ test('simulation form state is kept temporarily and can be cleared', function ()
         ->whereHas('type.brand.usage', fn ($query) => $query->where('name', 'Passenger'))
         ->whereHas('prices', fn ($query) => $query->where('price', '>', 0), '>=', 1)
         ->with(['type.brand.usage', 'prices' => fn ($query) => $query->where('price', '>', 0)->orderByDesc('year')])
+        ->orderBy('vehicle_models.id')
         ->firstOrFail();
     $price = $model->prices->first();
     $state = validSimulationState($model, $price->year);
@@ -393,6 +413,9 @@ test('simulation exposes validation and unavailable-price states while SRB calcu
         ->where('segment', 'Reguler')
         ->where('tier', 'Referral')
         ->with('subCategories')
+        // Tanpa ORDER BY, PostgreSQL bebas memilih baris mana pun. Tes yang
+        // memilih baris berbeda tiap jalan gagal sesekali tanpa sebab terlihat.
+        ->orderBy('id')
         ->firstOrFail();
     $validReferral = Referral::factory()->create([
         'category_id' => $validCategory->id,
@@ -404,6 +427,7 @@ test('simulation exposes validation and unavailable-price states while SRB calcu
         ->whereHas('type.brand.usage', fn ($query) => $query->where('name', 'Passenger'))
         ->whereHas('prices', fn ($query) => $query->where('price', '>', 0), '>=', 2)
         ->with(['type.brand.usage', 'prices' => fn ($query) => $query->where('price', '>', 0)->orderByDesc('year')])
+        ->orderBy('vehicle_models.id')
         ->firstOrFail();
     $price = $model->prices->first();
     Carbon::setTestNow(Carbon::create($price->year + 1, 8, 4));
@@ -493,6 +517,7 @@ test('Captive Internal only exposes Passenger and rejects Commercial server-side
         ->whereHas('type.brand.usage', fn ($query) => $query->where('name', 'Commercial'))
         ->whereHas('prices', fn ($query) => $query->where('price', '>', 0))
         ->with(['type.brand.usage', 'prices' => fn ($query) => $query->where('price', '>', 0)->orderByDesc('year')])
+        ->orderBy('vehicle_models.id')
         ->firstOrFail();
     $price = $model->prices->first();
     Carbon::setTestNow(Carbon::create($price->year + 1, 8, 4));
@@ -539,6 +564,7 @@ test('Mobil Bekas does not offer Commercial units and rejects them server-side',
         ->whereHas('type.brand.usage', fn ($query) => $query->where('name', 'Commercial'))
         ->whereHas('prices', fn ($query) => $query->where('price', '>', 0))
         ->with(['type.brand.usage', 'prices' => fn ($query) => $query->where('price', '>', 0)->orderByDesc('year')])
+        ->orderBy('vehicle_models.id')
         ->firstOrFail();
     $price = $commercial->prices->first();
     Carbon::setTestNow(Carbon::create($price->year + 1, 8, 4));

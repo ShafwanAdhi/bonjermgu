@@ -15,6 +15,7 @@ use App\Models\Product;
 use App\Repositories\SimulationConfigurationRepository;
 use Database\Seeders\ReferralMasterSeeder;
 use Database\Seeders\SimulationConfigurationSeeder;
+use Illuminate\Support\Facades\DB;
 
 /*
  * Nilai acuan dari workbook yang dipakai cabang hari ini,
@@ -115,4 +116,41 @@ it('carries the published card into the configuration the app loads', function (
     expect($config->product->flatRateFor(60, InstalmentType::ADDB))->toBe(0.1117)
         ->and($config->product->flatRateFor(60, InstalmentType::ADDM))->toBe(0.1069)
         ->and($config->product->effectiveRateFor(60))->toBe(0.1906);
+});
+
+/*
+ * Jenjang fiducia workbook, 'PHPM & Rate Jual'!AI42:AL48. Nilainya PNBP + biaya
+ * fidusia tetap 300.000, dan batas jenjangnya memakai harga OTR.
+ */
+it('charges the fiducia the workbook charges at every tier boundary', function () {
+    $tiers = DB::table('fiducia_tiers')->orderBy('min_amount')->get()
+        ->map(fn ($row) => [(int) $row->min_amount, $row->max_amount === null ? null : (int) $row->max_amount, (int) $row->fee])
+        ->all();
+
+    expect($tiers)->toEqual([
+        [0, 25_000_000, 350_000],
+        [25_000_001, 50_000_000, 375_000],
+        [50_000_001, 100_000_000, 400_000],
+        [100_000_001, 250_000_000, 500_000],
+        [250_000_001, 500_000_000, 750_000],
+        [500_000_001, 1_000_000_000, 1_150_000],
+        [1_000_000_001, null, 2_250_000],
+    ]);
+});
+
+/*
+ * Tabel LTV workbook: Passenger 95%, Commercial 85%. Engine membacanya sebagai
+ * Net DP, yaitu sisanya.
+ *
+ * Kolom products.dp_rate tidak ikut diuji karena engine tidak pernah
+ * membacanya — Net DP DTN datang dari simulation_settings.
+ */
+it('leaves the Net DP the workbook LTV table implies', function () {
+    $config = app(SimulationConfigurationRepository::class)->forProduct(
+        Product::query()->where('name', 'Reguler Passenger Referral')->firstOrFail(),
+        'Batas Bawah',
+    );
+
+    expect($config->downPayment->dtnStandardRate)->toBe(0.05)   // Passenger, LTV 95%
+        ->and($config->downPayment->dtnHighRiskRate)->toBe(0.15); // Commercial, LTV 85%
 });

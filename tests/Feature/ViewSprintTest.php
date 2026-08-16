@@ -262,3 +262,78 @@ it('answers the dimensions the simulation already knows', function () {
 
     Carbon::setTestNow();
 });
+
+/*
+ * Lembar ini berakhir sebagai gambar yang dikirim ke pusat. Kode yang dipilihkan
+ * sistem dari sekian kemungkinan terbaca persis seperti kode yang dipilih AO,
+ * dan tidak ada yang bisa membedakannya setelah jadi PNG.
+ */
+it('refuses to pick a Product ID when the filters leave more than one', function () {
+    [$user] = runOfficerSimulation();
+
+    foreach ([['A', 'PRODUCT SATU'], ['B', 'PRODUCT DUA']] as [$suffix, $productId]) {
+        SprintOffering::query()->create([
+            'fingerprint' => hash('sha256', 'ambigu-'.$suffix),
+            'source_workbook' => 'workbook.xlsx',
+            'source_sheet' => 'new REFERRAL',
+            'source_row' => 5,
+            'source_channel' => 'Referral',
+            'product_id' => $productId,
+            'product_offering' => 'OFFERING '.$suffix.' DP5 1TH - ADDB',
+            'product_category' => 'C2C Investasi PPSA',
+            'channel' => 'Referral',
+            'region' => 'Jawa',
+            'unit' => 'Passenger',
+            'brand' => 'Japan',
+            'profile' => 'Perorangan',
+            'debtor_type' => 'New Customer / Repeat Order',
+            'dp' => 'DP5',
+            'tenor' => '1TH',
+            'instalment' => 'ADDB',
+        ]);
+    }
+
+    Livewire::actingAs($user)
+        ->test(ViewSprint::class, ['tenor' => 12])
+        ->set('sprint_product', 'C2C Investasi PPSA')
+        ->set('sprint_channel', 'Referral')
+        ->set('sprint_dp', 'DP5')
+        ->assertSet('product_id', '')
+        ->assertSet('product_offering', '');
+
+    Carbon::setTestNow();
+});
+
+/* Menyempitkan sampai tersisa satu bukan tebakan, jadi yang satu itu dipilihkan. */
+it('settles on the only Product ID the filters leave standing', function () {
+    [$user] = runOfficerSimulation();
+
+    SprintOffering::query()->create([
+        'fingerprint' => hash('sha256', 'tunggal'),
+        'source_workbook' => 'workbook.xlsx',
+        'source_sheet' => 'new REFERRAL',
+        'source_row' => 5,
+        'source_channel' => 'Referral',
+        'product_id' => 'SATU-SATUNYA PRODUCT ID',
+        'product_offering' => 'SATU-SATUNYA OFFERING DP5 1TH - ADDB',
+        'product_category' => 'C2C Investasi PPSA',
+        'channel' => 'Referral',
+        'region' => 'Jawa',
+        'unit' => 'Passenger',
+        'brand' => 'Japan',
+        'profile' => 'Perorangan',
+        'debtor_type' => 'New Customer / Repeat Order',
+        'dp' => 'DP5',
+        'tenor' => '1TH',
+        'instalment' => 'ADDB',
+    ]);
+
+    Livewire::actingAs($user)
+        ->test(ViewSprint::class, ['tenor' => 12])
+        ->set('sprint_product', 'C2C Investasi PPSA')
+        ->set('sprint_dp', 'DP5')
+        ->assertSet('product_id', 'SATU-SATUNYA PRODUCT ID')
+        ->assertSet('product_offering', 'SATU-SATUNYA OFFERING DP5 1TH - ADDB');
+
+    Carbon::setTestNow();
+});

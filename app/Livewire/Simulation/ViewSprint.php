@@ -289,32 +289,38 @@ final class ViewSprint extends Component
             ->all();
     }
 
-    private function usingOfferingLookup(): bool
-    {
-        return $this->hasOfferingLookup();
-    }
-
+    /**
+     * Menjaga kedua kode tetap sejalan dengan filter di atasnya.
+     *
+     * Pilihan yang tidak lagi cocok dikosongkan, bukan diganti. Mengambil baris
+     * pertama dari sekian adalah tebakan, dan lembar ini berakhir sebagai PNG
+     * yang dikirim ke pusat — di sana kode tebakan terbaca persis seperti kode
+     * yang dipilih. Kalau filternya menyisakan tepat satu baris tidak ada yang
+     * ditebak, jadi baris itu dipilihkan.
+     */
     private function ensureSprintSelection(bool $allowProductChange = true): void
     {
-        if (! $this->usingOfferingLookup()) {
-            if (! $this->hasOfferingLookup()) {
-                $this->compose();
-            }
+        if (! $this->hasOfferingLookup()) {
+            $this->compose();
 
             return;
         }
 
-        $productOptions = $this->productIdOptions();
-
-        if ($allowProductChange && ! in_array($this->product_id, $productOptions, true)) {
-            $this->product_id = $productOptions[0] ?? '';
+        if ($allowProductChange) {
+            $this->product_id = $this->settledOption($this->productIdOptions(), $this->product_id);
         }
 
-        $offeringOptions = $this->productOfferingOptions();
+        $this->product_offering = $this->settledOption($this->productOfferingOptions(), $this->product_offering);
+    }
 
-        if (! in_array($this->product_offering, $offeringOptions, true)) {
-            $this->product_offering = $offeringOptions[0] ?? '';
+    /** @param  array<int, string>  $options */
+    private function settledOption(array $options, string $current): string
+    {
+        if (in_array($current, $options, true)) {
+            return $current;
         }
+
+        return count($options) === 1 ? $options[0] : '';
     }
 
     /** @return Builder<SprintOffering> */
@@ -452,7 +458,7 @@ final class ViewSprint extends Component
 
     public function updated(string $property): void
     {
-        if ($property === 'product_id' && $this->usingOfferingLookup()) {
+        if ($property === 'product_id' && $this->hasOfferingLookup()) {
             $this->ensureSprintSelection(false);
 
             return;
@@ -464,7 +470,7 @@ final class ViewSprint extends Component
 
         if (str_starts_with($property, 'sprint_')) {
             $this->ensureSprintSelection();
-        } elseif (! $this->usingOfferingLookup()) {
+        } elseif (! $this->hasOfferingLookup()) {
             $this->compose();
         }
     }
