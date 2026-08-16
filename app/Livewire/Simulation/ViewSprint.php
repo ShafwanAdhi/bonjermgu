@@ -23,6 +23,7 @@ use App\Support\SimulationSettingDefaults;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Throwable;
@@ -47,6 +48,23 @@ use Throwable;
 final class ViewSprint extends Component
 {
     private const OFFICER_FORM_SESSION_KEY = 'simulation.officer.form';
+
+    /**
+     * Isian AO bertahan lintas tenor.
+     *
+     * Tombol tenor menavigasi ke rute lain, jadi komponennya mount ulang. Tanpa
+     * ini, seorang AO yang sudah mengetik nama customer dan mengisi Insurance
+     * Paid Entry kehilangan semuanya begitu ia membandingkan tenor lain —
+     * padahal isian itu menggambarkan debitur yang sama, bukan tenornya.
+     *
+     * Nilai turunan sengaja tidak ikut disimpan: ia dihitung ulang dari
+     * simulasi tiap kali, dan menyimpannya berarti membekukan jawaban tenor
+     * lama pada lembar tenor baru.
+     */
+    private const SHEET_SESSION_KEY = 'simulation.officer.sprint';
+
+    /** @var array<int, int> */
+    public const TENORS = [12, 24, 36, 48, 60];
 
     /** Berlaku pada dokumen ini saja; tidak pernah masuk perhitungan. */
     private const MANUAL_DEFAULTS = [
@@ -152,7 +170,7 @@ final class ViewSprint extends Component
 
     public function mount(int $tenor): void
     {
-        abort_unless(in_array($tenor, [12, 24, 36, 48, 60], true), 404);
+        abort_unless(in_array($tenor, self::TENORS, true), 404);
         $this->tenor = $tenor;
 
         foreach (self::MANUAL_DEFAULTS as $property => $key) {
@@ -166,13 +184,151 @@ final class ViewSprint extends Component
         }
 
         $this->resolveOutcome();
+        $this->rejectTenorWithoutFinancing();
 
         if ($this->outcome !== null && $this->spesifik_product === '') {
             $this->spesifik_product = $this->outcome->config->product->name;
         }
 
         $this->prefillSelectors();
+        $this->restoreSheetState();
         $this->ensureSprintSelection();
+    }
+
+    /**
+     * Tenor yang tidak menghasilkan pembiayaan tidak boleh menjadi dokumen.
+     *
+     * Layar Simulasi Kredit menandainya dengan "—" alih-alih tombol, tapi
+     * alamatnya bisa diketik langsung. Tanpa penjagaan ini lembarnya terbuka
+     * berisi nol di setiap baris, dan nol terbaca seperti angka sah begitu jadi
+     * gambar yang dikirim ke pusat.
+     */
+    private function rejectTenorWithoutFinancing(): void
+    {
+        if ($this->outcome === null || in_array($this->tenor, $this->financedTenors(), true)) {
+            return;
+        }
+
+        // Outcome sengaja dipertahankan: pemilih tenor tetap perlu tahu tenor
+        // mana yang bisa dituju, supaya AO tidak harus kembali ke layar
+        // simulasi hanya untuk berpindah baris.
+        $this->unavailableReason = sprintf(
+            'Tenor %d bulan tidak menghasilkan pembiayaan pada simulasi ini, jadi tidak ada yang bisa dilaporkan.',
+            $this->tenor,
+        );
+    }
+
+    /**
+     * Tenor yang benar-benar menghasilkan pembiayaan pada simulasi ini.
+     *
+     * @return array<int, int>
+     */
+    #[Computed]
+    public function financedTenors(): array
+    {
+        if ($this->outcome === null) {
+            return [];
+        }
+
+        return array_values(array_filter(
+            self::TENORS,
+            fn (int $tenor): bool => $this->outcome->result->forTenor($tenor)->instalment > 0,
+        ));
+    }
+
+    /**
+     * Yang wajib terisi sebelum lembar ini pantas dikirim ke pusat.
+     *
+     * @return array<int, string>
+     */
+    #[Computed]
+    public function missingForExport(): array
+    {
+        return collect([
+            'Nama Customer' => $this->nama_customer,
+            'Product ID' => $this->product_id,
+            'Product Offering' => $this->product_offering,
+        ])->filter(fn (string $value): bool => trim($value) === '')->keys()->all();
+    }
+
+    /**
+     * Nama berkas unduhan. AO yang mengunduh beberapa tenor untuk debitur yang
+     * sama akan menerima berkas yang bisa dibedakan, bukan deretan stempel
+     * waktu yang harus dibuka satu per satu.
+     */
+    #[Computed]
+    public function exportFileName(): string
+    {
+        return sprintf(
+            'view-sprint-%s-%d-bulan.png',
+            Str::slug($this->nama_customer) ?: 'tanpa-nama',
+            $this->tenor,
+        );
+    }
+
+    /* ------------------------------------------------------- Ingatan lembar */
+
+    /**
+     * Properti yang diketik atau dipilih AO sendiri.
+     *
+     * Dropdown penyusun ditemukan dari properti komponen, bukan dari daftar
+     * terpisah: menambah satu dimensi baru lalu lupa mencatatnya di sini akan
+     * membuat dimensi itu diam-diam tidak ikut tersimpan.
+     *
+     * @return array<int, string>
+     */
+    private function rememberedProperties(): array
+    {
+        $selectors = array_values(array_filter(
+            array_keys(get_object_vars($this)),
+            // Jenis angsuran datang dari simulasi, bukan dari AO.
+            fn (string $property): bool => str_starts_with($property, 'sprint_') && $property !== 'sprint_instalment',
+        ));
+
+        return [
+            ...array_keys(self::MANUAL_DEFAULTS),
+            ...$selectors,
+            'nama_customer', 'spesifik_product', 'wira_no', 'sisa_kewajiban', 'sisa_os_lk',
+            'paid_status', 'paid_discount', 'paid_amount',
+        ];
+    }
+
+    /**
+     * Nilai tersimpan dipasang di atas hasil prefill, bukan sebaliknya: kalau AO
+     * sudah menimpa sebuah pilihan dengan sadar, pilihannya yang menang.
+     * Pilihan yang tidak lagi ada di daftar dibiarkan gugur ke hasil prefill.
+     */
+    private function restoreSheetState(): void
+    {
+        $stored = session()->get(self::SHEET_SESSION_KEY);
+
+        if (! is_array($stored)) {
+            return;
+        }
+
+        $options = $this->selectorOptions();
+
+        foreach ($this->rememberedProperties() as $property) {
+            if (! array_key_exists($property, $stored)) {
+                continue;
+            }
+
+            $value = $stored[$property];
+            $group = str_starts_with($property, 'sprint_') ? substr($property, 7) : null;
+
+            if ($group !== null && $value !== '' && ! in_array($value, $options[$group] ?? [], true)) {
+                continue;
+            }
+
+            $this->{$property} = $value;
+        }
+    }
+
+    private function rememberSheetState(): void
+    {
+        session()->put(self::SHEET_SESSION_KEY, collect($this->rememberedProperties())
+            ->mapWithKeys(fn (string $property): array => [$property => $this->{$property}])
+            ->all());
     }
 
     /* ---------------------------------------- Product ID & Product Offering */
@@ -276,6 +432,37 @@ final class ViewSprint extends Component
         return $options;
     }
 
+    /**
+     * Filter yang, kalau dilonggarkan sendirian, memunculkan offering lagi.
+     *
+     * Tanpa ini layar hanya berkata "Product ID belum tersedia" dan AO tidak
+     * punya cara tahu pilihan mana yang harus diubah — delapan dropdown, dan
+     * satu di antaranya menyaring habis semuanya.
+     *
+     * @return array<int, string>
+     */
+    #[Computed]
+    public function blockingFilters(): array
+    {
+        if (! $this->lookupDeadEnd()) {
+            return [];
+        }
+
+        return collect(SprintToken::GROUPS)
+            ->only(['product', 'channel', 'unit', 'brand', 'profile', 'debtor_type', 'dp', 'region'])
+            ->filter(fn (string $label, string $group): bool => $this->{'sprint_'.$group} !== ''
+                && $this->offeringQuery(includeProductId: false, ignore: $group)->exists())
+            ->values()
+            ->all();
+    }
+
+    /** Katalog offering ada, tapi kombinasi pilihan sekarang tidak menyisakan apa pun. */
+    #[Computed]
+    public function lookupDeadEnd(): bool
+    {
+        return $this->hasOfferingLookup() && $this->productIdOptions() === [];
+    }
+
     #[Computed]
     public function hasOfferingLookup(): bool
     {
@@ -346,21 +533,45 @@ final class ViewSprint extends Component
         return count($options) === 1 ? $options[0] : '';
     }
 
-    /** @return Builder<SprintOffering> */
-    private function offeringQuery(bool $includeProductId): Builder
+    /**
+     * @param  string|null  $ignore  Dimensi yang dilewati, untuk menguji apakah
+     *                               ia yang menyaring habis semuanya.
+     * @return Builder<SprintOffering>
+     */
+    private function offeringQuery(bool $includeProductId, ?string $ignore = null): Builder
     {
         $query = SprintOffering::query();
+        $on = fn (string $group): bool => $group !== $ignore;
 
-        $this->whereNullable($query, 'product_category', $this->sprint_product);
-        $this->whereNullable($query, 'channel', $this->sprint_channel);
-        $this->whereNullable($query, 'unit', $this->sprint_unit);
-        $this->whereNullable($query, 'brand', $this->sprint_brand);
-        $this->whereNullable($query, 'dp', $this->sprint_dp);
+        if ($on('product')) {
+            $this->whereNullable($query, 'product_category', $this->sprint_product);
+        }
+        if ($on('channel')) {
+            $this->whereNullable($query, 'channel', $this->sprint_channel);
+        }
+        if ($on('unit')) {
+            $this->whereNullable($query, 'unit', $this->sprint_unit);
+        }
+        if ($on('brand')) {
+            $this->whereNullable($query, 'brand', $this->sprint_brand);
+        }
+        if ($on('dp')) {
+            $this->whereNullable($query, 'dp', $this->sprint_dp);
+        }
+        if ($on('profile')) {
+            $this->whereProfile($query);
+        }
+        if ($on('debtor_type')) {
+            $this->whereDebtorType($query);
+        }
+        if ($on('region')) {
+            $this->whereRegion($query);
+        }
+
+        // Tenor dan jenis angsuran tidak dipilih AO di layar ini, jadi
+        // melonggarkannya tidak pernah bisa jadi saran yang berguna.
         $this->whereNullable($query, 'tenor', intdiv($this->tenor, 12).'TH');
         $this->whereNullable($query, 'instalment', $this->sprint_instalment);
-        $this->whereProfile($query);
-        $this->whereDebtorType($query);
-        $this->whereRegion($query);
 
         if ($includeProductId) {
             $this->whereNullable($query, 'product_id', $this->product_id);
@@ -481,6 +692,8 @@ final class ViewSprint extends Component
 
     public function updated(string $property): void
     {
+        $this->rememberSheetState();
+
         if ($property === 'product_id' && $this->hasOfferingLookup()) {
             $this->ensureSprintSelection(false);
 
@@ -673,7 +886,7 @@ final class ViewSprint extends Component
     #[Computed]
     public function available(): bool
     {
-        return $this->outcome !== null;
+        return $this->outcome !== null && $this->unavailableReason === null;
     }
 
     private function setting(string $key): string

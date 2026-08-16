@@ -6,11 +6,29 @@
                       meta="Lembar entri untuk SPRINT. Seluruh angka dibaca dari simulasi yang baru Anda jalankan." />
 
     @if (! $this->available)
+        @php($reachable = $this->financedTenors)
         <x-ui.card>
             <div class="py-xl text-center">
-                <p class="text-body-md text-ink">Belum ada simulasi.</p>
+                <p class="text-body-md text-ink">
+                    {{ $reachable === [] ? 'Belum ada simulasi.' : 'Tenor ini tidak tersedia.' }}
+                </p>
                 <p class="mt-1 text-helper text-muted">{{ $unavailableReason }}</p>
-                <x-ui.button :href="route('simulation.officer')" wire:navigate size="md" class="mt-lg">
+
+                {{-- Tenor lain masih terjangkau; tidak perlu kembali ke layar simulasi. --}}
+                @if ($reachable !== [])
+                    <div class="mt-lg flex flex-wrap items-center justify-center gap-2">
+                        <span class="text-helper text-muted">Tenor yang tersedia:</span>
+                        @foreach ($reachable as $tenorOption)
+                            <a href="{{ route('simulation.officer.sprint', $tenorOption) }}" wire:navigate
+                               class="rounded-sm border border-hairline bg-canvas px-2.5 py-1 text-[12px] font-medium text-link">
+                                {{ $tenorOption }} bulan
+                            </a>
+                        @endforeach
+                    </div>
+                @endif
+
+                <x-ui.button :href="route('simulation.officer')" wire:navigate
+                             :variant="$reachable === [] ? 'primary' : 'secondary'" size="md" class="mt-lg">
                     Ke Simulasi Kredit
                 </x-ui.button>
             </div>
@@ -46,7 +64,8 @@
                     <div class="flex flex-col gap-lg">
                         <div class="grid grid-cols-1 gap-md sm:grid-cols-2">
                             @foreach ($selectorFields as [$group, $label, $placeholder, $wide])
-                                <x-ui.field :label="$label" class="{{ $wide ? 'sm:col-span-2' : '' }}">
+                                <x-ui.field :label="$label" class="{{ $wide ? 'sm:col-span-2' : '' }}"
+                                            :helper="$sprint_unit === '' && $group === 'unit' ? 'Unit Commercial bercabang jadi Pick Up atau Truck; simulasi tidak menentukannya.' : ($sprint_channel === '' && $group === 'channel' ? 'Sub kategori referral Anda belum dipetakan ke kanal SPRINT.' : null)">
                                     <x-ui.select wire:model.live="sprint_{{ $group }}">
                                         <option value="">{{ $placeholder }}</option>
                                         @foreach ($selectorOptions[$group] ?? [] as $option)
@@ -69,6 +88,29 @@
 
                         <div class="rounded-sm border border-hairline bg-surface-soft p-md">
                             <div class="grid grid-cols-1 gap-md">
+                                {{-- Jalan buntu tanpa diagnosa memaksa AO menebak
+                                     di antara delapan dropdown. --}}
+                                {{-- Katalog kosong bukan salah pilihan AO; tanpa
+                                     pesan ini layarnya hanya berkata "belum tersedia". --}}
+                                @if (! $lookupAvailable)
+                                    <p role="status" class="text-helper text-muted">
+                                        Katalog offering SPRINT belum diimpor, jadi kode disusun dari token.
+                                        Minta Admin menjalankan <span class="font-mono">sprint:import-offerings</span>.
+                                    </p>
+                                @elseif ($this->lookupDeadEnd)
+                                    @php($blocking = $this->blockingFilters)
+                                    <p role="status" class="text-helper text-signature-coral">
+                                        Tidak ada offering yang cocok dengan kombinasi ini.
+                                        {{-- Kalau tak satu pun filter membukanya sendirian,
+                                             mengatakannya lebih berguna daripada diam. --}}
+                                        @if ($blocking !== [])
+                                            Coba longgarkan {{ implode(' atau ', $blocking) }}.
+                                        @else
+                                            Lebih dari satu pilihan menyempitkannya sekaligus.
+                                        @endif
+                                    </p>
+                                @endif
+
                                 <x-ui.field label="Product ID">
                                     @if ($lookupAvailable)
                                         <x-ui.select wire:model.live="product_id" :disabled="$productIdOptions === []">
@@ -183,7 +225,7 @@
 
                         @foreach ([['acp_axp', 'ACP & AXP'], ['gap', 'GAP'], ['hic', 'HIC'], ['water_hammer', 'Water Hammer & Theft by Driver']] as [$field, $label])
                             @php($fieldValue = ${$field})
-                            <x-ui.field :label="$label">
+                            <x-ui.field :label="$label" wire:key="manual-{{ $field }}">
                                 <x-ui.select wire:model.live="{{ $field }}">
                                     @if ($fieldValue !== '' && ! in_array($fieldValue, $manualOptions[$field], true))
                                         <option value="{{ $fieldValue }}">{{ $fieldValue }}</option>
@@ -227,24 +269,48 @@
 
             {{-- ------------------------------------------------- Lembarnya --}}
             <div class="flex min-w-0 flex-col gap-md"
-                 x-data="viewSprintExport()">
+                 x-data="viewSprintExport(@js($this->exportFileName))">
                 <div class="flex flex-wrap items-center gap-sm border-t border-hairline pt-lg">
                     <span class="text-helper text-muted">Tenor {{ $s['tenor'] }} bulan</span>
                     <div class="ml-auto flex gap-1">
-                        @foreach ([12, 24, 36, 48, 60] as $tenorOption)
-                            <a href="{{ route('simulation.officer.sprint', $tenorOption) }}" wire:navigate
+                        @php($reachable = $this->financedTenors)
+                        @foreach (\App\Livewire\Simulation\ViewSprint::TENORS as $tenorOption)
+                            @php($usable = in_array($tenorOption, $reachable, true))
+                            {{-- Tenor tanpa pembiayaan tidak ditawarkan: mengkliknya
+                                 hanya berujung pada layar "tidak tersedia". --}}
+                            <a @if ($usable) href="{{ route('simulation.officer.sprint', $tenorOption) }}" wire:navigate @endif
+                               aria-label="{{ $usable ? 'Lihat tenor '.$tenorOption.' bulan' : 'Tenor '.$tenorOption.' bulan tidak menghasilkan pembiayaan' }}"
+                               @if (! $usable) aria-disabled="true" title="Tidak menghasilkan pembiayaan" @endif
+                               @if ($tenorOption === $s['tenor']) aria-current="page" @endif
                                @class([
                                    'rounded-sm border px-2.5 py-1 text-[12px] font-medium',
                                    'border-primary bg-primary text-on-primary' => $tenorOption === $s['tenor'],
-                                   'border-hairline bg-canvas text-muted' => $tenorOption !== $s['tenor'],
+                                   'border-hairline bg-canvas text-muted' => $tenorOption !== $s['tenor'] && $usable,
+                                   'cursor-not-allowed border-divider bg-surface-soft text-border-strong' => ! $usable,
                                ])>{{ $tenorOption }}</a>
                         @endforeach
                     </div>
-                    <x-ui.button type="button" size="sm" x-on:click="save()" x-bind:disabled="busy">
+                    @php($missing = $this->missingForExport)
+                    <x-ui.button type="button" size="sm" x-on:click="save()"
+                                 x-bind:disabled="busy"
+                                 :disabled="$missing !== []"
+                                 :title="$missing === [] ? null : 'Lengkapi '.implode(', ', $missing)">
                         <span x-show="! busy">Unduh PNG</span>
                         <span x-show="busy" x-cloak>Menyiapkan…</span>
                     </x-ui.button>
                 </div>
+
+                {{-- Lembar setengah jadi terbaca seperti lembar sah begitu jadi
+                     gambar, dan gambar itu yang dikirim ke pusat. --}}
+                @if ($missing !== [])
+                    <p role="status" class="text-helper text-signature-coral">
+                        Belum bisa diunduh. Lengkapi dulu: {{ implode(', ', $missing) }}.
+                    </p>
+                @endif
+
+                <p x-show="failed" x-cloak role="alert" class="text-helper text-signature-coral">
+                    Gambar gagal dibuat. Gunakan tangkapan layar biasa, atau muat ulang halaman lalu coba lagi.
+                </p>
 
                 {{-- Yang dipotret. Sengaja berlatar putih dan berukuran tetap
                      supaya hasilnya sama di layar mana pun. --}}

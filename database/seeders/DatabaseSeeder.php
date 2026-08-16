@@ -12,6 +12,7 @@ class DatabaseSeeder extends Seeder
             ReferralMasterSeeder::class,
             // Depends on age groups created by ReferralMasterSeeder.
             SimulationConfigurationSeeder::class,
+            SprintOfferingSeeder::class,
             VehicleSeeder::class,
             // Fixed catalogues. Neither is editable through the interface.
             DocumentRequirementSeeder::class,

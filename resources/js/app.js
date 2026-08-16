@@ -490,8 +490,9 @@ document.addEventListener("livewire:initialized", () => {
  * tabel, dan kompresi lossy membuatnya sulit dibaca saat diketik ulang.
  */
 document.addEventListener("alpine:init", () => {
-    window.Alpine.data("viewSprintExport", () => ({
+    window.Alpine.data("viewSprintExport", (fileName) => ({
         busy: false,
+        failed: false,
 
         async save() {
             const sheet = this.$refs.sheet?.firstElementChild;
@@ -501,6 +502,7 @@ document.addEventListener("alpine:init", () => {
             }
 
             this.busy = true;
+            this.failed = false;
 
             try {
                 const { default: html2canvas } = await import("html2canvas");
@@ -513,14 +515,14 @@ document.addEventListener("alpine:init", () => {
                 });
 
                 const link = document.createElement("a");
-                link.download = `view-sprint-${Date.now()}.png`;
+                    link.download = fileName;
                 link.href = canvas.toDataURL("image/png");
                 link.click();
             } catch (error) {
+                // Pesannya ditampilkan di halaman, bukan lewat alert: alert
+                // menutupi lembar yang justru ingin dilihat penggunanya.
                 console.error("Gagal menyimpan View Sprint", error);
-                window.alert(
-                    "Gambar gagal dibuat. Silakan gunakan tangkapan layar biasa.",
-                );
+                this.failed = true;
             } finally {
                 this.busy = false;
             }

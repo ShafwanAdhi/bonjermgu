@@ -376,3 +376,134 @@ it('spells GAP, HIC and Water Hammer the way the workbook does', function () {
         ->and(ViewSprint::MANUAL_OPTIONS['water_hammer'])->toBe(['NO', 'YES'])
         ->and(ViewSprint::MANUAL_OPTIONS['is_beliv'])->toBe(['TIDAK', 'YA']);
 });
+
+/*
+ * Layar Simulasi Kredit menandai tenor tanpa pembiayaan dengan "—" alih-alih
+ * tombol, tapi alamatnya bisa diketik langsung. Lembar berisi nol di setiap
+ * baris terbaca seperti lembar sah begitu jadi gambar.
+ */
+it('refuses a tenor that produces no financing at all', function () {
+    [$user, $price] = runOfficerSimulation();
+
+    // Harga sangat rendah membuat Net DP melampaui harga, jadi tidak ada yang dibiayai.
+    Livewire::actingAs($user)
+        ->test(OfficerSimulation::class)
+        ->set('unit_price', '1')
+        ->call('calculate');
+
+    $sprint = Livewire::actingAs($user)->test(ViewSprint::class, ['tenor' => 60]);
+
+    expect($sprint->instance()->available())->toBeFalse();
+    $sprint->assertSee('tidak menghasilkan pembiayaan');
+
+    Carbon::setTestNow();
+});
+
+/*
+ * Lembar ini hanya ada untuk jadi gambar yang dikirim ke pusat. Mengunduhnya
+ * setengah jadi menghasilkan dokumen yang terbaca sah padahal identitasnya
+ * kosong.
+ */
+it('names what is still missing before the sheet may be downloaded', function () {
+    [$user] = runOfficerSimulation();
+
+    $sprint = Livewire::actingAs($user)->test(ViewSprint::class, ['tenor' => 12]);
+
+    expect($sprint->instance()->missingForExport())->toContain('Nama Customer')
+        ->and($sprint->instance()->missingForExport())->toContain('Product ID');
+
+    $sprint->assertSee('Belum bisa diunduh');
+
+    Carbon::setTestNow();
+});
+
+/*
+ * Tombol tenor menavigasi ke rute lain, jadi komponennya mount ulang. Isian AO
+ * menggambarkan debiturnya, bukan tenornya, dan harus ikut pindah.
+ */
+it('keeps what the officer typed when the tenor changes', function () {
+    [$user] = runOfficerSimulation();
+
+    Livewire::actingAs($user)
+        ->test(ViewSprint::class, ['tenor' => 12])
+        ->set('nama_customer', 'PT Sinar Rejeki')
+        ->set('gap', 'YES')
+        ->set('wira_no', '77')
+        ->set('paid_status.2', 'ON LOAN');
+
+    Livewire::actingAs($user)
+        ->test(ViewSprint::class, ['tenor' => 48])
+        ->assertSet('nama_customer', 'PT Sinar Rejeki')
+        ->assertSet('gap', 'YES')
+        ->assertSet('wira_no', '77')
+        ->assertSet('paid_status.2', 'ON LOAN');
+
+    Carbon::setTestNow();
+});
+
+it('names the download after the customer and the tenor', function () {
+    [$user] = runOfficerSimulation();
+
+    $sprint = Livewire::actingAs($user)
+        ->test(ViewSprint::class, ['tenor' => 36])
+        ->set('nama_customer', 'PT Sinar Rejeki');
+
+    expect($sprint->instance()->exportFileName())->toBe('view-sprint-pt-sinar-rejeki-36-bulan.png');
+
+    Carbon::setTestNow();
+});
+
+/*
+ * Delapan dropdown, dan satu kombinasi bisa menyaring habis katalog. Tanpa
+ * diagnosa, layar hanya berkata "belum tersedia" dan AO harus menebak pilihan
+ * mana yang harus diubah.
+ */
+it('names the filter to relax when one of them empties the catalogue', function () {
+    [$user] = runOfficerSimulation();
+
+    SprintOffering::query()->create([
+        'fingerprint' => hash('sha256', 'diagnosa'),
+        'source_workbook' => 'workbook.xlsx',
+        'source_sheet' => 'new REFERRAL',
+        'source_row' => 5,
+        'source_channel' => 'Referral',
+        'product_id' => 'PRODUCT ADA',
+        'product_offering' => 'OFFERING ADA DP5 1TH - ADDB',
+        'product_category' => 'C2C Investasi PPSA',
+        'channel' => 'Referral',
+        'region' => 'Jawa',
+        'unit' => 'Passenger',
+        'brand' => 'Japan',
+        'profile' => 'Perorangan',
+        'debtor_type' => 'New Customer / Repeat Order',
+        'dp' => 'DP5',
+        'tenor' => '1TH',
+        'instalment' => 'ADDB',
+    ]);
+
+    $sprint = Livewire::actingAs($user)
+        ->test(ViewSprint::class, ['tenor' => 12])
+        ->set('sprint_product', 'C2C Investasi PPSA')
+        ->set('sprint_dp', 'DP5')
+        // Hanya Golongan DP yang meleset; melonggarkannya sendirian cukup.
+        ->set('sprint_dp', 'DP50');
+
+    expect($sprint->instance()->lookupDeadEnd())->toBeTrue()
+        ->and($sprint->instance()->blockingFilters())->toBe(['Golongan DP']);
+
+    $sprint->assertSee('Coba longgarkan Golongan DP');
+
+    Carbon::setTestNow();
+});
+
+/* Tenor tanpa pembiayaan tidak boleh ditawarkan sebagai tautan. */
+it('offers only the tenors that actually produce financing', function () {
+    [$user] = runOfficerSimulation();
+
+    $sprint = Livewire::actingAs($user)->test(ViewSprint::class, ['tenor' => 12]);
+
+    expect($sprint->instance()->financedTenors())->not->toBeEmpty()
+        ->and($sprint->instance()->financedTenors())->each->toBeIn([12, 24, 36, 48, 60]);
+
+    Carbon::setTestNow();
+});
