@@ -215,17 +215,18 @@
                             </x-ui.select>
                         </x-ui.field>
 
-                        <x-ui.field label="Sisa Kewajiban">
+                        <x-ui.field label="Sisa Kewajiban" class="sm:[&_[data-ui-field-label]]:flex sm:[&_[data-ui-field-label]]:min-h-[38px] sm:[&_[data-ui-field-label]]:items-end">
                             <x-ui.money-input wire:model.live.debounce.400ms="sisa_kewajiban" placeholder="Rp 0" />
                         </x-ui.field>
 
-                        <x-ui.field label="Sisa OS LK Sebelumnya">
+                        <x-ui.field label="Sisa OS LK Sebelumnya" class="sm:[&_[data-ui-field-label]]:flex sm:[&_[data-ui-field-label]]:min-h-[38px] sm:[&_[data-ui-field-label]]:items-end">
                             <x-ui.money-input wire:model.live.debounce.400ms="sisa_os_lk" placeholder="Rp 0" />
                         </x-ui.field>
 
                         @foreach ([['acp_axp', 'ACP & AXP'], ['gap', 'GAP'], ['hic', 'HIC'], ['water_hammer', 'Water Hammer & Theft by Driver']] as [$field, $label])
                             @php($fieldValue = ${$field})
-                            <x-ui.field :label="$label" wire:key="manual-{{ $field }}">
+                            <x-ui.field :label="$label" wire:key="manual-{{ $field }}"
+                                        class="{{ in_array($field, ['hic', 'water_hammer'], true) ? 'sm:[&_[data-ui-field-label]]:flex sm:[&_[data-ui-field-label]]:min-h-[38px] sm:[&_[data-ui-field-label]]:items-end' : '' }}">
                                 <x-ui.select wire:model.live="{{ $field }}">
                                     @if ($fieldValue !== '' && ! in_array($fieldValue, $manualOptions[$field], true))
                                         <option value="{{ $fieldValue }}">{{ $fieldValue }}</option>
