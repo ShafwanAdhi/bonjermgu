@@ -65,7 +65,7 @@
                         <div class="grid grid-cols-1 gap-md sm:grid-cols-2">
                             @foreach ($selectorFields as [$group, $label, $placeholder, $wide])
                                 <x-ui.field :label="$label" class="{{ $wide ? 'sm:col-span-2' : '' }}"
-                                            :helper="$sprint_unit === '' && $group === 'unit' ? 'Unit Commercial bercabang jadi Pick Up atau Truck; simulasi tidak menentukannya.' : ($sprint_channel === '' && $group === 'channel' ? 'Sub kategori referral Anda belum dipetakan ke kanal SPRINT.' : null)">
+                                            :helper="$sprint_unit === '' && $group === 'unit' ? 'Unit Commercial bercabang jadi Pick Up atau Truck; simulasi tidak menentukannya.' : null">
                                     <x-ui.select wire:model.live="sprint_{{ $group }}">
                                         <option value="">{{ $placeholder }}</option>
                                         @foreach ($selectorOptions[$group] ?? [] as $option)
@@ -111,7 +111,7 @@
                                     </p>
                                 @endif
 
-                                <x-ui.field label="Product ID">
+                                <x-ui.field label="Product ID" required>
                                     @if ($lookupAvailable)
                                         <x-ui.select wire:model.live="product_id" :disabled="$productIdOptions === []">
                                             <option value="">{{ $productIdOptions === [] ? 'Product ID belum tersedia' : 'Pilih Product ID' }}</option>
@@ -125,7 +125,7 @@
                                     @endif
                                 </x-ui.field>
 
-                                <x-ui.field label="Product Offering"
+                                <x-ui.field label="Product Offering" required
                                             :helper="$lookupAvailable && $product_id !== '' && $productOfferingOptions === []
                                                 ? 'Tidak ada offering yang cocok dengan filter yang dipilih.'
                                                 : null">
@@ -159,7 +159,7 @@
 
                 <x-ui.card title="Diisi Account Officer">
                     <div class="grid grid-cols-1 gap-md sm:grid-cols-2">
-                        <x-ui.field label="Nama Customer" class="sm:col-span-2">
+                        <x-ui.field label="Nama Customer" required class="sm:col-span-2">
                             <x-ui.input wire:model.live.debounce.400ms="nama_customer" type="text"
                                         placeholder="Nama customer sesuai pengajuan" />
                         </x-ui.field>
@@ -292,8 +292,10 @@
                     </div>
                     @php($missing = $this->missingForExport)
                     <x-ui.button type="button" size="sm" x-on:click="save()"
-                                 x-bind:disabled="busy"
+                                 data-export-button
                                  :disabled="$missing !== []"
+                                 x-bind:aria-busy="busy"
+                                 x-bind:class="busy && 'pointer-events-none opacity-70'"
                                  :title="$missing === [] ? null : 'Lengkapi '.implode(', ', $missing)">
                         <span x-show="! busy">Unduh PNG</span>
                         <span x-show="busy" x-cloak>Menyiapkan…</span>

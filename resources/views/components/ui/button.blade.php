@@ -23,6 +23,7 @@
 
     $padKey = $variant === 'primary' ? 'primary' : 'secondary';
     $classes = 'inline-flex items-center justify-center rounded-lg text-button transition-colors '
+        .'disabled:cursor-not-allowed disabled:opacity-50 '
         .$sizes[$size][$padKey].' '.$variants[$variant];
     $type = $attributes->get('type', 'button');
 @endphp

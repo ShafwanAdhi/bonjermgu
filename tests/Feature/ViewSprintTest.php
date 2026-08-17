@@ -507,3 +507,31 @@ it('offers only the tenors that actually produce financing', function () {
 
     Carbon::setTestNow();
 });
+
+/*
+ * Tombol unduh sempat tetap bisa diklik meski pesannya sudah melarang:
+ * x-bind:disabled="busy" menghapus atribut disabled dari server setiap kali
+ * busy bernilai false. Sisi server yang memegang disabled sekarang, jadi tes
+ * ini memeriksa atributnya benar-benar terpasang, bukan sekadar pesannya ada.
+ */
+it('really disables the download button while the sheet is incomplete', function () {
+    [$user] = runOfficerSimulation();
+
+    $html = Livewire::actingAs($user)->test(ViewSprint::class, ['tenor' => 12])->html();
+
+    expect($html)->toMatch('/<button[^>]*data-export-button[^>]*\bdisabled\b/');
+
+    Carbon::setTestNow();
+});
+
+it('marks every field that blocks the download as required', function () {
+    [$user] = runOfficerSimulation();
+
+    $html = Livewire::actingAs($user)->test(ViewSprint::class, ['tenor' => 12])->html();
+
+    // Label wajib membawa tanda bintang; jumlahnya harus sama dengan jumlah
+    // yang menahan unduhan, tidak lebih dan tidak kurang.
+    expect(substr_count($html, '<span class="text-signature-coral"> *</span>'))->toBe(3);
+
+    Carbon::setTestNow();
+});
