@@ -2,6 +2,7 @@
 
 use App\Livewire\Simulation\OfficerSimulation;
 use App\Livewire\Simulation\ViewSprint;
+use App\Models\ReferralCategory;
 use App\Models\SimulationSetting;
 use App\Models\SprintOffering;
 use App\Models\User;
@@ -532,6 +533,77 @@ it('marks every field that blocks the download as required', function () {
     // Label wajib membawa tanda bintang; jumlahnya harus sama dengan jumlah
     // yang menahan unduhan, tidak lebih dan tidak kurang.
     expect(substr_count($html, '<span class="text-signature-coral"> *</span>'))->toBe(3);
+
+    Carbon::setTestNow();
+});
+
+/*
+ * Lima dimensi berhenti ditanyakan ke AO karena jawabannya sudah ditentukan
+ * hal lain (klien, 18 Agustus 2026). Nilainya tetap muncul di lembar; yang
+ * hilang hanya kolom isiannya.
+ */
+it('stops asking for what the simulation and the configuration already decided', function () {
+    [$user] = runOfficerSimulation();
+
+    $html = Livewire::actingAs($user)->test(ViewSprint::class, ['tenor' => 12])->html();
+
+    foreach (['sprint_region', 'sprint_debtor_type'] as $gone) {
+        expect($html)->not->toContain('wire:model.live="'.$gone.'"');
+    }
+    foreach (['mandiri_kpm', 'kondisi_kendaraan'] as $gone) {
+        expect($html)->not->toContain('wire:model.live="'.$gone.'"');
+    }
+
+    // Tenor dan Jenis Angsuran tidak lagi tampil sebagai kolom mati.
+    expect($html)->not->toContain('label="Jenis Angsuran"');
+
+    Carbon::setTestNow();
+});
+
+it('reads Type Customer from the simulation instead of asking again', function () {
+    [$category, $model, $price] = officerMaster();
+    Carbon::setTestNow(Carbon::create($price->year + 1, 8, 4));
+    $user = User::factory()->accountOfficer()->create();
+
+    Livewire::actingAs($user)
+        ->test(OfficerSimulation::class)
+        ->set(officerState($category, $model, $price->year))
+        ->set('unit_price', (string) $price->price)
+        ->set('customer_type', 'Additional Order')
+        ->call('calculate')
+        ->assertHasNoErrors();
+
+    Livewire::actingAs($user)
+        ->test(ViewSprint::class, ['tenor' => 12])
+        ->assertSet('sprint_debtor_type', 'Additional Order');
+
+    Carbon::setTestNow();
+});
+
+/*
+ * KKB mengikuti segmen kategori referral, bukan pilihan AO: Captive Internal
+ * dan Captive External memakainya, sisanya tidak.
+ */
+it('turns KKB on only for the Captive segment', function (string $segment, string $expected) {
+    [$user] = runOfficerSimulation();
+
+    $categoryId = session()->get('simulation.officer.form')['referral_category_id'];
+    ReferralCategory::query()->whereKey($categoryId)->update(['segment' => $segment]);
+
+    Livewire::actingAs($user)
+        ->test(ViewSprint::class, ['tenor' => 12])
+        ->assertSet('mandiri_kpm', $expected);
+
+    Carbon::setTestNow();
+})->with([['Captive', 'YES'], ['Reguler', 'NO']]);
+
+it('fixes the vehicle condition and the region from Admin configuration', function () {
+    [$user] = runOfficerSimulation();
+
+    Livewire::actingAs($user)
+        ->test(ViewSprint::class, ['tenor' => 12])
+        ->assertSet('kondisi_kendaraan', 'USED CAR')
+        ->assertSet('sprint_region', 'Jawa');
 
     Carbon::setTestNow();
 });

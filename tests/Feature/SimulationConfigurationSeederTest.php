@@ -34,7 +34,7 @@ it('seeds the complete simulation configuration and vehicle master idempotently'
         'tjh_tiers' => 4,
         'fiducia_tiers' => 7,
         'sum_insured_schedules' => 5,
-        'simulation_settings' => 41,
+        'simulation_settings' => 42,
     ];
 
     foreach ($expectedCounts as $table => $count) {

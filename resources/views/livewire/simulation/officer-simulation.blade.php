@@ -72,11 +72,23 @@
             {{-- -------------------------------------------------- Profil debitur --}}
             <x-ui.card title="3 · Profil Debitur">
                 <div class="grid grid-cols-1 gap-md sm:grid-cols-2">
-                    <x-ui.field label="Type Debitur" required :error="$errors->first('debtor_type')">
+                    <x-ui.field label="Type Debitur" required helper="Wiraswasta, non wiraswasta, atau badan usaha."
+                                :error="$errors->first('debtor_type')">
                         <x-ui.select wire:model.live="debtor_type" :invalid="$errors->has('debtor_type')">
                             <option value="non_entrepreneur">Perorangan Non Wiraswasta</option>
                             <option value="entrepreneur">Perorangan Wiraswasta</option>
                             <option value="legal_entity">Badan Hukum Usaha</option>
+                        </x-ui.select>
+                    </x-ui.field>
+
+                    {{-- Type Customer, EDIT SIMULASI E11. Terbawa ke View Sprint;
+                         tidak menyentuh perhitungan. --}}
+                    <x-ui.field label="Type Customer" required helper="Riwayat debitur di MTF. Terbawa ke View Sprint."
+                                :error="$errors->first('customer_type')">
+                        <x-ui.select wire:model.live="customer_type" :invalid="$errors->has('customer_type')">
+                            @foreach (\App\Livewire\Simulation\OfficerSimulation::CUSTOMER_TYPES as $option)
+                                <option value="{{ $option }}">{{ $option }}</option>
+                            @endforeach
                         </x-ui.select>
                     </x-ui.field>
 

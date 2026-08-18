@@ -51,6 +51,7 @@ final class SimulationSettingDefaults
             'view_sprint_gap' => 'NO',
             'view_sprint_hic' => 'NO',
             'view_sprint_water_hammer' => 'NO',
+            'view_sprint_region' => 'Jawa',
             'view_sprint_modal_usaha_threshold' => '500000000',
         ];
     }

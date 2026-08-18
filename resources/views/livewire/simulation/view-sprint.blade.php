@@ -49,15 +49,17 @@
                 @php($selectorOptions = $this->selectorOptions)
                 @php($productIdOptions = $this->productIdOptions)
                 @php($productOfferingOptions = $this->productOfferingOptions)
+                {{-- Type Customer, Wilayah, Tenor, dan Jenis Angsuran tidak ada di
+                     sini: semuanya sudah ditentukan layar simulasi atau
+                     konfigurasi Admin, dan menampilkannya sebagai kolom mati
+                     hanya menambah yang harus dibaca AO. --}}
                 @php($selectorFields = [
                     ['product', 'Product', 'Product SPRINT', false],
                     ['channel', 'Kanal', 'Kanal pengajuan', false],
                     ['unit', 'Jenis Kendaraan', 'Jenis kendaraan', false],
                     ['brand', 'Brand', 'Brand kendaraan', false],
                     ['profile', 'Profil Debitur', 'Profil debitur', true],
-                    ['debtor_type', 'Type Debitur', 'Type debitur', false],
                     ['dp', 'Golongan DP', 'Golongan DP', false],
-                    ['region', 'Wilayah', 'Wilayah', false],
                 ])
 
                 <x-ui.card title="Pilihan SPRINT">
@@ -74,15 +76,6 @@
                                     </x-ui.select>
                                 </x-ui.field>
                             @endforeach
-
-                            {{-- Ditentukan baris tenor yang dipilih AO, bukan dipilih di sini. --}}
-                            <x-ui.field label="Tenor">
-                                <x-ui.input type="text" value="{{ intdiv($tenor, 12) }}TH" disabled />
-                            </x-ui.field>
-
-                            <x-ui.field label="Jenis Angsuran">
-                                <x-ui.input type="text" value="{{ $sprint_instalment !== '' ? $sprint_instalment : '—' }}" disabled />
-                            </x-ui.field>
 
                         </div>
 
@@ -175,27 +168,7 @@
                             </x-ui.select>
                         </x-ui.field>
 
-                        <x-ui.field label="Mandiri KPM (KKB)">
-                            <x-ui.select wire:model.live="mandiri_kpm">
-                                @if ($mandiri_kpm !== '' && ! in_array($mandiri_kpm, $manualOptions['mandiri_kpm'], true))
-                                    <option value="{{ $mandiri_kpm }}">{{ $mandiri_kpm }}</option>
-                                @endif
-                                @foreach ($manualOptions['mandiri_kpm'] as $option)
-                                    <option value="{{ $option }}">{{ $option }}</option>
-                                @endforeach
-                            </x-ui.select>
-                        </x-ui.field>
 
-                        <x-ui.field label="Kondisi Kendaraan" class="sm:col-span-2">
-                            <x-ui.select wire:model.live="kondisi_kendaraan">
-                                @if ($kondisi_kendaraan !== '' && ! in_array($kondisi_kendaraan, $manualOptions['kondisi_kendaraan'], true))
-                                    <option value="{{ $kondisi_kendaraan }}">{{ $kondisi_kendaraan }}</option>
-                                @endif
-                                @foreach ($manualOptions['kondisi_kendaraan'] as $option)
-                                    <option value="{{ $option }}">{{ $option }}</option>
-                                @endforeach
-                            </x-ui.select>
-                        </x-ui.field>
 
                         <x-ui.field label="Spesifik Product" class="sm:col-span-2">
                             <x-ui.input wire:model.live.debounce.400ms="spesifik_product" type="text"

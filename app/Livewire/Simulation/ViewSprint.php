@@ -15,6 +15,7 @@ use App\Domain\Simulation\SimulationMode;
 use App\Domain\Simulation\StnkOwnership;
 use App\Domain\Simulation\VehicleUsage;
 use App\Models\AgeGroup;
+use App\Models\ReferralCategory;
 use App\Models\ReferralSubCategory;
 use App\Models\SimulationSetting;
 use App\Models\SprintOffering;
@@ -69,8 +70,6 @@ final class ViewSprint extends Component
     /** Berlaku pada dokumen ini saja; tidak pernah masuk perhitungan. */
     private const MANUAL_DEFAULTS = [
         'cara_pembayaran' => 'view_sprint_cara_pembayaran',
-        'mandiri_kpm' => 'view_sprint_mandiri_kpm',
-        'kondisi_kendaraan' => 'view_sprint_kondisi_kendaraan',
         'is_beliv' => 'view_sprint_is_beliv',
         'acp_axp' => 'view_sprint_acp_axp',
         'gap' => 'view_sprint_gap',
@@ -92,8 +91,6 @@ final class ViewSprint extends Component
      */
     public const MANUAL_OPTIONS = [
         'cara_pembayaran' => ['AUTO COLLECTION', 'PDC/GIRO'],
-        'mandiri_kpm' => ['NO', 'YES'],
-        'kondisi_kendaraan' => ['USED CAR', 'NEW CAR'],
         'is_beliv' => ['TIDAK', 'YA'],
         'acp_axp' => ['ADA', 'TIDAK'],
         'gap' => ['NO', 'YES'],
@@ -133,8 +130,13 @@ final class ViewSprint extends Component
 
     public string $cara_pembayaran = '';
 
-    public string $mandiri_kpm = '';
+    /**
+     * Ditentukan kategori referral simulasinya: Captive Internal dan Captive
+     * External memakai KKB, sisanya tidak (klien, 18 Agustus 2026).
+     */
+    public string $mandiri_kpm = 'NO';
 
+    /** Pembiayaan ini selalu unit bekas; nilainya tetap dapat diubah Admin. */
     public string $kondisi_kendaraan = '';
 
     public string $spesifik_product = '';
@@ -176,6 +178,11 @@ final class ViewSprint extends Component
         foreach (self::MANUAL_DEFAULTS as $property => $key) {
             $this->{$property} = $this->setting($key);
         }
+
+        // Tidak ditanyakan ke AO: keduanya sudah ditentukan hal lain.
+        $this->kondisi_kendaraan = $this->setting('view_sprint_kondisi_kendaraan');
+        $this->sprint_region = $this->setting('view_sprint_region');
+        $this->mandiri_kpm = $this->mandiriKpmForCategory();
 
         foreach (range(1, 5) as $year) {
             $this->paid_status[$year] = 'CASH';
@@ -279,10 +286,14 @@ final class ViewSprint extends Component
      */
     private function rememberedProperties(): array
     {
+        // Yang datang dari layar simulasi atau dari konfigurasi tidak diingat di
+        // sini: menyimpannya berarti membekukan jawaban lama pada simulasi baru.
+        $derived = ['sprint_instalment', 'sprint_debtor_type', 'sprint_region'];
+
         $selectors = array_values(array_filter(
             array_keys(get_object_vars($this)),
-            // Jenis angsuran datang dari simulasi, bukan dari AO.
-            fn (string $property): bool => str_starts_with($property, 'sprint_') && $property !== 'sprint_instalment',
+            fn (string $property): bool => str_starts_with($property, 'sprint_')
+                && ! in_array($property, $derived, true),
         ));
 
         return [
@@ -369,6 +380,22 @@ final class ViewSprint extends Component
 
         $this->sprint_instalment = $input->instalmentType->value;
         $this->sprint_channel = $this->channelForSubCategory();
+        $this->sprint_debtor_type = (string) (session()->get(self::OFFICER_FORM_SESSION_KEY)['customer_type'] ?? 'New Customer');
+    }
+
+    /**
+     * KKB mengikuti segmen kategori referral, bukan pilihan AO.
+     *
+     * Segmen dipakai alih-alih mencocokkan nama supaya kategori Captive yang
+     * ditambahkan Admin kelak ikut terbaca tanpa menyentuh kode ini.
+     */
+    private function mandiriKpmForCategory(): string
+    {
+        $id = session()->get(self::OFFICER_FORM_SESSION_KEY)['referral_category_id'] ?? null;
+
+        $segment = $id ? ReferralCategory::query()->whereKey($id)->value('segment') : null;
+
+        return $segment === 'Captive' ? 'YES' : 'NO';
     }
 
     /** Kanal yang dipakai sub kategori referral pilihan AO, kalau dikenal. */

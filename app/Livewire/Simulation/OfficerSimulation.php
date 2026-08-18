@@ -45,12 +45,16 @@ final class OfficerSimulation extends Component
 {
     private const FORM_SESSION_KEY = 'simulation.officer.form';
 
+    /** @var array<int, string> Mengikuti daftar EDIT SIMULASI E11 pada workbook. */
+    public const CUSTOMER_TYPES = ['New Customer', 'Repeat Order', 'Additional Order'];
+
     private const FORM_STATE_PROPERTIES = [
         'referral_category_id',
         'referral_sub_category_id',
         'financing_type',
         'mode',
         'debtor_type',
+        'customer_type',
         'age_group_id',
         'usage_id',
         'brand_id',
@@ -91,6 +95,17 @@ final class OfficerSimulation extends Component
     public string $mode = 'A';
 
     public string $debtor_type = 'non_entrepreneur';
+
+    /**
+     * Type Customer pada workbook (EDIT SIMULASI E11): New Customer, Repeat
+     * Order, atau Additional Order. Berbeda dari Type Debitur di atas, yang
+     * memisahkan wiraswasta dari badan usaha.
+     *
+     * Tidak masuk engine. Ia dikumpulkan di sini karena AO sudah menjawabnya
+     * saat menyusun simulasi, lalu terbawa ke View Sprint — bukan karena ia
+     * mengubah harga (klien, 18 Agustus 2026).
+     */
+    public string $customer_type = 'New Customer';
 
     public ?string $age_group_id = null;
 
@@ -294,6 +309,7 @@ final class OfficerSimulation extends Component
         return route('applications.create', [
             'financing_product' => $this->financing_type,
             'debtor_type' => $this->debtor_type,
+            'customer_type' => $this->customer_type,
         ]);
     }
 
@@ -312,6 +328,7 @@ final class OfficerSimulation extends Component
             'financing_type' => ['required', Rule::enum(FinancingType::class)],
             'mode' => ['required', Rule::enum(SimulationMode::class)],
             'debtor_type' => ['required', Rule::enum(DebtorType::class)],
+            'customer_type' => ['required', 'string', Rule::in(self::CUSTOMER_TYPES)],
             'age_group_id' => [
                 Rule::requiredIf($this->debtor_type !== DebtorType::LEGAL_ENTITY->value),
                 'nullable',
@@ -365,6 +382,7 @@ final class OfficerSimulation extends Component
             'financing_type' => 'Jenis Pembiayaan',
             'mode' => 'Dasar Simulasi',
             'debtor_type' => 'Type Debitur',
+            'customer_type' => 'Type Customer',
             'age_group_id' => 'Usia Debitur',
             'usage_id' => 'Penggunaan Unit',
             'brand_id' => 'Merk',
