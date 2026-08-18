@@ -271,6 +271,9 @@
                                 ['ext_earthquake', 'Gempa'],
                                 ['ext_riot', 'Huru-hara'],
                                 ['ext_terrorism', 'Teroris'],
+                                ['ext_gap', 'GAP'],
+                                ['ext_hic', 'HIC'],
+                                ['ext_water_hammer', 'Water Hammer & Theft by Driver'],
                             ] as [$field, $label])
                                 <label class="flex items-center gap-sm text-body-md text-body">
                                     <input wire:model.live="{{ $field }}" type="checkbox" class="rounded-xs border-hairline">

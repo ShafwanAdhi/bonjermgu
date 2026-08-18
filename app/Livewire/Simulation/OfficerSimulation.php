@@ -75,6 +75,9 @@ final class OfficerSimulation extends Component
         'ext_earthquake',
         'ext_riot',
         'ext_terrorism',
+        'ext_gap',
+        'ext_hic',
+        'ext_water_hammer',
         'tjh_amount',
         'driver_amount',
         'passenger_amount',
@@ -147,6 +150,16 @@ final class OfficerSimulation extends Component
     public bool $ext_riot = false;
 
     public bool $ext_terrorism = false;
+
+    /**
+     * Perluasan yang sebelumnya hanya dicatat sebagai YA/TIDAK di lembar SPRINT.
+     * Ratenya masih nol sampai pusat menerbitkannya (klien, 18 Agustus 2026).
+     */
+    public bool $ext_gap = false;
+
+    public bool $ext_hic = false;
+
+    public bool $ext_water_hammer = false;
 
     public string $tjh_amount = '0';
 
@@ -496,6 +509,9 @@ final class OfficerSimulation extends Component
                         'earthquake' => $this->ext_earthquake,
                         'riot' => $this->ext_riot,
                         'terrorism' => $this->ext_terrorism,
+                        'gap' => $this->ext_gap,
+                        'hic' => $this->ext_hic,
+                        'water_hammer' => $this->ext_water_hammer,
                     ],
                     tjhAmount: (float) $validated['tjh_amount'],
                     driverCoverageAmount: (float) $validated['driver_amount'],

@@ -202,6 +202,10 @@ class SimulationConfigurationSeeder extends Seeder
             ['code' => 'teroris', 'rate' => 0.0005],
             ['code' => 'pengemudi', 'rate' => 0.0050],
             ['code' => 'penumpang', 'rate' => 0.0010],
+            // Ratenya menyusul dari pusat; nol berarti belum membebani premi.
+            ['code' => 'gap', 'rate' => 0],
+            ['code' => 'hic', 'rate' => 0],
+            ['code' => 'water_hammer', 'rate' => 0],
         ], ['code'], ['rate']);
     }
 

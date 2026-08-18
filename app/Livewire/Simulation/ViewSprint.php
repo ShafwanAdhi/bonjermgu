@@ -13,6 +13,7 @@ use App\Domain\Simulation\InsuranceCoverage;
 use App\Domain\Simulation\Output\TenorResult;
 use App\Domain\Simulation\SimulationMode;
 use App\Domain\Simulation\StnkOwnership;
+use App\Domain\Simulation\VehicleOrigin;
 use App\Domain\Simulation\VehicleUsage;
 use App\Models\AgeGroup;
 use App\Models\ReferralCategory;
@@ -71,10 +72,6 @@ final class ViewSprint extends Component
     private const MANUAL_DEFAULTS = [
         'cara_pembayaran' => 'view_sprint_cara_pembayaran',
         'is_beliv' => 'view_sprint_is_beliv',
-        'acp_axp' => 'view_sprint_acp_axp',
-        'gap' => 'view_sprint_gap',
-        'hic' => 'view_sprint_hic',
-        'water_hammer' => 'view_sprint_water_hammer',
     ];
 
     /**
@@ -92,10 +89,6 @@ final class ViewSprint extends Component
     public const MANUAL_OPTIONS = [
         'cara_pembayaran' => ['AUTO COLLECTION', 'PDC/GIRO'],
         'is_beliv' => ['TIDAK', 'YA'],
-        'acp_axp' => ['ADA', 'TIDAK'],
-        'gap' => ['NO', 'YES'],
-        'hic' => ['NO', 'YES'],
-        'water_hammer' => ['NO', 'YES'],
     ];
 
     public int $tenor = 12;
@@ -149,22 +142,20 @@ final class ViewSprint extends Component
 
     public string $sisa_os_lk = '0';
 
-    public string $acp_axp = '';
+    /**
+     * Keempatnya kini jawaban simulasi, bukan pertanyaan.
+     *
+     * ACP mengikuti apakah engine benar-benar membebankannya; GAP, HIC, dan
+     * Water Hammer sudah menjadi perluasan asuransi yang dicentang AO di layar
+     * Simulasi Kredit (klien, 18 Agustus 2026).
+     */
+    public string $acp_axp = 'TIDAK';
 
-    public string $gap = '';
+    public string $gap = 'NO';
 
-    public string $hic = '';
+    public string $hic = 'NO';
 
-    public string $water_hammer = '';
-
-    /** @var array<int, string> Cash / On Loan per tahun 1..5 */
-    public array $paid_status = [];
-
-    /** @var array<int, string> Diskon premi per tahun 1..5 */
-    public array $paid_discount = [];
-
-    /** @var array<int, string> Premi dibayar per tahun 1..5 */
-    public array $paid_amount = [];
+    public string $water_hammer = 'NO';
 
     public ?string $unavailableReason = null;
 
@@ -184,12 +175,6 @@ final class ViewSprint extends Component
         $this->sprint_region = $this->setting('view_sprint_region');
         $this->mandiri_kpm = $this->mandiriKpmForCategory();
 
-        foreach (range(1, 5) as $year) {
-            $this->paid_status[$year] = 'CASH';
-            $this->paid_discount[$year] = '0';
-            $this->paid_amount[$year] = '0';
-        }
-
         $this->resolveOutcome();
         $this->rejectTenorWithoutFinancing();
 
@@ -198,6 +183,7 @@ final class ViewSprint extends Component
         }
 
         $this->prefillSelectors();
+        $this->prefillInsuranceAnswers();
         $this->restoreSheetState();
         $this->ensureSprintSelection();
     }
@@ -288,7 +274,10 @@ final class ViewSprint extends Component
     {
         // Yang datang dari layar simulasi atau dari konfigurasi tidak diingat di
         // sini: menyimpannya berarti membekukan jawaban lama pada simulasi baru.
-        $derived = ['sprint_instalment', 'sprint_debtor_type', 'sprint_region'];
+        $derived = [
+            'sprint_instalment', 'sprint_debtor_type', 'sprint_region',
+            'sprint_channel', 'sprint_brand', 'sprint_dp',
+        ];
 
         $selectors = array_values(array_filter(
             array_keys(get_object_vars($this)),
@@ -300,7 +289,6 @@ final class ViewSprint extends Component
             ...array_keys(self::MANUAL_DEFAULTS),
             ...$selectors,
             'nama_customer', 'spesifik_product', 'wira_no', 'sisa_kewajiban', 'sisa_os_lk',
-            'paid_status', 'paid_discount', 'paid_amount',
         ];
     }
 
@@ -379,7 +367,8 @@ final class ViewSprint extends Component
         };
 
         $this->sprint_instalment = $input->instalmentType->value;
-        $this->sprint_channel = $this->channelForSubCategory();
+        $this->sprint_channel = $this->channelForReferral();
+        $this->sprint_dp = $this->downPaymentBand();
         $this->sprint_debtor_type = (string) (session()->get(self::OFFICER_FORM_SESSION_KEY)['customer_type'] ?? 'New Customer');
     }
 
@@ -398,19 +387,69 @@ final class ViewSprint extends Component
         return $segment === 'Captive' ? 'YES' : 'NO';
     }
 
-    /** Kanal yang dipakai sub kategori referral pilihan AO, kalau dikenal. */
-    private function channelForSubCategory(): string
+    /**
+     * Kanal mengikuti tier kategori referral, bukan pilihan AO.
+     *
+     * Sub kategori menimpanya kalau satu kategori melayani lebih dari satu
+     * kanal: Karyawan Internal adalah Referral kecuali Graha Sultan, yang
+     * Telemarketing. Tier yang tidak dipetakan berarti kanalnya memang tidak
+     * dipakai pusat, dan hasilnya kosong — bukan tebakan.
+     */
+    private function channelForReferral(): string
     {
-        $id = session()->get(self::OFFICER_FORM_SESSION_KEY)['referral_sub_category_id'] ?? null;
+        $state = session()->get(self::OFFICER_FORM_SESSION_KEY) ?? [];
+        $tokens = $this->tokens();
 
-        if (! $id) {
+        $subCategory = ($state['referral_sub_category_id'] ?? null)
+            ? ReferralSubCategory::query()->whereKey($state['referral_sub_category_id'])->value('name')
+            : null;
+
+        $override = $subCategory === null
+            ? null
+            : ($tokens['channel_source'] ?? collect())->firstWhere('source', $subCategory)?->offering_token;
+
+        if ($override) {
+            return (string) $override;
+        }
+
+        $tier = ($state['referral_category_id'] ?? null)
+            ? ReferralCategory::query()->whereKey($state['referral_category_id'])->value('tier')
+            : null;
+
+        return (string) (($tokens['channel_tier'] ?? collect())->firstWhere('source', $tier)?->offering_token ?? '');
+    }
+
+    /** Jawaban asuransi yang sudah diberikan simulasi, bukan ditanyakan lagi. */
+    private function prefillInsuranceAnswers(): void
+    {
+        if ($this->outcome === null) {
+            return;
+        }
+
+        $input = $this->outcome->input;
+        $yes = fn (string $code): string => $input->extensionEnabled($code) ? 'YES' : 'NO';
+
+        $this->acp_axp = $this->outcome->result->forTenor($this->tenor)->insurance->acp > 0 ? 'ADA' : 'TIDAK';
+        $this->gap = $yes('gap');
+        $this->hic = $yes('hic');
+        $this->water_hammer = $yes('water_hammer');
+    }
+
+    /**
+     * Golongan DP mengikuti unit dan asal merk (klien, 18 Agustus 2026):
+     * Passenger Jepang DP5, sisanya DP15.
+     */
+    private function downPaymentBand(): string
+    {
+        $input = $this->outcome?->input;
+
+        if ($input === null) {
             return '';
         }
 
-        $name = ReferralSubCategory::query()->whereKey($id)->value('name');
-
-        return (string) ($this->tokens()['channel_source'] ?? collect())
-            ->firstWhere('source', $name)?->offering_token;
+        return $input->vehicleUsage === VehicleUsage::PASSENGER && $input->vehicleOrigin === VehicleOrigin::JAPAN
+            ? 'DP5'
+            : 'DP15';
     }
 
     /** @return array<string, Collection<int, SprintToken>> */
@@ -867,6 +906,17 @@ final class ViewSprint extends Component
             'deposit_angsuran_rp' => (int) round($row->depositInstalmentAmount),
 
             'detail_asuransi' => $this->insuranceYears($row),
+
+            // Status selalu CASH, dan barisnya hanya sepanjang tenor: lembar
+            // tenor satu tahun tidak lagi menampilkan lima baris kosong
+            // (klien, 18 Agustus 2026).
+            'paid_entry' => collect($row->insurance->yearly)
+                ->map(fn (array $year): array => [
+                    'status' => 'CASH',
+                    'discount' => (int) round($year['discount']),
+                    'paid' => (int) round($year['paid']),
+                ])
+                ->all(),
         ];
     }
 

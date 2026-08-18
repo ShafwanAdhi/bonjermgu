@@ -28,7 +28,7 @@ it('seeds the complete simulation configuration and vehicle master idempotently'
         'vehicle_prices' => 26_791,
         'insurance_casco_rates' => 40,
         'insurance_loading_rates' => 15,
-        'insurance_extension_rates' => 6,
+        'insurance_extension_rates' => 9,
         'acp_base_rates' => 5,
         'acp_uppings' => 4,
         'tjh_tiers' => 4,

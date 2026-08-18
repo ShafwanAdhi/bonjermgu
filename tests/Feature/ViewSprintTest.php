@@ -3,6 +3,7 @@
 use App\Livewire\Simulation\OfficerSimulation;
 use App\Livewire\Simulation\ViewSprint;
 use App\Models\ReferralCategory;
+use App\Models\ReferralSubCategory;
 use App\Models\SimulationSetting;
 use App\Models\SprintOffering;
 use App\Models\User;
@@ -260,8 +261,8 @@ it('answers the dimensions the simulation already knows', function () {
         ->assertSet('sprint_brand', 'Japan')
         ->assertSet('sprint_profile', 'Perorangan Non Wiraswasta')
         ->assertSet('sprint_instalment', 'ADDB')
-        // Ambigu bagi engine; ditinggalkan untuk AO.
-        ->assertSet('sprint_dp', '');
+        // Passenger Jepang; sisanya DP15 (klien, 18 Agustus 2026).
+        ->assertSet('sprint_dp', 'DP5');
 
     Carbon::setTestNow();
 });
@@ -370,12 +371,12 @@ it('offers each manual field a list its own Admin default belongs to', function 
     expect($mismatched)->toBe([]);
 });
 
-it('spells GAP, HIC and Water Hammer the way the workbook does', function () {
-    expect(ViewSprint::MANUAL_OPTIONS['acp_axp'])->toBe(['ADA', 'TIDAK'])
-        ->and(ViewSprint::MANUAL_OPTIONS['gap'])->toBe(['NO', 'YES'])
-        ->and(ViewSprint::MANUAL_OPTIONS['hic'])->toBe(['NO', 'YES'])
-        ->and(ViewSprint::MANUAL_OPTIONS['water_hammer'])->toBe(['NO', 'YES'])
-        ->and(ViewSprint::MANUAL_OPTIONS['is_beliv'])->toBe(['TIDAK', 'YA']);
+/* Yang tersisa sebagai pilihan manual tinggal dua, dan keduanya berbeda kosakata. */
+it('keeps the manual vocabulary the workbook uses for what is still asked', function () {
+    expect(ViewSprint::MANUAL_OPTIONS)->toBe([
+        'cara_pembayaran' => ['AUTO COLLECTION', 'PDC/GIRO'],
+        'is_beliv' => ['TIDAK', 'YA'],
+    ]);
 });
 
 /*
@@ -410,8 +411,9 @@ it('names what is still missing before the sheet may be downloaded', function ()
 
     $sprint = Livewire::actingAs($user)->test(ViewSprint::class, ['tenor' => 12]);
 
-    expect($sprint->instance()->missingForExport())->toContain('Nama Customer')
-        ->and($sprint->instance()->missingForExport())->toContain('Product ID');
+    // Kanal, Brand, dan Golongan DP yang diturunkan menyempitkan katalog sampai
+    // tersisa satu, jadi kedua kode terisi sendiri dan tinggal namanya.
+    expect($sprint->instance()->missingForExport())->toBe(['Nama Customer']);
 
     $sprint->assertSee('Belum bisa diunduh');
 
@@ -428,16 +430,14 @@ it('keeps what the officer typed when the tenor changes', function () {
     Livewire::actingAs($user)
         ->test(ViewSprint::class, ['tenor' => 12])
         ->set('nama_customer', 'PT Sinar Rejeki')
-        ->set('gap', 'YES')
-        ->set('wira_no', '77')
-        ->set('paid_status.2', 'ON LOAN');
+        ->set('spesifik_product', 'Paket Khusus')
+        ->set('wira_no', '77');
 
     Livewire::actingAs($user)
         ->test(ViewSprint::class, ['tenor' => 48])
         ->assertSet('nama_customer', 'PT Sinar Rejeki')
-        ->assertSet('gap', 'YES')
-        ->assertSet('wira_no', '77')
-        ->assertSet('paid_status.2', 'ON LOAN');
+        ->assertSet('spesifik_product', 'Paket Khusus')
+        ->assertSet('wira_no', '77');
 
     Carbon::setTestNow();
 });
@@ -550,7 +550,8 @@ it('stops asking for what the simulation and the configuration already decided',
     foreach (['sprint_region', 'sprint_debtor_type'] as $gone) {
         expect($html)->not->toContain('wire:model.live="'.$gone.'"');
     }
-    foreach (['mandiri_kpm', 'kondisi_kendaraan'] as $gone) {
+    foreach (['mandiri_kpm', 'kondisi_kendaraan', 'acp_axp', 'gap', 'hic', 'water_hammer',
+        'sprint_channel', 'sprint_brand', 'sprint_dp', 'paid_status.1'] as $gone) {
         expect($html)->not->toContain('wire:model.live="'.$gone.'"');
     }
 
@@ -604,6 +605,83 @@ it('fixes the vehicle condition and the region from Admin configuration', functi
         ->test(ViewSprint::class, ['tenor' => 12])
         ->assertSet('kondisi_kendaraan', 'USED CAR')
         ->assertSet('sprint_region', 'Jawa');
+
+    Carbon::setTestNow();
+});
+
+/*
+ * Kanal mengikuti tier kategori referral, ditimpa sub kategori bila satu
+ * kategori melayani lebih dari satu (klien, 18 Agustus 2026).
+ */
+it('reads the channel from the referral tier', function (string $segment, string $tier, string $expected) {
+    [$user] = runOfficerSimulation();
+
+    $state = session()->get('simulation.officer.form');
+    // Segmen ikut disetel karena Product diresolusi dari segmen + unit + tier;
+    // tier sendirian bisa menunjuk produk yang tidak ada.
+    ReferralCategory::query()->whereKey($state['referral_category_id'])
+        ->update(['segment' => $segment, 'tier' => $tier]);
+
+    // Fixture layar AO tidak memilih sub kategori, jadi tidak ada yang menimpa
+    // tier — persis keadaan yang ingin diuji di sini.
+    $state['referral_sub_category_id'] = null;
+    session()->put('simulation.officer.form', $state);
+
+    Livewire::actingAs($user)
+        ->test(ViewSprint::class, ['tenor' => 12])
+        ->assertSet('sprint_channel', $expected);
+
+    Carbon::setTestNow();
+})->with([
+    ['Captive', 'Semangat', 'Captive NJF Semangat'],
+    ['Captive', 'Tengah', 'Captive NJF Tengah'],
+    ['Captive', 'Cuan', 'Captive NJF Cuan'],
+    ['Reguler', 'Sales Dealer', 'Wira Agent'],
+    // Tier yang tidak dipakai pusat tidak ditebak.
+    ['Captive', 'Khusus Karyawan Bank Mandiri', ''],
+]);
+
+it('lets a sub-category override the tier where a category serves two channels', function () {
+    [$user] = runOfficerSimulation();
+
+    $state = session()->get('simulation.officer.form');
+    ReferralCategory::query()->whereKey($state['referral_category_id'])->update(['tier' => 'Referral']);
+
+    $telemarketing = ReferralSubCategory::query()->create([
+        'category_id' => $state['referral_category_id'],
+        'name' => 'Graha Sultan',
+    ]);
+    $state['referral_sub_category_id'] = $telemarketing->id;
+    session()->put('simulation.officer.form', $state);
+
+    Livewire::actingAs($user)
+        ->test(ViewSprint::class, ['tenor' => 12])
+        ->assertSet('sprint_channel', 'Telemarketing');
+
+    Carbon::setTestNow();
+});
+
+/* Insurance Paid Entry hanya sepanjang tenor, dan seluruhnya dari engine. */
+it('lists Insurance Paid Entry for the tenor years only', function (int $tenor, int $years) {
+    [$user] = runOfficerSimulation();
+
+    $sheet = Livewire::actingAs($user)->test(ViewSprint::class, ['tenor' => $tenor])->instance()->sheet();
+
+    expect($sheet['paid_entry'])->toHaveCount($years)
+        ->and(collect($sheet['paid_entry'])->pluck('status')->unique()->all())->toBe(['CASH'])
+        ->and(collect($sheet['paid_entry'])->sum('paid'))->toBeGreaterThan(0);
+
+    Carbon::setTestNow();
+})->with([[12, 1], [36, 3], [60, 5]]);
+
+/* Rincian per tahun harus berjumlah sama dengan total asuransi yang dilaporkan. */
+it('splits the premium across years without losing any of it', function () {
+    [$user] = runOfficerSimulation();
+
+    $sprint = Livewire::actingAs($user)->test(ViewSprint::class, ['tenor' => 60])->instance();
+    $sheet = $sprint->sheet();
+
+    expect(collect($sheet['paid_entry'])->sum('paid'))->toEqualWithDelta($sheet['asuransi'], 100);
 
     Carbon::setTestNow();
 });

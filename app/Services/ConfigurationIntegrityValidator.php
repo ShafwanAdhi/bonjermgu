@@ -29,6 +29,9 @@ final class ConfigurationIntegrityValidator
         'teroris',
         'pengemudi',
         'penumpang',
+        'gap',
+        'hic',
+        'water_hammer',
     ];
 
     private const RATE_SETTING_KEYS = [
@@ -163,8 +166,12 @@ final class ConfigurationIntegrityValidator
             'Loading asuransi wajib lengkap untuk setiap usia kendaraan 0 sampai 14 tahun.',
         );
 
+        // Keduanya diurutkan sebelum dibandingkan: urutan penulisan konstanta di
+        // atas tidak boleh ikut menentukan lolos atau tidaknya konfigurasi.
         $extensionCodes = InsuranceExtensionRate::query()->orderBy('code')->pluck('code')->all();
         $expectedCodes = self::EXTENSION_CODES;
+        sort($extensionCodes);
+        sort($expectedCodes);
         sort($expectedCodes);
         $this->ensure(
             $extensionCodes === $expectedCodes,

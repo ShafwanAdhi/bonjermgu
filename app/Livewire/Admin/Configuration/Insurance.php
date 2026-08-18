@@ -28,6 +28,9 @@ final class Insurance extends AuditedAdminComponent
 
     private const EXTENSION_LABELS = [
         'banjir' => 'Banjir',
+        'gap' => 'GAP',
+        'hic' => 'HIC',
+        'water_hammer' => 'Water Hammer & Theft by Driver',
         'gempa' => 'Gempa',
         'huru_hara' => 'Huru-hara',
         'teroris' => 'Teroris',
@@ -368,7 +371,7 @@ final class Insurance extends AuditedAdminComponent
             'loadingRates.*.id' => ['nullable', 'integer'],
             'loadingRates.*.vehicle_age' => ['required', 'integer', 'min:0', 'distinct'],
             'loadingRates.*.rate' => ['required', 'numeric', 'between:0,100'],
-            'extensionRates' => ['required', 'array', 'size:6'],
+            'extensionRates' => ['required', 'array', 'size:9'],
             'extensionRates.*.id' => ['nullable', 'integer'],
             'extensionRates.*.code' => ['required', Rule::in(array_keys(self::EXTENSION_LABELS)), 'distinct'],
             'extensionRates.*.rate' => ['required', 'numeric', 'between:0,100'],

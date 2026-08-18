@@ -27,7 +27,10 @@ final class InsuranceCalculator
         $driver = 0.0;
         $passenger = 0.0;
 
+        $yearly = [];
+
         for ($year = 1; $year <= $tenorYears; $year++) {
+            $premiumBefore = $casco + $loading + $extensions + $tjh + $driver + $passenger;
             $coverage = $input->coverageType->coverageForYear($year);
             $sumInsured = $otrPrice * $config->insurance->sumInsuredPercentage($year);
             $yearlyCasco = $config->insurance->cascoRateFor(
@@ -42,7 +45,10 @@ final class InsuranceCalculator
                 $vehicleAge = ($currentYear - $input->vehicleYear) + ($year - 1);
                 $loading += $yearlyCasco * $config->insurance->loadingRate($vehicleAge);
 
-                foreach (['flood', 'earthquake', 'riot', 'terrorism'] as $code) {
+                // GAP, HIC, dan Water Hammer menyusul sebagai perluasan biasa.
+                // Ratenya masih nol sampai pusat menerbitkannya, jadi mengaktifkannya
+                // belum mengubah premi apa pun.
+                foreach (['flood', 'earthquake', 'riot', 'terrorism', 'gap', 'hic', 'water_hammer'] as $code) {
                     if ($input->extensionEnabled($code)) {
                         $extensions += $config->insurance->extensionRate($code) * $sumInsured;
                     }
@@ -55,6 +61,13 @@ final class InsuranceCalculator
 
                 $tjh += $this->tieredPremium($input->tjhAmount, $config->insurance->tjhTiers);
             }
+
+            // Premi tahun ini saja. ACP dan garansi mesin menyusul di bawah,
+            // setelah keduanya diketahui untuk keseluruhan kontrak.
+            $yearly[$year] = [
+                'paid' => $casco + $loading + $extensions + $tjh + $driver + $passenger - $premiumBefore,
+                'discount' => 0.0,
+            ];
         }
 
         $acpEnabled = match ($input->financingType) {
@@ -78,6 +91,24 @@ final class InsuranceCalculator
         }
 
         $engineWarranty = $input->engineWarrantyEnabled ? $config->insurance->engineWarrantyFee : 0.0;
+
+        // ACP dibagi ke tahunnya dari selisih tabel kumulatif, dan diskonnya
+        // adalah nominal upping — persis dua kolom yang diminta blok Insurance
+        // Paid Entry. Garansi mesin ditagih sekali, di tahun pertama.
+        if ($acp > 0 || $engineWarranty > 0) {
+            $upping = $config->insurance->acpUpping($input->ageGroup);
+
+            foreach ($yearly as $year => $row) {
+                $share = $config->insurance->acpBaseRate($year)
+                    - ($year > 1 ? $config->insurance->acpBaseRate($year - 1) : 0.0);
+                $yearlyAcp = $acp > 0 ? $share * (1 + $upping) * $acpBasis : 0.0;
+
+                $yearly[$year]['paid'] = $row['paid'] + $yearlyAcp + ($year === 1 ? $engineWarranty : 0.0);
+                $yearly[$year]['discount'] = $upping > 0 && $acp > 0
+                    ? -($yearlyAcp - ($share * $acpBasis))
+                    : 0.0;
+            }
+        }
         $rawTotal = $casco + $loading + $extensions + $tjh + $driver + $passenger + $acp + $engineWarranty;
         $total = $input->financingType === FinancingType::DTN
             ? Rounding::down($rawTotal, 100)
@@ -93,6 +124,7 @@ final class InsuranceCalculator
             $acp,
             $engineWarranty,
             $total,
+            $yearly,
         );
     }
 

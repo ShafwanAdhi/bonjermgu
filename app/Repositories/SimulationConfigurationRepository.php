@@ -33,6 +33,9 @@ final class SimulationConfigurationRepository
         'gempa' => 'earthquake',
         'huru_hara' => 'riot',
         'teroris' => 'terrorism',
+        'gap' => 'gap',
+        'hic' => 'hic',
+        'water_hammer' => 'water_hammer',
         'pengemudi' => 'driver',
         'penumpang' => 'passenger',
     ];

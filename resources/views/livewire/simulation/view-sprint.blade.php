@@ -55,11 +55,8 @@
                      hanya menambah yang harus dibaca AO. --}}
                 @php($selectorFields = [
                     ['product', 'Product', 'Product SPRINT', false],
-                    ['channel', 'Kanal', 'Kanal pengajuan', false],
                     ['unit', 'Jenis Kendaraan', 'Jenis kendaraan', false],
-                    ['brand', 'Brand', 'Brand kendaraan', false],
                     ['profile', 'Profil Debitur', 'Profil debitur', true],
-                    ['dp', 'Golongan DP', 'Golongan DP', false],
                 ])
 
                 <x-ui.card title="Pilihan SPRINT">
@@ -195,50 +192,9 @@
                         <x-ui.field label="Sisa OS LK Sebelumnya" class="sm:[&_[data-ui-field-label]]:flex sm:[&_[data-ui-field-label]]:min-h-[38px] sm:[&_[data-ui-field-label]]:items-end">
                             <x-ui.money-input wire:model.live.debounce.400ms="sisa_os_lk" placeholder="Rp 0" />
                         </x-ui.field>
-
-                        @foreach ([['acp_axp', 'ACP & AXP'], ['gap', 'GAP'], ['hic', 'HIC'], ['water_hammer', 'Water Hammer & Theft by Driver']] as [$field, $label])
-                            @php($fieldValue = ${$field})
-                            <x-ui.field :label="$label" wire:key="manual-{{ $field }}"
-                                        class="{{ in_array($field, ['hic', 'water_hammer'], true) ? 'sm:[&_[data-ui-field-label]]:flex sm:[&_[data-ui-field-label]]:min-h-[38px] sm:[&_[data-ui-field-label]]:items-end' : '' }}">
-                                <x-ui.select wire:model.live="{{ $field }}">
-                                    @if ($fieldValue !== '' && ! in_array($fieldValue, $manualOptions[$field], true))
-                                        <option value="{{ $fieldValue }}">{{ $fieldValue }}</option>
-                                    @endif
-                                    @foreach ($manualOptions[$field] as $option)
-                                        <option value="{{ $option }}">{{ $option }}</option>
-                                    @endforeach
-                                </x-ui.select>
-                            </x-ui.field>
-                        @endforeach
                     </div>
                 </x-ui.card>
 
-                <x-ui.card title="Insurance Paid Entry">
-                    <div class="flex flex-col gap-sm">
-                        @foreach (range(1, 5) as $year)
-                            <div wire:key="paid-{{ $year }}"
-                                 class="rounded-sm border border-hairline bg-canvas p-sm">
-                                <div class="mb-sm text-caption text-ink">
-                                    Tahun {{ $year }}
-                                </div>
-                                <div class="grid grid-cols-1 gap-sm sm:grid-cols-3 sm:items-end">
-                                    <x-ui.field label="Status">
-                                        <x-ui.select wire:model.live="paid_status.{{ $year }}">
-                                            <option value="CASH">CASH</option>
-                                            <option value="ON LOAN">ON LOAN</option>
-                                        </x-ui.select>
-                                    </x-ui.field>
-                                    <x-ui.field label="Diskon">
-                                        <x-ui.money-input wire:model.live.debounce.400ms="paid_discount.{{ $year }}" placeholder="Rp 0" />
-                                    </x-ui.field>
-                                    <x-ui.field label="Paid">
-                                        <x-ui.money-input wire:model.live.debounce.400ms="paid_amount.{{ $year }}" placeholder="Rp 0" />
-                                    </x-ui.field>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                </x-ui.card>
             </div>
 
             {{-- ------------------------------------------------- Lembarnya --}}
@@ -247,22 +203,6 @@
                 <div class="flex flex-wrap items-center gap-sm border-t border-hairline pt-lg">
                     <span class="text-helper text-muted">Tenor {{ $s['tenor'] }} bulan</span>
                     <div class="ml-auto flex gap-1">
-                        @php($reachable = $this->financedTenors)
-                        @foreach (\App\Livewire\Simulation\ViewSprint::TENORS as $tenorOption)
-                            @php($usable = in_array($tenorOption, $reachable, true))
-                            {{-- Tenor tanpa pembiayaan tidak ditawarkan: mengkliknya
-                                 hanya berujung pada layar "tidak tersedia". --}}
-                            <a @if ($usable) href="{{ route('simulation.officer.sprint', $tenorOption) }}" wire:navigate @endif
-                               aria-label="{{ $usable ? 'Lihat tenor '.$tenorOption.' bulan' : 'Tenor '.$tenorOption.' bulan tidak menghasilkan pembiayaan' }}"
-                               @if (! $usable) aria-disabled="true" title="Tidak menghasilkan pembiayaan" @endif
-                               @if ($tenorOption === $s['tenor']) aria-current="page" @endif
-                               @class([
-                                   'rounded-sm border px-2.5 py-1 text-[12px] font-medium',
-                                   'border-primary bg-primary text-on-primary' => $tenorOption === $s['tenor'],
-                                   'border-hairline bg-canvas text-muted' => $tenorOption !== $s['tenor'] && $usable,
-                                   'cursor-not-allowed border-divider bg-surface-soft text-border-strong' => ! $usable,
-                               ])>{{ $tenorOption }}</a>
-                        @endforeach
                     </div>
                     @php($missing = $this->missingForExport)
                     <x-ui.button type="button" size="sm" x-on:click="save()"
@@ -445,12 +385,12 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach (range(1, 5) as $year)
+                                @foreach ($s['paid_entry'] as $year => $entry)
                                     <tr>
                                         <td class="border border-neutral-400 px-1 py-[3px]">{{ $year }}</td>
-                                        <td class="border border-neutral-400 px-1 py-[3px]">{{ $paid_status[$year] ?? 'CASH' }}</td>
-                                        <td class="border border-neutral-400 px-1 py-[3px] text-right tabular-nums">{{ Format::rupiah((int) ($paid_discount[$year] ?? 0)) }}</td>
-                                        <td class="border border-neutral-400 px-1 py-[3px] text-right tabular-nums">{{ Format::rupiah((int) ($paid_amount[$year] ?? 0)) }}</td>
+                                        <td class="border border-neutral-400 px-1 py-[3px]">{{ $entry['status'] }}</td>
+                                        <td class="border border-neutral-400 px-1 py-[3px] text-right tabular-nums">{{ Format::rupiah($entry['discount']) }}</td>
+                                        <td class="border border-neutral-400 px-1 py-[3px] text-right tabular-nums">{{ Format::rupiah($entry['paid']) }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>
