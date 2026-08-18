@@ -211,7 +211,7 @@
                                  x-bind:aria-busy="busy"
                                  x-bind:class="busy && 'pointer-events-none opacity-70'"
                                  :title="$missing === [] ? null : 'Lengkapi '.implode(', ', $missing)">
-                        <span x-show="! busy">Unduh PNG</span>
+                        <span x-show="! busy">Unduh ViewSprint</span>
                         <span x-show="busy" x-cloak>Menyiapkan…</span>
                     </x-ui.button>
                 </div>

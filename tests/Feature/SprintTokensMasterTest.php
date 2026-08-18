@@ -20,14 +20,14 @@ it('refuses the SPRINT token master to everyone except Admin', function (string 
 it('lets Admin rename a token', function () {
     $this->actingAs(User::factory()->admin()->create());
 
-    $index = collect(SprintToken::grouped()['product'])->search(fn ($row) => $row->source === 'Sale & Leaseback');
+    $index = collect(SprintToken::grouped()['product'])->search(fn ($row) => $row->source === 'C2C Multiguna PPSA');
 
     Livewire::test(SprintTokens::class)
-        ->set("groups.product.{$index}.offering_token", 'KMK SLB')
+        ->set("groups.product.{$index}.offering_token", 'MGU PPSA')
         ->call('save')
         ->assertHasNoErrors();
 
-    expect(SprintToken::query()->where('source', 'Sale & Leaseback')->value('offering_token'))->toBe('KMK SLB');
+    expect(SprintToken::query()->where('source', 'C2C Multiguna PPSA')->value('offering_token'))->toBe('MGU PPSA');
 });
 
 /*

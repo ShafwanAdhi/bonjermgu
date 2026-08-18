@@ -685,3 +685,22 @@ it('splits the premium across years without losing any of it', function () {
 
     Carbon::setTestNow();
 });
+
+/*
+ * Daftar Product ditentukan token yang diatur Admin, bukan kategori yang
+ * kebetulan ada di katalog. Sale & Leaseback berhenti ditawarkan meski 1.544
+ * baris offering-nya masih ada dan akan kembali tiap impor
+ * (klien, 18 Agustus 2026).
+ */
+it('offers only the products Admin lists, never one the catalogue merely contains', function () {
+    [$user] = runOfficerSimulation();
+
+    $options = Livewire::actingAs($user)
+        ->test(ViewSprint::class, ['tenor' => 12])
+        ->instance()
+        ->selectorOptions()['product'];
+
+    expect($options)->toBe(['Fasilitas Dana', 'Fasilitas Modal Usaha', 'C2C Multiguna PPSA', 'C2C Investasi PPSA']);
+
+    Carbon::setTestNow();
+});

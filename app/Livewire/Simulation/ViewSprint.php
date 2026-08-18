@@ -472,8 +472,11 @@ final class ViewSprint extends Component
             ->all();
 
         if ($this->hasOfferingLookup()) {
+            // Product sengaja tidak ikut: daftarnya ditentukan token yang diatur
+            // Admin, bukan kategori apa pun yang kebetulan ada di katalog.
+            // Sale & Leaseback masih punya 1.544 baris offering dan akan muncul
+            // lagi tiap impor kalau digabungkan dari sana.
             foreach ([
-                'product' => 'product_category',
                 'channel' => 'channel',
                 'unit' => 'unit',
                 'brand' => 'brand',
