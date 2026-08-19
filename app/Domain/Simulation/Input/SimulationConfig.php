@@ -17,9 +17,12 @@ final readonly class SimulationConfig
         public RefundConfig $refund,
         public int $maxVehicleAge,
         public SimulationProfile $profile = SimulationProfile::REFERRAL,
+        public float $belivFeeAmount = 0,
         public float $bbnkbAmount = 0,
         public float $pkbAmount = 0,
         public float $invoiceAmount = 0,
+        public float $outstandingObligationAmount = 0,
+        public float $previousOutstandingPrincipalAmount = 0,
         /**
          * How many instalments are withheld, not a rupiah figure. The amount
          * follows the instalment of each tenor, so it cannot be a shared
@@ -46,9 +49,12 @@ final readonly class SimulationConfig
         ?ProductConfig $product = null,
         ?InsuranceConfig $insurance = null,
         ?SimulationProfile $profile = null,
+        ?float $belivFeeAmount = null,
         ?float $bbnkbAmount = null,
         ?float $pkbAmount = null,
         ?float $invoiceAmount = null,
+        ?float $outstandingObligationAmount = null,
+        ?float $previousOutstandingPrincipalAmount = null,
         ?int $depositInstalmentCount = null,
     ): self {
         return new self(
@@ -59,9 +65,12 @@ final readonly class SimulationConfig
             refund: $this->refund,
             maxVehicleAge: $this->maxVehicleAge,
             profile: $profile ?? $this->profile,
+            belivFeeAmount: $belivFeeAmount ?? $this->currentBelivFeeAmount(),
             bbnkbAmount: $bbnkbAmount ?? $this->bbnkbAmount,
             pkbAmount: $pkbAmount ?? $this->pkbAmount,
             invoiceAmount: $invoiceAmount ?? $this->invoiceAmount,
+            outstandingObligationAmount: $outstandingObligationAmount ?? $this->currentOutstandingObligationAmount(),
+            previousOutstandingPrincipalAmount: $previousOutstandingPrincipalAmount ?? $this->currentPreviousOutstandingPrincipalAmount(),
             depositInstalmentCount: $depositInstalmentCount ?? $this->depositInstalmentCount,
             defaultExtensions: $this->defaultExtensions,
             defaultTjhAmount: $this->defaultTjhAmount,
@@ -81,6 +90,15 @@ final readonly class SimulationConfig
     {
         return $this->bbnkbAmount
             + $this->pkbAmount
+            + $this->invoiceAmount
+            + $this->currentOutstandingObligationAmount()
+            + $this->currentPreviousOutstandingPrincipalAmount();
+    }
+
+    public function statutoryDisbursementDeductions(): float
+    {
+        return $this->bbnkbAmount
+            + $this->pkbAmount
             + $this->invoiceAmount;
     }
 
@@ -88,5 +106,20 @@ final readonly class SimulationConfig
     public function depositFor(int $instalment): int
     {
         return $this->depositInstalmentCount * $instalment;
+    }
+
+    public function currentBelivFeeAmount(): float
+    {
+        return isset($this->belivFeeAmount) ? $this->belivFeeAmount : 0.0;
+    }
+
+    public function currentOutstandingObligationAmount(): float
+    {
+        return isset($this->outstandingObligationAmount) ? $this->outstandingObligationAmount : 0.0;
+    }
+
+    public function currentPreviousOutstandingPrincipalAmount(): float
+    {
+        return isset($this->previousOutstandingPrincipalAmount) ? $this->previousOutstandingPrincipalAmount : 0.0;
     }
 }

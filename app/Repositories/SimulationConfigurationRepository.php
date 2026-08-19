@@ -154,6 +154,7 @@ final class SimulationConfigurationRepository
                 adminRefundRate: $this->floatSetting($settings, 'ucf_admin_refund_rate'),
             ),
             maxVehicleAge: $this->intSetting($settings, 'max_vehicle_age'),
+            belivFeeAmount: $this->floatSetting($settings, 'beliv_fee_amount'),
             bbnkbAmount: $this->floatSetting($settings, 'default_bbnkb_amount'),
             pkbAmount: $this->floatSetting($settings, 'default_pkb_amount'),
             invoiceAmount: $this->floatSetting($settings, 'default_invoice_amount'),

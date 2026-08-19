@@ -2,14 +2,19 @@
 
 use App\Livewire\Simulation\OfficerSimulation;
 use App\Livewire\Simulation\ViewSprint;
+use App\Models\AgeGroup;
 use App\Models\ReferralCategory;
 use App\Models\ReferralSubCategory;
 use App\Models\SimulationSetting;
 use App\Models\SprintOffering;
 use App\Models\User;
+use App\Models\VehicleModel;
 use App\Support\SimulationSettingDefaults;
 use Carbon\Carbon;
+use Database\Seeders\ReferralMasterSeeder;
+use Database\Seeders\SimulationConfigurationSeeder;
 use Livewire\Livewire;
+use Tests\Support\TestVehicleMaster;
 
 /*
  * View Sprint is the sheet an inputter screenshots and sends to head office.
@@ -20,19 +25,57 @@ use Livewire\Livewire;
 
 function runOfficerSimulation(): array
 {
-    [$category, $model, $price] = officerMaster();
+    [$category, $model, $price] = viewSprintOfficerMaster();
     Carbon::setTestNow(Carbon::create($price->year + 1, 8, 4));
 
     $user = User::factory()->accountOfficer()->create();
 
     Livewire::actingAs($user)
         ->test(OfficerSimulation::class)
-        ->set(officerState($category, $model, $price->year))
+        ->set(viewSprintOfficerState($category, $model, $price->year))
         ->set('unit_price', (string) $price->price)
         ->call('calculate')
         ->assertHasNoErrors();
 
     return [$user, $price];
+}
+
+function viewSprintOfficerMaster(): array
+{
+    test()->seed(ReferralMasterSeeder::class);
+    test()->seed(SimulationConfigurationSeeder::class);
+    TestVehicleMaster::seed();
+
+    $category = ReferralCategory::query()
+        ->where('is_active', true)
+        ->where('allows_passenger', true)
+        ->orderBy('id')
+        ->firstOrFail();
+
+    $model = VehicleModel::query()
+        ->whereHas('type.brand.usage', fn ($query) => $query->where('name', 'Passenger'))
+        ->whereHas('prices', fn ($query) => $query->where('price', '>', 0))
+        ->with(['type.brand', 'prices' => fn ($query) => $query->where('price', '>', 0)->orderByDesc('year')])
+        ->firstOrFail();
+
+    return [$category, $model, $model->prices->first()];
+}
+
+function viewSprintOfficerState(ReferralCategory $category, VehicleModel $model, int $year): array
+{
+    return [
+        'referral_category_id' => (string) $category->id,
+        'debtor_type' => 'non_entrepreneur',
+        'age_group_id' => (string) AgeGroup::query()->where('label', '36-45 tahun')->value('id'),
+        'usage_id' => (string) $model->type->brand->usage_id,
+        'brand_id' => (string) $model->type->brand_id,
+        'type_id' => (string) $model->type_id,
+        'model_id' => (string) $model->id,
+        'vehicle_year' => (string) $year,
+        'instalment_type' => 'ADDB',
+        'coverage_type' => 'tlo_all',
+        'stnk_ownership' => 'own',
+    ];
 }
 
 it('refuses View Sprint to everyone except AO', function (string $state) {
@@ -56,6 +99,53 @@ it('reads every figure from the simulation the officer already ran', function ()
     Carbon::setTestNow();
 });
 
+it('reads outstanding obligations from the officer simulation instead of asking again', function () {
+    [$category, $model, $price] = viewSprintOfficerMaster();
+    Carbon::setTestNow(Carbon::create($price->year + 1, 8, 4));
+
+    $user = User::factory()->accountOfficer()->create();
+
+    Livewire::actingAs($user)
+        ->test(OfficerSimulation::class)
+        ->set(viewSprintOfficerState($category, $model, $price->year))
+        ->set('unit_price', (string) $price->price)
+        ->set('sisa_kewajiban', '1500000')
+        ->set('sisa_os_lk', '2500000')
+        ->call('calculate')
+        ->assertHasNoErrors();
+
+    $sheet = Livewire::actingAs($user)
+        ->test(ViewSprint::class, ['tenor' => 24])
+        ->instance()
+        ->sheet();
+
+    expect($sheet['sisa_kewajiban'])->toBe(1_500_000)
+        ->and($sheet['sisa_os_lk'])->toBe(2_500_000);
+
+    Carbon::setTestNow();
+});
+
+it('reads BELIV from the officer simulation instead of asking again', function () {
+    [$category, $model, $price] = viewSprintOfficerMaster();
+    Carbon::setTestNow(Carbon::create($price->year + 1, 8, 4));
+
+    $user = User::factory()->accountOfficer()->create();
+
+    Livewire::actingAs($user)
+        ->test(OfficerSimulation::class)
+        ->set(viewSprintOfficerState($category, $model, $price->year))
+        ->set('unit_price', (string) $price->price)
+        ->set('is_beliv', true)
+        ->call('calculate')
+        ->assertHasNoErrors();
+
+    Livewire::actingAs($user)
+        ->test(ViewSprint::class, ['tenor' => 24])
+        ->assertSet('is_beliv', 'YA');
+
+    Carbon::setTestNow();
+});
+
 it('shows the figures of the tenor that was asked for', function () {
     [$user] = runOfficerSimulation();
 
@@ -70,8 +160,8 @@ it('shows the figures of the tenor that was asked for', function () {
 });
 
 /*
- * The engine never learns these; SPRINT still needs them. They start from the
- * Admin defaults so the AO edits rather than types from nothing.
+ * SPRINT still needs a few values the engine does not know. BELIV is no longer
+ * one of them: it is chosen on the simulation screen and merely shown here.
  */
 it('starts the fields the engine cannot know from the Admin defaults', function () {
     [$user] = runOfficerSimulation();
@@ -81,7 +171,6 @@ it('starts the fields the engine cannot know from the Admin defaults', function 
         ->assertSet('cara_pembayaran', 'AUTO COLLECTION')
         ->assertSet('kondisi_kendaraan', 'USED CAR')
         ->assertSet('mandiri_kpm', 'NO')
-        ->assertSet('is_beliv', 'TIDAK')
         ->assertSet('acp_axp', 'ADA')
         ->assertSet('gap', 'NO')
         ->assertSet('hic', 'NO')
@@ -350,9 +439,7 @@ it('settles on the only Product ID the filters leave standing', function () {
  * berisi "NO", "ADA", "TIDAK" sekaligus. Itu yang terjadi pada GAP, HIC, dan
  * Water Hammer: bawaannya NO, tapi pilihannya ADA/TIDAK.
  *
- * Kosakatanya memang tidak seragam antar field, mengikuti data validation
- * workbook: ADA/TIDAK untuk ACP & AXP, TIDAK/YA untuk BELIV, NO/YES untuk
- * GAP, HIC, dan Water Hammer.
+ * Kosakata manual yang masih tersisa mengikuti data validation workbook.
  */
 it('offers each manual field a list its own Admin default belongs to', function () {
     $sprint = new ViewSprint;
@@ -371,11 +458,10 @@ it('offers each manual field a list its own Admin default belongs to', function 
     expect($mismatched)->toBe([]);
 });
 
-/* Yang tersisa sebagai pilihan manual tinggal dua, dan keduanya berbeda kosakata. */
+/* Yang tersisa sebagai pilihan manual tinggal cara pembayaran. */
 it('keeps the manual vocabulary the workbook uses for what is still asked', function () {
     expect(ViewSprint::MANUAL_OPTIONS)->toBe([
         'cara_pembayaran' => ['AUTO COLLECTION', 'PDC/GIRO'],
-        'is_beliv' => ['TIDAK', 'YA'],
     ]);
 });
 
@@ -430,14 +516,12 @@ it('keeps what the officer typed when the tenor changes', function () {
     Livewire::actingAs($user)
         ->test(ViewSprint::class, ['tenor' => 12])
         ->set('nama_customer', 'PT Sinar Rejeki')
-        ->set('spesifik_product', 'Paket Khusus')
-        ->set('wira_no', '77');
+        ->set('spesifik_product', 'Paket Khusus');
 
     Livewire::actingAs($user)
         ->test(ViewSprint::class, ['tenor' => 48])
         ->assertSet('nama_customer', 'PT Sinar Rejeki')
-        ->assertSet('spesifik_product', 'Paket Khusus')
-        ->assertSet('wira_no', '77');
+        ->assertSet('spesifik_product', 'Paket Khusus');
 
     Carbon::setTestNow();
 });
@@ -551,7 +635,7 @@ it('stops asking for what the simulation and the configuration already decided',
         expect($html)->not->toContain('wire:model.live="'.$gone.'"');
     }
     foreach (['mandiri_kpm', 'kondisi_kendaraan', 'acp_axp', 'gap', 'hic', 'water_hammer',
-        'sprint_channel', 'sprint_brand', 'sprint_dp', 'paid_status.1'] as $gone) {
+        'sprint_channel', 'sprint_brand', 'sprint_dp', 'sisa_kewajiban', 'sisa_os_lk', 'is_beliv', 'wira_no', 'paid_status.1'] as $gone) {
         expect($html)->not->toContain('wire:model.live="'.$gone.'"');
     }
 
@@ -562,13 +646,13 @@ it('stops asking for what the simulation and the configuration already decided',
 });
 
 it('reads Type Customer from the simulation instead of asking again', function () {
-    [$category, $model, $price] = officerMaster();
+    [$category, $model, $price] = viewSprintOfficerMaster();
     Carbon::setTestNow(Carbon::create($price->year + 1, 8, 4));
     $user = User::factory()->accountOfficer()->create();
 
     Livewire::actingAs($user)
         ->test(OfficerSimulation::class)
-        ->set(officerState($category, $model, $price->year))
+        ->set(viewSprintOfficerState($category, $model, $price->year))
         ->set('unit_price', (string) $price->price)
         ->set('customer_type', 'Additional Order')
         ->call('calculate')

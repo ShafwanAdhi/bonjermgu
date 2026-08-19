@@ -10,6 +10,7 @@ final class SimulationSettingDefaults
         return [
             'max_vehicle_age' => '16',
             'engine_warranty_fee' => '1500000',
+            'beliv_fee_amount' => '0',
             'active_insurance_zone' => 'Wilayah 2',
             'active_rate_variant' => 'Batas Bawah',
             'default_deposit_instalment_count' => '0',
@@ -46,7 +47,6 @@ final class SimulationSettingDefaults
             'view_sprint_cara_pembayaran' => 'AUTO COLLECTION',
             'view_sprint_mandiri_kpm' => 'NO',
             'view_sprint_kondisi_kendaraan' => 'USED CAR',
-            'view_sprint_is_beliv' => 'TIDAK',
             'view_sprint_acp_axp' => 'ADA',
             'view_sprint_gap' => 'NO',
             'view_sprint_hic' => 'NO',

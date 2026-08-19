@@ -78,6 +78,7 @@ final class OfficerSimulation extends Component
         'ext_gap',
         'ext_hic',
         'ext_water_hammer',
+        'is_beliv',
         'tjh_amount',
         'driver_amount',
         'passenger_amount',
@@ -87,6 +88,8 @@ final class OfficerSimulation extends Component
         'bbnkb_amount',
         'pkb_amount',
         'invoice_amount',
+        'sisa_kewajiban',
+        'sisa_os_lk',
     ];
 
     public ?string $referral_category_id = null;
@@ -171,6 +174,8 @@ final class OfficerSimulation extends Component
 
     public bool $engine_warranty = true;
 
+    public bool $is_beliv = false;
+
     public string $deposit_instalment = '0';
 
     public string $bbnkb_amount = '0';
@@ -178,6 +183,10 @@ final class OfficerSimulation extends Component
     public string $pkb_amount = '0';
 
     public string $invoice_amount = '0';
+
+    public string $sisa_kewajiban = '0';
+
+    public string $sisa_os_lk = '0';
 
     /** Tenor whose derivation is expanded below the results. */
     public int $traced_tenor = 12;
@@ -379,10 +388,13 @@ final class OfficerSimulation extends Component
             'driver_amount' => ['required', 'integer', 'min:0'],
             'passenger_amount' => ['required', 'integer', 'min:0'],
             'passenger_count' => ['required', 'integer', 'min:0', 'max:20'],
+            'is_beliv' => ['boolean'],
             'deposit_instalment' => ['required', 'integer', 'min:0', 'max:10'],
             'bbnkb_amount' => ['required', 'integer', 'min:0'],
             'pkb_amount' => ['required', 'integer', 'min:0'],
             'invoice_amount' => ['required', 'integer', 'min:0'],
+            'sisa_kewajiban' => ['required', 'integer', 'min:0'],
+            'sisa_os_lk' => ['required', 'integer', 'min:0'],
         ];
     }
 
@@ -416,10 +428,13 @@ final class OfficerSimulation extends Component
             'driver_amount' => 'Pertanggungan Pengemudi',
             'passenger_amount' => 'Pertanggungan Penumpang',
             'passenger_count' => 'Jumlah Penumpang',
+            'is_beliv' => 'BELIV',
             'deposit_instalment' => 'Deposit Angsuran',
             'bbnkb_amount' => 'BBNKB',
             'pkb_amount' => 'PKB',
             'invoice_amount' => 'Faktur',
+            'sisa_kewajiban' => 'Sisa Kewajiban',
+            'sisa_os_lk' => 'Sisa OS LK Sebelumnya',
         ];
     }
 
@@ -467,6 +482,7 @@ final class OfficerSimulation extends Component
         foreach ([
             'unit_price', 'desired_amount', 'up_admin', 'tjh_amount', 'driver_amount',
             'passenger_amount', 'bbnkb_amount', 'pkb_amount', 'invoice_amount',
+            'sisa_kewajiban', 'sisa_os_lk',
         ] as $field) {
             $this->{$field} = RupiahInput::normalize($this->{$field});
         }
@@ -518,10 +534,13 @@ final class OfficerSimulation extends Component
                     passengerCoverageAmount: (float) $validated['passenger_amount'],
                     passengerCount: (int) $validated['passenger_count'],
                     engineWarrantyEnabled: $this->engine_warranty,
+                    belivEnabled: $this->is_beliv,
                     depositInstalmentCount: (int) $validated['deposit_instalment'],
                     bbnkbAmount: (float) $validated['bbnkb_amount'],
                     pkbAmount: (float) $validated['pkb_amount'],
                     invoiceAmount: (float) $validated['invoice_amount'],
+                    outstandingObligationAmount: (float) $validated['sisa_kewajiban'],
+                    previousOutstandingPrincipalAmount: (float) $validated['sisa_os_lk'],
                 ),
                 (int) today()->format('Y'),
             );
@@ -677,10 +696,13 @@ final class OfficerSimulation extends Component
         $this->passenger_amount = '0';
         $this->passenger_count = '0';
         $this->engine_warranty = true;
+        $this->is_beliv = false;
         $this->deposit_instalment = '0';
         $this->bbnkb_amount = '0';
         $this->pkb_amount = '0';
         $this->invoice_amount = '0';
+        $this->sisa_kewajiban = '0';
+        $this->sisa_os_lk = '0';
         $this->traced_tenor = 12;
     }
 

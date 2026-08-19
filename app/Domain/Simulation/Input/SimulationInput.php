@@ -36,6 +36,7 @@ final readonly class SimulationInput
         public float $passengerCoverageAmount = 0,
         public int $passengerCount = 0,
         public bool $engineWarrantyEnabled = true,
+        public bool $belivEnabled = false,
     ) {}
 
     public function extensionEnabled(string $code): bool

@@ -49,9 +49,9 @@ final class CalculationTrace
             self::insuranceSection($tenor),
             self::feeSection($tenor, $config),
             self::instalmentSection($tenor, $input->instalmentType, $isModeA),
-            $isModeA ? self::disbursementSection($tenor, $config, $isUcf) : self::desiredAmountSection($tenor),
+            $isModeA ? self::disbursementSection($tenor, $config, $isUcf) : self::desiredAmountSection($tenor, $config, $isUcf),
             self::refundSection($tenor),
-            self::outcomeSection($tenor, $isUcf, $isModeA),
+            self::outcomeSection($tenor, $config, $isUcf, $isModeA),
         ]));
     }
 
@@ -255,8 +255,13 @@ final class CalculationTrace
                     'value' => Format::rupiah((int) round($tenor->fees->fiducia)),
                 ],
                 [
+                    'label' => 'BELIV',
+                    'formula' => 'biaya tetap bila BELIV aktif',
+                    'value' => Format::rupiah((int) round($tenor->fees->beliv)),
+                ],
+                [
                     'label' => 'Total biaya',
-                    'formula' => 'provisi + administrasi + fiducia',
+                    'formula' => 'provisi + administrasi + fiducia + BELIV',
                     'value' => Format::rupiah((int) round($tenor->fees->total())),
                     'emphasis' => true,
                 ],
@@ -316,7 +321,17 @@ final class CalculationTrace
                 [
                     'label' => 'Potongan pencairan',
                     'formula' => 'BBNKB, PKB, faktur',
-                    'value' => Format::rupiah((int) round($config->disbursementDeductions())),
+                    'value' => Format::rupiah((int) round($config->statutoryDisbursementDeductions())),
+                ],
+                [
+                    'label' => 'Sisa kewajiban',
+                    'formula' => 'pelunasan kewajiban berjalan',
+                    'value' => Format::rupiah((int) round($config->currentOutstandingObligationAmount())),
+                ],
+                [
+                    'label' => 'Sisa OS LK sebelumnya',
+                    'formula' => 'pelunasan outstanding sebelumnya',
+                    'value' => Format::rupiah((int) round($config->currentPreviousOutstandingPrincipalAmount())),
                 ],
                 [
                     'label' => 'Deposit angsuran',
@@ -329,7 +344,7 @@ final class CalculationTrace
                 ],
                 [
                     'label' => 'Pencairan neto',
-                    'formula' => 'pencairan gross − potongan − deposit',
+                    'formula' => 'pencairan gross - seluruh potongan - deposit',
                     'value' => Format::rupiah((int) round($tenor->netDisbursement)),
                     'emphasis' => true,
                 ],
@@ -337,29 +352,44 @@ final class CalculationTrace
         ];
     }
 
-    private static function desiredAmountSection(TenorResult $tenor): array
+    private static function desiredAmountSection(TenorResult $tenor, $config, bool $isUcf): array
     {
+        $steps = [
+            [
+                'label' => 'Nominal dikehendaki',
+                'formula' => 'input pengguna',
+                'value' => Format::rupiah((int) round($tenor->desiredAmount)),
+            ],
+            [
+                'label' => 'Total bayar pertama',
+                'formula' => 'asuransi + biaya',
+                'value' => Format::rupiah((int) round($tenor->firstPayment)),
+            ],
+            [
+                'label' => 'Net DP hasil',
+                'formula' => 'nominal - (bayar pertama + angsuran pertama)',
+                'value' => Format::rupiah((int) round($tenor->netDpAmount)),
+                'emphasis' => true,
+            ],
+        ];
+
+        if (! $isUcf) {
+            $steps[] = [
+                'label' => 'Sisa kewajiban',
+                'formula' => 'mengurangi pencairan',
+                'value' => Format::rupiah((int) round($config->currentOutstandingObligationAmount())),
+            ];
+            $steps[] = [
+                'label' => 'Sisa OS LK sebelumnya',
+                'formula' => 'mengurangi pencairan',
+                'value' => Format::rupiah((int) round($config->currentPreviousOutstandingPrincipalAmount())),
+            ];
+        }
+
         return [
             'title' => '7 · Nominal Dikehendaki',
             'note' => 'Mode B menghitung angsuran dari nominal yang dikehendaki, bukan sebaliknya.',
-            'steps' => [
-                [
-                    'label' => 'Nominal dikehendaki',
-                    'formula' => 'input pengguna',
-                    'value' => Format::rupiah((int) round($tenor->desiredAmount)),
-                ],
-                [
-                    'label' => 'Total bayar pertama',
-                    'formula' => 'asuransi + biaya',
-                    'value' => Format::rupiah((int) round($tenor->firstPayment)),
-                ],
-                [
-                    'label' => 'Net DP hasil',
-                    'formula' => 'nominal − (bayar pertama + angsuran pertama)',
-                    'value' => Format::rupiah((int) round($tenor->netDpAmount)),
-                    'emphasis' => true,
-                ],
-            ],
+            'steps' => $steps,
         ];
     }
 
@@ -401,7 +431,7 @@ final class CalculationTrace
         ];
     }
 
-    private static function outcomeSection(TenorResult $tenor, bool $isUcf, bool $isModeA): array
+    private static function outcomeSection(TenorResult $tenor, $config, bool $isUcf, bool $isModeA): array
     {
         $heading = match (true) {
             ! $isUcf && $isModeA => 'Pencairan Maksimal',
@@ -416,7 +446,11 @@ final class CalculationTrace
             'steps' => [
                 [
                     'label' => $heading,
-                    'formula' => $isModeA ? 'pencairan neto + total refund' : 'nominal dikehendaki',
+                    'formula' => match (true) {
+                        $isModeA => 'pencairan neto + total refund',
+                        ! $isUcf && $config->disbursementDeductions() > 0 => 'nominal dikehendaki - potongan',
+                        default => 'nominal dikehendaki',
+                    },
                     'value' => Format::rupiah((int) round($tenor->outputAmount)),
                     'emphasis' => true,
                 ],

@@ -13,6 +13,7 @@ final class FeeCalculator
         SimulationConfig $config,
         float $ltvAmount,
         float $otrPrice,
+        bool $belivEnabled = false,
     ): FeeBreakdown {
         $provision = ($config->product->provisionRate + $config->product->upProvision) * $ltvAmount;
 
@@ -24,6 +25,7 @@ final class FeeCalculator
             $provision,
             $config->product->adminMax + $config->product->upAdmin,
             $config->fees->fiduciaFor($otrPrice),
+            $belivEnabled ? $config->currentBelivFeeAmount() : 0,
         );
     }
 }

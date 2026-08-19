@@ -74,7 +74,94 @@ it('withholds from Mobil Bekas disbursement without touching Total Bayar Pertama
         ->and($held->outputAmount)->toEqual($free->outputAmount - 2 * $free->instalment);
 });
 
-it('withholds nothing in Mode B, which produces no disbursement', function () {
+it('withholds outstanding obligations from Dana Tunai disbursement', function () {
+    $engine = new SimulationEngine;
+    $free = $engine->simulate(
+        SimulationTestFactory::dtnInput(),
+        SimulationTestFactory::dtnConfig(),
+        2026,
+    )->forTenor(24);
+    $held = $engine->simulate(
+        SimulationTestFactory::dtnInput(),
+        SimulationTestFactory::dtnConfig()->with(
+            outstandingObligationAmount: 1_500_000,
+            previousOutstandingPrincipalAmount: 2_500_000,
+        ),
+        2026,
+    )->forTenor(24);
+
+    expect($held->outputAmount)->toEqual($free->outputAmount - 4_000_000)
+        ->and($held->netDisbursement)->toEqual($free->netDisbursement - 4_000_000);
+});
+
+it('withholds outstanding obligations from Dana Tunai Mode B cash received', function () {
+    $result = (new SimulationEngine)->simulate(
+        SimulationTestFactory::dtnInput(SimulationMode::B),
+        SimulationTestFactory::dtnConfig()->with(
+            outstandingObligationAmount: 1_500_000,
+            previousOutstandingPrincipalAmount: 2_500_000,
+        ),
+        2026,
+    );
+
+    expect($result->forTenor(12)->outputAmount)->toEqual(56_000_000);
+});
+
+it('charges configurable BELIV fee when BELIV is enabled', function () {
+    $engine = new SimulationEngine;
+    $free = $engine->simulate(
+        SimulationTestFactory::dtnInput(),
+        SimulationTestFactory::dtnConfig()->with(belivFeeAmount: 1_250_000),
+        2026,
+    )->forTenor(24);
+    $charged = $engine->simulate(
+        SimulationTestFactory::dtnInput(belivEnabled: true),
+        SimulationTestFactory::dtnConfig()->with(belivFeeAmount: 1_250_000),
+        2026,
+    )->forTenor(24);
+
+    expect($charged->fees->beliv)->toEqual(1_250_000.0)
+        ->and($charged->fees->total())->toEqual($free->fees->total() + 1_250_000)
+        ->and($charged->outputAmount)->toEqual($free->outputAmount - 1_250_000);
+});
+
+it('keeps cached configs from before BELIV usable', function () {
+    $fresh = SimulationTestFactory::dtnConfig();
+    $reflection = new ReflectionClass($fresh);
+    $legacy = $reflection->newInstanceWithoutConstructor();
+
+    foreach ([
+        'product',
+        'insurance',
+        'fees',
+        'downPayment',
+        'refund',
+        'maxVehicleAge',
+        'profile',
+        'bbnkbAmount',
+        'pkbAmount',
+        'invoiceAmount',
+        'depositInstalmentCount',
+        'defaultExtensions',
+        'defaultTjhAmount',
+        'defaultDriverCoverageAmount',
+        'defaultPassengerCoverageAmount',
+        'defaultPassengerCount',
+        'defaultEngineWarrantyEnabled',
+    ] as $property) {
+        $reflection->getProperty($property)->setValue($legacy, $fresh->{$property});
+    }
+
+    $copy = $legacy->with();
+
+    expect($legacy->currentBelivFeeAmount())->toBe(0.0)
+        ->and($legacy->currentOutstandingObligationAmount())->toBe(0.0)
+        ->and($legacy->currentPreviousOutstandingPrincipalAmount())->toBe(0.0)
+        ->and($copy->currentBelivFeeAmount())->toBe(0.0)
+        ->and($copy->disbursementDeductions())->toBe(0.0);
+});
+
+it('withholds no deposit in Mode B', function () {
     $result = (new SimulationEngine)->simulate(
         SimulationTestFactory::dtnInput(SimulationMode::B),
         SimulationTestFactory::dtnConfig(depositInstalmentCount: 5),

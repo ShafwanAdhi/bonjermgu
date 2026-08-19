@@ -5,6 +5,7 @@ use App\Models\AgeGroup;
 use App\Models\ReferralCategory;
 use App\Models\User;
 use App\Models\VehicleModel;
+use App\Support\Format;
 use Carbon\Carbon;
 use Database\Seeders\ReferralMasterSeeder;
 use Database\Seeders\SimulationConfigurationSeeder;
@@ -192,6 +193,29 @@ it('applies the upping an officer enters without touching the Product', function
     Carbon::setTestNow();
 });
 
+it('applies outstanding obligations as disbursement deductions in the officer simulation trace', function () {
+    [$category, $model, $price] = officerMaster();
+    Carbon::setTestNow(Carbon::create($price->year + 1, 8, 4));
+
+    $component = Livewire::actingAs(User::factory()->accountOfficer()->create())
+        ->test(OfficerSimulation::class)
+        ->set(officerState($category, $model, $price->year))
+        ->set('unit_price', (string) $price->price)
+        ->set('sisa_kewajiban', '1500000')
+        ->set('sisa_os_lk', '2500000')
+        ->call('calculate')
+        ->assertHasNoErrors();
+
+    $steps = collect($component->get('traces')[12])
+        ->flatMap(fn (array $section): array => $section['steps'])
+        ->keyBy('label');
+
+    expect($steps['Sisa kewajiban']['value'])->toBe(Format::rupiah(1_500_000))
+        ->and($steps['Sisa OS LK sebelumnya']['value'])->toBe(Format::rupiah(2_500_000));
+
+    Carbon::setTestNow();
+});
+
 /*
  * The only two fields Amount Finance handoff can carry: financing product and
  * debtor type. Referral (a specific account) and Amount Finance are both
@@ -243,6 +267,9 @@ it('keeps officer simulation form data until the officer clears it', function ()
         ->set('unit_price', 'Rp '.number_format($price->price, 0, ',', '.'))
         ->set('desired_amount', 'Rp 25.000.000')
         ->set('up_admin', 'Rp 500.000')
+        ->set('sisa_kewajiban', 'Rp 1.500.000')
+        ->set('sisa_os_lk', 'Rp 2.500.000')
+        ->set('is_beliv', true)
         ->set('ext_flood', true);
 
     expect(session('simulation.officer.form.financing_type'))->toBe('UCF')
@@ -250,6 +277,9 @@ it('keeps officer simulation form data until the officer clears it', function ()
         ->and(session('simulation.officer.form.unit_price'))->toBe('Rp '.number_format($price->price, 0, ',', '.'))
         ->and(session('simulation.officer.form.desired_amount'))->toBe('Rp 25.000.000')
         ->and(session('simulation.officer.form.up_admin'))->toBe('Rp 500.000')
+        ->and(session('simulation.officer.form.sisa_kewajiban'))->toBe('Rp 1.500.000')
+        ->and(session('simulation.officer.form.sisa_os_lk'))->toBe('Rp 2.500.000')
+        ->and(session('simulation.officer.form.is_beliv'))->toBeTrue()
         ->and(session('simulation.officer.form.ext_flood'))->toBeTrue();
 
     Livewire::actingAs($officer)
@@ -259,6 +289,9 @@ it('keeps officer simulation form data until the officer clears it', function ()
         ->assertSet('unit_price', 'Rp '.number_format($price->price, 0, ',', '.'))
         ->assertSet('desired_amount', 'Rp 25.000.000')
         ->assertSet('up_admin', 'Rp 500.000')
+        ->assertSet('sisa_kewajiban', 'Rp 1.500.000')
+        ->assertSet('sisa_os_lk', 'Rp 2.500.000')
+        ->assertSet('is_beliv', true)
         ->assertSet('ext_flood', true)
         ->call('clearFormData')
         ->assertSet('financing_type', 'DTN')
@@ -266,6 +299,9 @@ it('keeps officer simulation form data until the officer clears it', function ()
         ->assertSet('unit_price', '')
         ->assertSet('desired_amount', '')
         ->assertSet('up_admin', '0')
+        ->assertSet('sisa_kewajiban', '0')
+        ->assertSet('sisa_os_lk', '0')
+        ->assertSet('is_beliv', false)
         ->assertSet('ext_flood', false)
         ->assertSet('hasCalculated', false);
 

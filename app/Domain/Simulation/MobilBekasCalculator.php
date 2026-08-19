@@ -99,7 +99,13 @@ final class MobilBekasCalculator
         $sellingInterestRate = $flatRateFinal * ($tenorMonths / 12);
         $modeATotalAr = $modeALtvAmount * (1 + $sellingInterestRate);
         $insurance = $this->insuranceCalculator->calculate($input, $config, $otrPrice, $tenorMonths, $currentYear, $modeATotalAr);
-        $fees = $this->feeCalculator->calculate(FinancingType::UCF, $config, $modeALtvAmount, $otrPrice);
+        $fees = $this->feeCalculator->calculate(
+            FinancingType::UCF,
+            $config,
+            $modeALtvAmount,
+            $otrPrice,
+            $input->belivEnabled,
+        );
 
         if ($input->mode === SimulationMode::A) {
             $netDpRate = $minimumNetDpRate;

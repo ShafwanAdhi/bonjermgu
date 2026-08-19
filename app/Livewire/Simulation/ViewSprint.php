@@ -71,7 +71,6 @@ final class ViewSprint extends Component
     /** Berlaku pada dokumen ini saja; tidak pernah masuk perhitungan. */
     private const MANUAL_DEFAULTS = [
         'cara_pembayaran' => 'view_sprint_cara_pembayaran',
-        'is_beliv' => 'view_sprint_is_beliv',
     ];
 
     /**
@@ -88,7 +87,6 @@ final class ViewSprint extends Component
      */
     public const MANUAL_OPTIONS = [
         'cara_pembayaran' => ['AUTO COLLECTION', 'PDC/GIRO'],
-        'is_beliv' => ['TIDAK', 'YA'],
     ];
 
     public int $tenor = 12;
@@ -137,10 +135,6 @@ final class ViewSprint extends Component
     public string $wira_no = '0';
 
     public string $is_beliv = '';
-
-    public string $sisa_kewajiban = '0';
-
-    public string $sisa_os_lk = '0';
 
     /**
      * Keempatnya kini jawaban simulasi, bukan pertanyaan.
@@ -275,7 +269,7 @@ final class ViewSprint extends Component
         // Yang datang dari layar simulasi atau dari konfigurasi tidak diingat di
         // sini: menyimpannya berarti membekukan jawaban lama pada simulasi baru.
         $derived = [
-            'sprint_instalment', 'sprint_debtor_type', 'sprint_region',
+            'sprint_instalment', 'sprint_debtor_type', 'sprint_profile', 'sprint_region',
             'sprint_channel', 'sprint_brand', 'sprint_dp',
         ];
 
@@ -288,7 +282,7 @@ final class ViewSprint extends Component
         return [
             ...array_keys(self::MANUAL_DEFAULTS),
             ...$selectors,
-            'nama_customer', 'spesifik_product', 'wira_no', 'sisa_kewajiban', 'sisa_os_lk',
+            'nama_customer', 'spesifik_product',
         ];
     }
 
@@ -433,6 +427,7 @@ final class ViewSprint extends Component
         $this->gap = $yes('gap');
         $this->hic = $yes('hic');
         $this->water_hammer = $yes('water_hammer');
+        $this->is_beliv = $input->belivEnabled ? 'YA' : 'TIDAK';
     }
 
     /**
@@ -840,16 +835,22 @@ final class ViewSprint extends Component
                 'earthquake' => (bool) $get('ext_earthquake', false),
                 'riot' => (bool) $get('ext_riot', false),
                 'terrorism' => (bool) $get('ext_terrorism', false),
+                'gap' => (bool) $get('ext_gap', false),
+                'hic' => (bool) $get('ext_hic', false),
+                'water_hammer' => (bool) $get('ext_water_hammer', false),
             ],
             tjhAmount: $money('tjh_amount'),
             driverCoverageAmount: $money('driver_amount'),
             passengerCoverageAmount: $money('passenger_amount'),
             passengerCount: (int) $get('passenger_count', 0),
             engineWarrantyEnabled: (bool) $get('engine_warranty', true),
+            belivEnabled: (bool) $get('is_beliv', false),
             depositInstalmentCount: (int) $get('deposit_instalment', 0),
             bbnkbAmount: $money('bbnkb_amount'),
             pkbAmount: $money('pkb_amount'),
             invoiceAmount: $money('invoice_amount'),
+            outstandingObligationAmount: $money('sisa_kewajiban'),
+            previousOutstandingPrincipalAmount: $money('sisa_os_lk'),
         );
     }
 
@@ -896,6 +897,8 @@ final class ViewSprint extends Component
             'type_customer' => $input->debtorType === DebtorType::LEGAL_ENTITY ? 'BADAN USAHA' : 'PERORANGAN',
             'refund_administration' => (int) round($row->refund->administration),
             'refund_provision' => (int) round($row->refund->provision),
+            'sisa_kewajiban' => (int) round($config->currentOutstandingObligationAmount()),
+            'sisa_os_lk' => (int) round($config->currentPreviousOutstandingPrincipalAmount()),
 
             'usage' => $input->vehicleUsage === VehicleUsage::PASSENGER ? 'Non Commercial' : 'Commercial',
             'rate_jual' => mb_strtoupper(str_replace('Batas ', '', $config->insurance->activeVariant)),

@@ -65,6 +65,8 @@ final class OfficerSimulator
             bbnkbAmount: $request->bbnkbAmount,
             pkbAmount: $request->pkbAmount,
             invoiceAmount: $request->invoiceAmount,
+            outstandingObligationAmount: $request->outstandingObligationAmount,
+            previousOutstandingPrincipalAmount: $request->previousOutstandingPrincipalAmount,
             depositInstalmentCount: $request->depositInstalmentCount,
         );
 
@@ -88,6 +90,7 @@ final class OfficerSimulator
             passengerCoverageAmount: $request->passengerCoverageAmount,
             passengerCount: $request->passengerCount,
             engineWarrantyEnabled: $request->engineWarrantyEnabled,
+            belivEnabled: $request->belivEnabled,
         );
 
         return new ConfigurationSimulationOutcome(

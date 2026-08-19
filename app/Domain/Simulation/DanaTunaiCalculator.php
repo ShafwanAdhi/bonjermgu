@@ -101,7 +101,13 @@ final class DanaTunaiCalculator
         $sellingInterestRate = $flatRateFinal * ($tenorMonths / 12);
         $modeATotalAr = $modeALtvAmount * (1 + $sellingInterestRate);
         $insurance = $this->insuranceCalculator->calculate($input, $config, $otrPrice, $tenorMonths, $currentYear, $modeATotalAr);
-        $fees = $this->feeCalculator->calculate(FinancingType::DTN, $config, $modeALtvAmount, $otrPrice);
+        $fees = $this->feeCalculator->calculate(
+            FinancingType::DTN,
+            $config,
+            $modeALtvAmount,
+            $otrPrice,
+            $input->belivEnabled,
+        );
         $modeAInstalment = Rounding::up($modeATotalAr / $tenorMonths, 1000);
 
         if ($input->mode === SimulationMode::A) {
@@ -139,13 +145,13 @@ final class DanaTunaiCalculator
             // Algebraically identical to PHPM × LTV rate, while preserving an
             // exact rupiah value instead of exposing a binary-float artefact.
             $ltvAmount = $meetsMinimum ? $input->phpmPrice - $netDpAmount : 0;
-            // Mode B quotes an instalment against a chosen amount; there is no
-            // disbursement, and no refund on either product.
+            // Mode B quotes an instalment against a chosen amount. The cash
+            // received still honors per-transaction disbursement deductions.
             $refund = RefundBreakdown::zero();
             $grossDisbursement = 0;
             $depositAmount = 0;
             $netDisbursement = 0;
-            $outputAmount = $input->desiredAmount;
+            $outputAmount = max($input->desiredAmount - $config->disbursementDeductions(), 0);
             $desiredAmount = $input->desiredAmount;
             $zeroReason = $meetsMinimum ? null : ZeroReason::DownPaymentBelowMinimum;
         }

@@ -161,11 +161,16 @@ test('configuration audit last change is isolated per module', function () {
 
     $defaultsComponent = Livewire::actingAs($admin)->test(Defaults::class);
     $originalWarranty = (int) $defaultsComponent->get('settings.engine_warranty_fee');
+    $originalBeliv = (int) $defaultsComponent->get('settings.beliv_fee_amount');
 
     $defaultsComponent
         ->set('settings.engine_warranty_fee', 'Rp '.number_format($originalWarranty + 2_000, 0, ',', '.'))
+        ->set('settings.beliv_fee_amount', 'Rp '.number_format($originalBeliv + 1_000, 0, ',', '.'))
         ->call('save')
         ->assertHasNoErrors();
+
+    expect(SimulationSetting::query()->where('key', 'beliv_fee_amount')->value('value'))
+        ->toBe((string) ($originalBeliv + 1_000));
 
     $defaultAudit = AdminChangeLog::query()
         ->where('audit_module', 'configuration.defaults')

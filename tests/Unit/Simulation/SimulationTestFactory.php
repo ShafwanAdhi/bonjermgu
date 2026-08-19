@@ -59,6 +59,7 @@ final class SimulationTestFactory
         int $vehicleYear = 2017,
         float $phpmPrice = 110_000_026,
         float $marketPrice = 0,
+        bool $belivEnabled = false,
     ): SimulationInput {
         return new SimulationInput(
             financingType: FinancingType::DTN,
@@ -74,6 +75,7 @@ final class SimulationTestFactory
             coverageType: CoverageType::COMPREHENSIVE_THEN_TLO,
             marketPrice: $marketPrice,
             desiredAmount: 60_000_000,
+            belivEnabled: $belivEnabled,
         );
     }
 
@@ -86,6 +88,7 @@ final class SimulationTestFactory
         float $phpmPrice = 110_000_026,
         VehicleOrigin $vehicleOrigin = VehicleOrigin::JAPAN,
         VehicleUsage $vehicleUsage = VehicleUsage::PASSENGER,
+        bool $belivEnabled = false,
     ): SimulationInput {
         return new SimulationInput(
             financingType: FinancingType::UCF,
@@ -101,6 +104,7 @@ final class SimulationTestFactory
             coverageType: CoverageType::TLO_ALL,
             marketPrice: $marketPrice,
             desiredAmount: 60_000_000,
+            belivEnabled: $belivEnabled,
         );
     }
 

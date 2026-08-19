@@ -39,7 +39,7 @@
         <div class="flex flex-col gap-xl">
 
             {{-- ------------------------------------------------- Isian AO --}}
-            <div class="grid grid-cols-1 gap-lg xl:grid-cols-3 xl:items-start">
+            <div>
                 {{--
                     Kedua kode dirangkai dari satu token per dimensi, seperti
                     Master!C5 dan Master!C6 merangkainya dari dropdown. Yang sudah
@@ -56,40 +56,37 @@
                 @php($selectorFields = [
                     ['product', 'Product', 'Product SPRINT', false],
                     ['unit', 'Jenis Kendaraan', 'Jenis kendaraan', false],
-                    ['profile', 'Profil Debitur', 'Profil debitur', true],
                 ])
 
-                <x-ui.card title="Pilihan SPRINT">
-                    <div class="flex flex-col gap-lg">
-                        <div class="grid grid-cols-1 gap-md sm:grid-cols-2">
-                            @foreach ($selectorFields as [$group, $label, $placeholder, $wide])
-                                <x-ui.field :label="$label" class="{{ $wide ? 'sm:col-span-2' : '' }}"
-                                            :helper="$sprint_unit === '' && $group === 'unit' ? 'Unit Commercial bercabang jadi Pick Up atau Truck; simulasi tidak menentukannya.' : null">
-                                    <x-ui.select wire:model.live="sprint_{{ $group }}">
-                                        <option value="">{{ $placeholder }}</option>
-                                        @foreach ($selectorOptions[$group] ?? [] as $option)
-                                            <option value="{{ $option }}">{{ $option }}</option>
-                                        @endforeach
-                                    </x-ui.select>
-                                </x-ui.field>
-                            @endforeach
+                {{-- Kosakata tiap field berbeda dan itu disengaja; lihat ViewSprint::MANUAL_OPTIONS. --}}
+                @php($manualOptions = \App\Livewire\Simulation\ViewSprint::MANUAL_OPTIONS)
 
-                        </div>
+                <x-ui.card>
+                    <div class="grid grid-cols-1 gap-xl lg:grid-cols-[minmax(0,1.18fr)_minmax(320px,0.82fr)] lg:items-start">
+                        <section class="min-w-0">
+                            <div class="mb-md flex items-baseline gap-sm">
+                                <h2 class="text-title-sm text-ink">Pilihan SPRINT</h2>
+                                <span class="text-helper text-muted">Product ID dan Offering</span>
+                            </div>
 
-                        <div class="rounded-sm border border-hairline bg-surface-soft p-md">
-                            <div class="grid grid-cols-1 gap-md">
+                            <div class="grid grid-cols-1 gap-md sm:grid-cols-2">
+                                @foreach ($selectorFields as [$group, $label, $placeholder, $wide])
+                                    <x-ui.field :label="$label" class="{{ $wide ? 'sm:col-span-2' : '' }}"
+                                                :helper="$sprint_unit === '' && $group === 'unit' ? 'Unit Commercial bercabang jadi Pick Up atau Truck; simulasi tidak menentukannya.' : null">
+                                        <x-ui.select wire:model.live="sprint_{{ $group }}">
+                                            <option value="">{{ $placeholder }}</option>
+                                            @foreach ($selectorOptions[$group] ?? [] as $option)
+                                                <option value="{{ $option }}">{{ $option }}</option>
+                                            @endforeach
+                                        </x-ui.select>
+                                    </x-ui.field>
+                                @endforeach
+
                                 {{-- Jalan buntu tanpa diagnosa memaksa AO menebak
                                      di antara delapan dropdown. --}}
-                                {{-- Katalog kosong bukan salah pilihan AO; tanpa
-                                     pesan ini layarnya hanya berkata "belum tersedia". --}}
-                                @if (! $lookupAvailable)
-                                    <p role="status" class="text-helper text-muted">
-                                        Katalog offering SPRINT belum diimpor, jadi kode disusun dari token.
-                                        Minta Admin menjalankan <span class="font-mono">sprint:import-offerings</span>.
-                                    </p>
-                                @elseif ($this->lookupDeadEnd)
+                                @if ($lookupAvailable && $this->lookupDeadEnd)
                                     @php($blocking = $this->blockingFilters)
-                                    <p role="status" class="text-helper text-signature-coral">
+                                    <p role="status" class="sm:col-span-2 text-helper text-signature-coral">
                                         Tidak ada offering yang cocok dengan kombinasi ini.
                                         {{-- Kalau tak satu pun filter membukanya sendirian,
                                              mengatakannya lebih berguna daripada diam. --}}
@@ -101,7 +98,7 @@
                                     </p>
                                 @endif
 
-                                <x-ui.field label="Product ID" required>
+                                <x-ui.field label="Product ID" required class="sm:col-span-2">
                                     @if ($lookupAvailable)
                                         <x-ui.select wire:model.live="product_id" :disabled="$productIdOptions === []">
                                             <option value="">{{ $productIdOptions === [] ? 'Product ID belum tersedia' : 'Pilih Product ID' }}</option>
@@ -115,7 +112,7 @@
                                     @endif
                                 </x-ui.field>
 
-                                <x-ui.field label="Product Offering" required
+                                <x-ui.field label="Product Offering" required class="sm:col-span-2"
                                             :helper="$lookupAvailable && $product_id !== '' && $productOfferingOptions === []
                                                 ? 'Tidak ada offering yang cocok dengan filter yang dipilih.'
                                                 : null">
@@ -140,58 +137,36 @@
                                     @endif
                                 </x-ui.field>
                             </div>
-                        </div>
-                    </div>
-                </x-ui.card>
+                        </section>
 
-                {{-- Kosakata tiap field berbeda dan itu disengaja; lihat ViewSprint::MANUAL_OPTIONS. --}}
-                @php($manualOptions = \App\Livewire\Simulation\ViewSprint::MANUAL_OPTIONS)
+                        <section class="min-w-0 border-t border-hairline pt-lg lg:border-l lg:border-t-0 lg:pl-xl lg:pt-0">
+                            <div class="mb-md flex items-baseline gap-sm">
+                                <h2 class="text-title-sm text-ink">Diisi Account Officer</h2>
+                            </div>
 
-                <x-ui.card title="Diisi Account Officer">
-                    <div class="grid grid-cols-1 gap-md sm:grid-cols-2">
-                        <x-ui.field label="Nama Customer" required class="sm:col-span-2">
-                            <x-ui.input wire:model.live.debounce.400ms="nama_customer" type="text"
-                                        placeholder="Nama customer sesuai pengajuan" />
-                        </x-ui.field>
+                            <div class="grid grid-cols-1 gap-md">
+                                <x-ui.field label="Nama Customer" required>
+                                    <x-ui.input wire:model.live.debounce.400ms="nama_customer" type="text"
+                                                placeholder="Nama customer sesuai pengajuan" />
+                                </x-ui.field>
 
-                        <x-ui.field label="Cara Pembayaran" class="sm:col-span-2">
-                            <x-ui.select wire:model.live="cara_pembayaran">
-                                @if ($cara_pembayaran !== '' && ! in_array($cara_pembayaran, $manualOptions['cara_pembayaran'], true))
-                                    <option value="{{ $cara_pembayaran }}">{{ $cara_pembayaran }}</option>
-                                @endif
-                                @foreach ($manualOptions['cara_pembayaran'] as $option)
-                                    <option value="{{ $option }}">{{ $option }}</option>
-                                @endforeach
-                            </x-ui.select>
-                        </x-ui.field>
+                                <x-ui.field label="Cara Pembayaran">
+                                    <x-ui.select wire:model.live="cara_pembayaran">
+                                        @if ($cara_pembayaran !== '' && ! in_array($cara_pembayaran, $manualOptions['cara_pembayaran'], true))
+                                            <option value="{{ $cara_pembayaran }}">{{ $cara_pembayaran }}</option>
+                                        @endif
+                                        @foreach ($manualOptions['cara_pembayaran'] as $option)
+                                            <option value="{{ $option }}">{{ $option }}</option>
+                                        @endforeach
+                                    </x-ui.select>
+                                </x-ui.field>
 
-
-
-                        <x-ui.field label="Spesifik Product" class="sm:col-span-2">
-                            <x-ui.input wire:model.live.debounce.400ms="spesifik_product" type="text"
-                                        placeholder="Contoh: Fasilitas Dana" />
-                        </x-ui.field>
-
-                        <x-ui.field label="Wira No">
-                            <x-ui.input wire:model.live.debounce.400ms="wira_no" type="text"
-                                        placeholder="Isi 0 bila tidak ada" />
-                        </x-ui.field>
-
-                        <x-ui.field label="Is BELIV?">
-                            <x-ui.select wire:model.live="is_beliv">
-                                @foreach ($manualOptions['is_beliv'] as $option)
-                                    <option value="{{ $option }}">{{ $option }}</option>
-                                @endforeach
-                            </x-ui.select>
-                        </x-ui.field>
-
-                        <x-ui.field label="Sisa Kewajiban" class="sm:[&_[data-ui-field-label]]:flex sm:[&_[data-ui-field-label]]:min-h-[38px] sm:[&_[data-ui-field-label]]:items-end">
-                            <x-ui.money-input wire:model.live.debounce.400ms="sisa_kewajiban" placeholder="Rp 0" />
-                        </x-ui.field>
-
-                        <x-ui.field label="Sisa OS LK Sebelumnya" class="sm:[&_[data-ui-field-label]]:flex sm:[&_[data-ui-field-label]]:min-h-[38px] sm:[&_[data-ui-field-label]]:items-end">
-                            <x-ui.money-input wire:model.live.debounce.400ms="sisa_os_lk" placeholder="Rp 0" />
-                        </x-ui.field>
+                                <x-ui.field label="Spesifik Product">
+                                    <x-ui.input wire:model.live.debounce.400ms="spesifik_product" type="text"
+                                                placeholder="Contoh: Fasilitas Dana" />
+                                </x-ui.field>
+                            </div>
+                        </section>
                     </div>
                 </x-ui.card>
 
@@ -285,8 +260,8 @@
                                             ['SPESIFIK PRODUCT', $spesifik_product],
                                             ['JUMLAH UNIT', $s['jumlah_unit']],
                                             ['BBN', Format::rupiah($s['bbn'])],
-                                            ['SISA KEWAJIBAN', Format::rupiah((int) $sisa_kewajiban)],
-                                            ['SISA OS LK SEBELUMNYA', Format::rupiah((int) $sisa_os_lk)],
+                                            ['SISA KEWAJIBAN', Format::rupiah($s['sisa_kewajiban'])],
+                                            ['SISA OS LK SEBELUMNYA', Format::rupiah($s['sisa_os_lk'])],
                                             ['BIAYA PROSES FAKTUR', Format::rupiah($s['biaya_proses_faktur'])],
                                             ['WIRA NO', $wira_no],
                                             ['REFUND ADMINISTRATION', Format::rupiah($s['refund_administration'])],

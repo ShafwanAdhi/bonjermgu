@@ -44,9 +44,7 @@
             {{-- ------------------------------------------------ Asal pengajuan --}}
             <x-ui.card title="2 · Asal Pengajuan">
                 <div class="grid grid-cols-1 gap-md sm:grid-cols-2">
-                    <x-ui.field label="Kategori Referral" required
-                                helper="Menentukan Product, jadi mengubahnya mengubah rate dan biaya."
-                                :error="$errors->first('referral_category_id')">
+                    <x-ui.field label="Kategori Referral" required :error="$errors->first('referral_category_id')">
                         <x-ui.select wire:model.live="referral_category_id"
                                      :invalid="$errors->has('referral_category_id')">
                             <option value="">Pilih kategori</option>
@@ -72,8 +70,7 @@
             {{-- -------------------------------------------------- Profil debitur --}}
             <x-ui.card title="3 · Profil Debitur">
                 <div class="grid grid-cols-1 gap-md sm:grid-cols-2">
-                    <x-ui.field label="Type Debitur" required helper="Wiraswasta, non wiraswasta, atau badan usaha."
-                                :error="$errors->first('debtor_type')">
+                    <x-ui.field label="Type Debitur" required :error="$errors->first('debtor_type')">
                         <x-ui.select wire:model.live="debtor_type" :invalid="$errors->has('debtor_type')">
                             <option value="non_entrepreneur">Perorangan Non Wiraswasta</option>
                             <option value="entrepreneur">Perorangan Wiraswasta</option>
@@ -83,8 +80,7 @@
 
                     {{-- Type Customer, EDIT SIMULASI E11. Terbawa ke View Sprint;
                          tidak menyentuh perhitungan. --}}
-                    <x-ui.field label="Type Customer" required helper="Riwayat debitur di MTF. Terbawa ke View Sprint."
-                                :error="$errors->first('customer_type')">
+                    <x-ui.field label="Type Customer" required :error="$errors->first('customer_type')">
                         <x-ui.select wire:model.live="customer_type" :invalid="$errors->has('customer_type')">
                             @foreach (\App\Livewire\Simulation\OfficerSimulation::CUSTOMER_TYPES as $option)
                                 <option value="{{ $option }}">{{ $option }}</option>
@@ -284,6 +280,10 @@
                                 <input wire:model.live="engine_warranty" type="checkbox" class="rounded-xs border-hairline">
                                 Garansi Mesin
                             </label>
+                            <label class="flex items-center gap-sm text-body-md text-body sm:col-span-2">
+                                <input wire:model.live="is_beliv" type="checkbox" class="rounded-xs border-hairline">
+                                BELIV
+                            </label>
                         </div>
 
                         <p class="mt-md text-helper text-border-strong">
@@ -359,6 +359,16 @@
                             <x-ui.field label="Faktur (Rp)" :error="$errors->first('invoice_amount')">
                                 <x-ui.money-input wire:model.live.debounce.500ms="invoice_amount" placeholder="Rp 0"
                                                   :invalid="$errors->has('invoice_amount')" />
+                            </x-ui.field>
+
+                            <x-ui.field label="Sisa Kewajiban" :error="$errors->first('sisa_kewajiban')">
+                                <x-ui.money-input wire:model.live.debounce.500ms="sisa_kewajiban" placeholder="Rp 0"
+                                                  :invalid="$errors->has('sisa_kewajiban')" />
+                            </x-ui.field>
+
+                            <x-ui.field label="Sisa OS LK Sebelumnya" :error="$errors->first('sisa_os_lk')">
+                                <x-ui.money-input wire:model.live.debounce.500ms="sisa_os_lk" placeholder="Rp 0"
+                                                  :invalid="$errors->has('sisa_os_lk')" />
                             </x-ui.field>
                         </div>
 
